@@ -124,15 +124,10 @@ class LicenseService
         }
 
         // Check cache first (only if not forcing validation)
-        // IMPORTANTE: Em produção, descomente a linha abaixo para usar cache
-        // $cached = Cache::get($this->cacheKey);
-        // if ($cached !== null && !request()->has('force')) {
-        //     Log::info('Usando cache de validação');
-        //     return $cached;
-        // }
-        
-        // Para debug, sempre validar (comentar em produção)
-        Log::info('Forçando validação (cache desabilitado para debug)');
+        $cached = Cache::get($this->cacheKey);
+        if ($cached !== null && !request()->has('force')) {
+            return $cached;
+        }
 
         try {
             $deviceId = License::generateDeviceId();
@@ -164,15 +159,26 @@ class LicenseService
                 
                 // Verificar formato básico da chave
                 if (!str_starts_with($apiKey, 'ls_')) {
-                    Log::warning('API Key não começa com "ls_" - pode estar incorreta', [
+                    Log::error('API Key não começa com "ls_" - formato inválido', [
                         'preview' => substr($apiKey, 0, 10) . '...',
                         'length' => strlen($apiKey),
+                        'hint' => 'API keys válidas começam com "ls_" e têm 51 caracteres',
                     ]);
                 }
                 
+                // Enviar no header X-API-Key (formato esperado pelo servidor)
                 $headers['X-API-Key'] = $apiKey;
-                // Alternativa: usar Authorization Bearer (descomente se necessário)
-                // $headers['Authorization'] = 'Bearer ' . $apiKey;
+                
+                Log::debug('API Key sendo enviada', [
+                    'header' => 'X-API-Key',
+                    'preview' => substr($apiKey, 0, 8) . '...' . substr($apiKey, -4),
+                    'length' => strlen($apiKey),
+                    'starts_with_ls' => str_starts_with($apiKey, 'ls_'),
+                ]);
+            } else {
+                Log::error('API Key não configurada - requisição será rejeitada', [
+                    'hint' => 'Configure LICENSE_API_KEY no .env ou no código',
+                ]);
             }
             
             Log::info('Iniciando validação de licença', [
@@ -188,6 +194,16 @@ class LicenseService
             ]);
 
             try {
+                // Log detalhado antes da requisição
+                Log::info('Enviando requisição para servidor de licenças', [
+                    'url' => $fullUrl,
+                    'method' => 'POST',
+                    'headers' => array_merge($headers, ['X-API-Key' => $apiKey ? (substr($apiKey, 0, 8) . '...' . substr($apiKey, -4)) : 'NÃO CONFIGURADA']),
+                    'request_data' => $requestData,
+                    'api_key_length' => $apiKey ? strlen($apiKey) : 0,
+                    'api_key_starts_with_ls' => $apiKey ? str_starts_with($apiKey, 'ls_') : false,
+                ]);
+                
                 $response = Http::timeout(15)
                     ->retry(2, 100) // Tentar 2 vezes com delay de 100ms
                     ->withHeaders($headers)
@@ -196,6 +212,7 @@ class LicenseService
                 Log::info('Resposta recebida do servidor', [
                     'status' => $response->status(),
                     'successful' => $response->successful(),
+                    'body_preview' => substr($response->body(), 0, 200),
                 ]);
             } catch (\Illuminate\Http\Client\ConnectionException $e) {
                 Log::error('Erro de conexão com servidor de licenças', [
