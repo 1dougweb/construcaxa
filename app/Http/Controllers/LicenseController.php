@@ -42,22 +42,33 @@ class LicenseController extends Controller
 
         // URL e API key vêm do código (.env ou diretamente no LicenseService)
         // Não são mais configuradas via frontend por segurança
-        $result = $this->licenseService->store(
-            $request->license_token,
-            null // URL vem do código
-        );
+        try {
+            $result = $this->licenseService->store(
+                $request->license_token,
+                null // URL vem do código
+            );
 
-        if ($result) {
-            return redirect()->route('license.configure')
-                ->with('success', 'Licença configurada e validada com sucesso!');
+            if ($result) {
+                return redirect()->route('license.configure')
+                    ->with('success', 'Licença configurada e validada com sucesso!');
+            }
+
+            $license = License::current();
+            $error = $license->validation_error ?? 'Erro ao validar licença. Verifique o token e as configurações do servidor.';
+
+            return redirect()->back()
+                ->withInput()
+                ->withErrors(['license_token' => $error]);
+        } catch (\Exception $e) {
+            \Log::error('Erro ao salvar licença', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+            
+            return redirect()->back()
+                ->withInput()
+                ->withErrors(['license_token' => 'Erro ao comunicar com o servidor: ' . $e->getMessage()]);
         }
-
-        $license = License::current();
-        $error = $license->validation_error ?? 'Erro ao validar licença. Verifique o token e as configurações do servidor.';
-
-        return redirect()->back()
-            ->withInput()
-            ->withErrors(['license_token' => $error]);
     }
 
     /**
@@ -89,8 +100,17 @@ class LicenseController extends Controller
         
         // Force validation if requested
         if ($request->has('validate')) {
-            $validation = $this->licenseService->validate();
-            $status = array_merge($status, $validation);
+            try {
+                $validation = $this->licenseService->validate();
+                $status = array_merge($status, $validation);
+            } catch (\Exception $e) {
+                \Log::error('Erro ao validar licença no status', [
+                    'error' => $e->getMessage(),
+                ]);
+                $status['valid'] = false;
+                $status['message'] = 'Erro ao validar: ' . $e->getMessage();
+                $status['error'] = 'VALIDATION_ERROR';
+            }
         }
         
         return response()->json($status);

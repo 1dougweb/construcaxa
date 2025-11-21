@@ -144,6 +144,15 @@
     @push('scripts')
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            // Garantir que notificationManager está disponível
+            const showNotification = (message, type = 'success') => {
+                if (window.notificationManager) {
+                    window.notificationManager.show(message, type);
+                } else {
+                    console.warn('NotificationManager não disponível');
+                }
+            };
+
             const validateBtn = document.getElementById('validate-btn');
             const statusContainer = document.getElementById('license-status-container');
             
@@ -157,7 +166,7 @@
                 });
             }
 
-            function validateLicense(showNotification = false) {
+            function validateLicense(showNotificationFlag = false) {
                 fetch('{{ route("license.status") }}?validate=1', {
                     method: 'GET',
                     headers: {
@@ -170,23 +179,23 @@
                 .then(data => {
                     updateStatusUI(data);
                     
-                    if (showNotification) {
+                    if (showNotificationFlag) {
                         if (data.valid) {
-                            window.notificationManager?.show('Licença validada com sucesso!', 'success');
+                            showNotification('Licença validada com sucesso!', 'success');
                         } else {
-                            window.notificationManager?.show(data.message || 'Erro ao validar licença', 'error');
+                            showNotification(data.message || 'Erro ao validar licença', 'error');
                         }
                     } else {
                         // Notificação silenciosa apenas se mudou de válida para inválida
                         if (!data.valid && data.configured) {
-                            window.notificationManager?.show('Atenção: Sua licença não está mais válida!', 'warning');
+                            showNotification('Atenção: Sua licença não está mais válida!', 'warning');
                         }
                     }
                 })
                 .catch(error => {
                     console.error('Erro ao validar licença:', error);
-                    if (showNotification) {
-                        window.notificationManager?.show('Erro ao conectar com o servidor de licenças', 'error');
+                    if (showNotificationFlag) {
+                        showNotification('Erro ao conectar com o servidor de licenças', 'error');
                     }
                 });
             }

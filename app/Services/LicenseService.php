@@ -83,15 +83,38 @@ class LicenseService
                 $requestData['api_key'] = $apiKey;
             }
 
+            // Garantir que a URL não termina com / e adicionar o endpoint
+            $serverUrl = rtrim($serverUrl, '/');
+            $fullUrl = $serverUrl . '/api/license/validate';
+            
+            Log::info('Validando licença', [
+                'url' => $fullUrl,
+                'server_url' => $serverUrl,
+                'has_api_key' => !empty($apiKey),
+                'token_preview' => substr($token, 0, 10) . '...',
+                'domain' => request()->getHost(),
+            ]);
+
             $response = Http::timeout(10)
                 ->withHeaders($apiKey ? ['Authorization' => 'Bearer ' . $apiKey] : [])
-                ->post($serverUrl . '/api/license/validate', $requestData);
+                ->post($fullUrl, $requestData);
 
             if (!$response->successful()) {
-                throw new \Exception('Erro ao comunicar com o servidor de licença: ' . $response->status());
+                $errorBody = $response->body();
+                Log::error('Erro na validação de licença', [
+                    'status' => $response->status(),
+                    'body' => $errorBody,
+                    'url' => $fullUrl,
+                ]);
+                throw new \Exception('Erro ao comunicar com o servidor de licença (Status: ' . $response->status() . '): ' . $errorBody);
             }
 
             $data = $response->json();
+            
+            Log::info('Resposta da validação', [
+                'valid' => $data['valid'] ?? false,
+                'message' => $data['message'] ?? 'Sem mensagem',
+            ]);
 
             $result = [
                 'valid' => $data['valid'] ?? false,
@@ -122,10 +145,13 @@ class LicenseService
             return $result;
 
         } catch (\Exception $e) {
+            $errorMessage = $e->getMessage();
             Log::error('License validation error', [
-                'error' => $e->getMessage(),
-                'token' => substr($token, 0, 10) . '...',
+                'error' => $errorMessage,
+                'token_preview' => substr($token, 0, 10) . '...',
                 'server_url' => $serverUrl,
+                'has_api_key' => !empty($apiKey),
+                'trace' => $e->getTraceAsString(),
             ]);
 
             // If we have a cached valid license, use it temporarily
@@ -206,10 +232,12 @@ class LicenseService
                 'valid' => false,
                 'message' => 'Licença não configurada',
                 'configured' => false,
+                'error' => 'NO_LICENSE',
             ];
         }
 
         $isValid = $license->isValid();
+        $serverUrl = env('LICENSE_SERVER_URL', 'https://automacao-license-server.qiqivn.easypanel.host');
         
         return [
             'valid' => $isValid,
@@ -219,6 +247,8 @@ class LicenseService
             'configured' => true,
             'expires_at' => $license->expires_at?->toIso8601String(),
             'last_validated_at' => $license->last_validated_at?->toIso8601String(),
+            'server_url' => $serverUrl,
+            'has_token' => !empty($license->license_token),
         ];
     }
 }
