@@ -82,11 +82,11 @@ RUN echo '<IfModule mod_rewrite.c>' > /var/www/.htaccess && \
 # Configure Nginx (as root, before switching user)
 COPY nginx/nginx.conf /etc/nginx/sites-available/default
 RUN sed -i 's/fastcgi_pass app:9000;/fastcgi_pass 127.0.0.1:9000;/g' /etc/nginx/sites-available/default || true
-# Add headers for HTTPS detection behind proxy - pass through proxy headers or use defaults
-RUN sed -i '/fastcgi_param SCRIPT_FILENAME/a\        fastcgi_param HTTP_X_FORWARDED_PROTO ${http_x_forwarded_proto:-$scheme};' /etc/nginx/sites-available/default && \
-    sed -i '/fastcgi_param HTTP_X_FORWARDED_PROTO/a\        fastcgi_param HTTP_X_FORWARDED_FOR ${http_x_forwarded_for:-$remote_addr};' /etc/nginx/sites-available/default && \
-    sed -i '/fastcgi_param HTTP_X_FORWARDED_FOR/a\        fastcgi_param HTTP_X_FORWARDED_HOST ${http_x_forwarded_host:-$host};' /etc/nginx/sites-available/default && \
-    sed -i '/fastcgi_param HTTP_X_FORWARDED_HOST/a\        fastcgi_param HTTP_X_FORWARDED_PORT ${http_x_forwarded_port:-$server_port};' /etc/nginx/sites-available/default || true
+# Add headers for HTTPS detection behind proxy
+RUN sed -i '/fastcgi_param SCRIPT_FILENAME/a\        fastcgi_param HTTP_X_FORWARDED_PROTO $http_x_forwarded_proto;' /etc/nginx/sites-available/default && \
+    sed -i '/fastcgi_param HTTP_X_FORWARDED_PROTO/a\        fastcgi_param HTTP_X_FORWARDED_FOR $http_x_forwarded_for;' /etc/nginx/sites-available/default && \
+    sed -i '/fastcgi_param HTTP_X_FORWARDED_FOR/a\        fastcgi_param HTTP_X_FORWARDED_HOST $http_x_forwarded_host;' /etc/nginx/sites-available/default && \
+    sed -i '/fastcgi_param HTTP_X_FORWARDED_HOST/a\        fastcgi_param HTTP_X_FORWARDED_PORT $http_x_forwarded_port;' /etc/nginx/sites-available/default || true
 RUN rm -f /etc/nginx/sites-enabled/default && \
     ln -sf /etc/nginx/sites-available/default /etc/nginx/sites-enabled/default || true
 
