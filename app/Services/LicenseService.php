@@ -61,19 +61,57 @@ class LicenseService
         // Opção 2: Diretamente no código (linha abaixo)
         //   Descomente a linha e coloque sua chave:
         // ============================================
+        // ============================================
+        // CONFIGURAÇÃO DA API KEY - PRODUÇÃO
+        // ============================================
+        // IMPORTANTE: A API key DEVE ser gerada no servidor de licenças
+        // Formato: ls_ + 48 caracteres aleatórios (total: 51 caracteres)
+        //
+        // PASSO 1: No servidor de licenças, gere a API key:
+        //   cd C:\Users\Douglas\Desktop\license-server
+        //   php artisan api-key:generate "Stock Master Production"
+        //
+        // PASSO 2: Copie a API key gerada (começa com "ls_")
+        //
+        // PASSO 3: Configure no .env do projeto:
+        //   LICENSE_API_KEY=ls_xxxxxxxxxxxxx... (chave completa de 51 caracteres)
+        //
+        // OU configure diretamente abaixo (linha 95) - NÃO RECOMENDADO PARA PRODUÇÃO
+        // ============================================
         $apiKey = env('LICENSE_API_KEY', '');
-        // Descomente a linha abaixo e coloque sua API key diretamente:
-        // $apiKey = 'COLE_SUA_API_KEY_AQUI';
         
-        // Log para debug (mostra apenas parte da chave por segurança)
-        if (empty($apiKey)) {
-            Log::warning('API Key não configurada', [
-                'hint' => 'Configure LICENSE_API_KEY no .env ou diretamente no código (linha 53)',
+        // Se preferir colocar diretamente no código (NÃO RECOMENDADO):
+        // $apiKey = 'ls_COLE_SUA_API_KEY_COMPLETA_AQUI_51_CARACTERES';
+        
+        // Validar formato da API key
+        if (!empty($apiKey) && $apiKey !== 'sua-chave-api-aqui') {
+            $apiKey = trim($apiKey);
+            // API keys válidas começam com "ls_" e têm 51 caracteres
+            if (!str_starts_with($apiKey, 'ls_')) {
+                Log::error('API Key com formato inválido - não começa com "ls_"', [
+                    'preview' => substr($apiKey, 0, 10) . '...',
+                    'length' => strlen($apiKey),
+                    'hint' => 'API keys válidas começam com "ls_" e têm 51 caracteres. Gere uma nova no servidor de licenças',
+                ]);
+            } elseif (strlen($apiKey) !== 51) {
+                Log::warning('API Key com tamanho incorreto', [
+                    'length' => strlen($apiKey),
+                    'expected' => 51,
+                    'hint' => 'API keys válidas têm exatamente 51 caracteres (ls_ + 48 chars)',
+                ]);
+            }
+        }
+        
+        // Log para debug
+        if (empty($apiKey) || $apiKey === 'sua-chave-api-aqui') {
+            Log::error('API Key não configurada - validação de licença falhará', [
+                'hint' => 'Configure LICENSE_API_KEY no .env ou diretamente no código (linha 95)',
             ]);
         } else {
             Log::debug('API Key configurada', [
                 'preview' => substr($apiKey, 0, 8) . '...' . substr($apiKey, -4),
                 'length' => strlen($apiKey),
+                'format_valid' => str_starts_with($apiKey, 'ls_') && strlen($apiKey) === 51,
             ]);
         }
 
@@ -86,10 +124,15 @@ class LicenseService
         }
 
         // Check cache first (only if not forcing validation)
-        $cached = Cache::get($this->cacheKey);
-        if ($cached !== null && !request()->has('force')) {
-            return $cached;
-        }
+        // IMPORTANTE: Em produção, descomente a linha abaixo para usar cache
+        // $cached = Cache::get($this->cacheKey);
+        // if ($cached !== null && !request()->has('force')) {
+        //     Log::info('Usando cache de validação');
+        //     return $cached;
+        // }
+        
+        // Para debug, sempre validar (comentar em produção)
+        Log::info('Forçando validação (cache desabilitado para debug)');
 
         try {
             $deviceId = License::generateDeviceId();
@@ -132,18 +175,44 @@ class LicenseService
                 // $headers['Authorization'] = 'Bearer ' . $apiKey;
             }
             
-            Log::info('Validando licença', [
+            Log::info('Iniciando validação de licença', [
                 'url' => $fullUrl,
                 'server_url' => $serverUrl,
                 'has_api_key' => !empty($apiKey),
+                'api_key_preview' => $apiKey ? (substr($apiKey, 0, 8) . '...' . substr($apiKey, -4)) : 'NÃO CONFIGURADA',
                 'token_preview' => substr($token, 0, 10) . '...',
                 'domain' => $domain,
                 'device_id' => $deviceId,
+                'request_data' => $requestData,
+                'headers' => array_keys($headers),
             ]);
 
-            $response = Http::timeout(10)
-                ->withHeaders($headers)
-                ->post($fullUrl, $requestData);
+            try {
+                $response = Http::timeout(15)
+                    ->retry(2, 100) // Tentar 2 vezes com delay de 100ms
+                    ->withHeaders($headers)
+                    ->post($fullUrl, $requestData);
+                
+                Log::info('Resposta recebida do servidor', [
+                    'status' => $response->status(),
+                    'successful' => $response->successful(),
+                ]);
+            } catch (\Illuminate\Http\Client\ConnectionException $e) {
+                Log::error('Erro de conexão com servidor de licenças', [
+                    'url' => $fullUrl,
+                    'error' => $e->getMessage(),
+                    'trace' => $e->getTraceAsString(),
+                ]);
+                throw new \Exception('Não foi possível conectar ao servidor de licenças: ' . $e->getMessage());
+            } catch (\Exception $e) {
+                Log::error('Erro inesperado ao fazer requisição', [
+                    'url' => $fullUrl,
+                    'error' => $e->getMessage(),
+                    'class' => get_class($e),
+                    'trace' => $e->getTraceAsString(),
+                ]);
+                throw $e;
+            }
 
             if (!$response->successful()) {
                 $errorBody = $response->body();
@@ -163,10 +232,16 @@ class LicenseService
                 
                 // Mensagem mais clara para erro 401 (API key inválida)
                 if ($response->status() === 401) {
-                    if (empty($apiKey)) {
-                        $errorMessage = 'API key não configurada. Configure LICENSE_API_KEY no arquivo .env ou diretamente no código (app/Services/LicenseService.php linha 60).';
+                    if (empty($apiKey) || $apiKey === 'sua-chave-api-aqui') {
+                        $errorMessage = 'API key não configurada. Gere uma API key no servidor de licenças com: php artisan api-key:generate "Nome" e configure LICENSE_API_KEY no arquivo .env ou diretamente no código (app/Services/LicenseService.php linha 66).';
                     } else {
-                        $errorMessage = 'API key inválida, expirada ou desativada. Verifique se a chave está correta. A chave configurada começa com: ' . substr($apiKey, 0, 8) . '...';
+                        $keyPreview = substr($apiKey, 0, 10) . '...';
+                        $isValidFormat = str_starts_with($apiKey, 'ls_');
+                        $errorMessage = 'API key inválida, expirada ou desativada. ';
+                        if (!$isValidFormat) {
+                            $errorMessage .= 'A chave configurada (' . $keyPreview . ') não está no formato correto. API keys válidas começam com "ls_" e têm 51 caracteres. ';
+                        }
+                        $errorMessage .= 'Gere uma nova API key no servidor de licenças e configure corretamente.';
                     }
                 }
                 
