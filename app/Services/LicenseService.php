@@ -49,17 +49,21 @@ class LicenseService
         // Se preferir colocar diretamente, descomente e configure:
         // $serverUrl = 'https://seu-servidor-de-licencas.com';
         
-        // API Key para autenticação - configure aqui ou no .env
+        // ============================================
+        // CONFIGURAÇÃO DA API KEY
+        // ============================================
+        // IMPORTANTE: Configure a API key aqui ou no .env
+        // 
+        // Opção 1: Via .env (recomendado)
+        //   Adicione no .env: LICENSE_API_KEY=sua-chave-api-aqui
+        //   Depois execute: php artisan config:clear
+        //
+        // Opção 2: Diretamente no código (linha abaixo)
+        //   Descomente a linha e coloque sua chave:
+        // ============================================
         $apiKey = env('LICENSE_API_KEY', '');
-        // Se preferir colocar diretamente, descomente e configure:
-        // $apiKey = 'sua-chave-api-aqui';
-        
-        // Log para debug
-        if (empty($apiKey)) {
-            Log::warning('API Key não configurada - a validação pode falhar', [
-                'hint' => 'Configure LICENSE_API_KEY no .env ou diretamente no código (linha 53)',
-            ]);
-        }
+        // Descomente a linha abaixo e coloque sua API key diretamente:
+        // $apiKey = 'COLE_SUA_API_KEY_AQUI';
         
         // Log para debug (mostra apenas parte da chave por segurança)
         if (empty($apiKey)) {
@@ -148,9 +152,9 @@ class LicenseService
                 // Mensagem mais clara para erro 401 (API key inválida)
                 if ($response->status() === 401) {
                     if (empty($apiKey)) {
-                        $errorMessage = 'API key não configurada. Configure LICENSE_API_KEY no arquivo .env ou diretamente no código (app/Services/LicenseService.php linha 53).';
+                        $errorMessage = 'API key não configurada. Configure LICENSE_API_KEY no arquivo .env ou diretamente no código (app/Services/LicenseService.php linha 60).';
                     } else {
-                        $errorMessage = 'API key inválida, expirada ou desativada. Verifique se a chave está correta no arquivo .env (LICENSE_API_KEY) ou no código.';
+                        $errorMessage = 'API key inválida, expirada ou desativada. Verifique se a chave está correta. A chave configurada começa com: ' . substr($apiKey, 0, 8) . '...';
                     }
                 }
                 

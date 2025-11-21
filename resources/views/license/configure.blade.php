@@ -87,9 +87,6 @@
                                 <p class="mt-1 text-sm text-gray-500">
                                     O código da licença fornecido pelo provedor de licenças.
                                 </p>
-                                <p class="mt-2 text-sm text-blue-600 bg-blue-50 p-3 rounded">
-                                    <strong>Nota:</strong> A URL da API e a chave da API são configuradas no código do servidor (arquivo <code>app/Services/LicenseService.php</code> ou via arquivo <code>.env</code>).
-                                </p>
                             </div>
                         </div>
 
