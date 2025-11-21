@@ -142,7 +142,7 @@ class LicenseService
 
             // Garantir que a URL não termina com / e adicionar o endpoint
             $serverUrl = rtrim($serverUrl, '/');
-            $fullUrl = $serverUrl . '/api/license/validate';
+            $fullUrl = $serverUrl . '/api/v1/license/validate';
             
             // Preparar headers - API key deve ir no header, não no body
             $headers = [
