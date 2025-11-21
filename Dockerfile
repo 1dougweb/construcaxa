@@ -64,29 +64,12 @@ RUN cd /var/www && \
 # Install Node dependencies and build assets
 RUN cd /var/www && \
     if [ -f package.json ]; then \
-        echo "Installing npm dependencies..." && \
-        npm install --legacy-peer-deps || npm install || echo "npm install had warnings but continuing..."; \
-        echo "Building assets..." && \
-        npm run build || echo "Build failed, will retry at runtime if needed"; \
-        echo "Build completed. Checking manifest..." && \
-        if [ -f public/build/manifest.json ]; then \
-            echo "✓ manifest.json found!"; \
-            ls -lh public/build/manifest.json; \
-        else \
-            echo "⚠ WARNING: manifest.json not found after build - will be created at runtime"; \
-            mkdir -p public/build; \
-            ls -la public/build/ 2>/dev/null || echo "Build directory created"; \
-        fi; \
+        npm install --legacy-peer-deps || npm install; \
+        npm run build || (echo "Build failed, continuing..." && mkdir -p public/build); \
     fi
 
-# Ensure build directory exists and has correct permissions
+# Ensure build directory has correct permissions
 RUN mkdir -p /var/www/public/build && \
-    if [ -f /var/www/public/build/manifest.json ]; then \
-        echo "Manifest.json found!"; \
-    else \
-        echo "WARNING: manifest.json not found after build!"; \
-        ls -la /var/www/public/build/ || true; \
-    fi && \
     chown -R www:www /var/www/public/build && \
     chmod -R 755 /var/www/public/build || true
 
@@ -168,11 +151,6 @@ RUN if [ ! -f /var/www/.env ]; then \
     chown www:www /var/www/.env; \
     fi
 
-# Set environment variables for HTTPS detection
-ENV APP_URL=${APP_URL:-https://localhost}
-ENV ASSET_URL=
-ENV FORCE_HTTPS=true
-
 # Create SQLite database file if using SQLite (for development)
 RUN mkdir -p /var/www/database && \
     touch /var/www/database/database.sqlite && \
@@ -183,16 +161,6 @@ RUN mkdir -p /var/www/database && \
 RUN echo '#!/bin/bash' > /usr/local/bin/docker-entrypoint.sh && \
     echo 'set -e' >> /usr/local/bin/docker-entrypoint.sh && \
     echo '' >> /usr/local/bin/docker-entrypoint.sh && \
-    echo '# Fix APP_URL to use HTTPS if not set or if using HTTP' >> /usr/local/bin/docker-entrypoint.sh && \
-    echo 'if [ -f /var/www/.env ]; then' >> /usr/local/bin/docker-entrypoint.sh && \
-    echo '    if grep -q "^APP_URL=http://" /var/www/.env; then' >> /usr/local/bin/docker-entrypoint.sh && \
-    echo '        sed -i "s|^APP_URL=http://|APP_URL=https://|g" /var/www/.env || true' >> /usr/local/bin/docker-entrypoint.sh && \
-    echo '    fi' >> /usr/local/bin/docker-entrypoint.sh && \
-    echo '    if ! grep -q "^APP_URL=" /var/www/.env; then' >> /usr/local/bin/docker-entrypoint.sh && \
-    echo '        echo "APP_URL=https://localhost" >> /var/www/.env' >> /usr/local/bin/docker-entrypoint.sh && \
-    echo '    fi' >> /usr/local/bin/docker-entrypoint.sh && \
-    echo 'fi' >> /usr/local/bin/docker-entrypoint.sh && \
-    echo '' >> /usr/local/bin/docker-entrypoint.sh && \
     echo '# Create SQLite database if using SQLite' >> /usr/local/bin/docker-entrypoint.sh && \
     echo 'if [ "${DB_CONNECTION:-sqlite}" = "sqlite" ]; then' >> /usr/local/bin/docker-entrypoint.sh && \
     echo '    mkdir -p /var/www/database' >> /usr/local/bin/docker-entrypoint.sh && \
@@ -202,27 +170,6 @@ RUN echo '#!/bin/bash' > /usr/local/bin/docker-entrypoint.sh && \
     echo '        chmod 664 /var/www/database/database.sqlite' >> /usr/local/bin/docker-entrypoint.sh && \
     echo '    fi' >> /usr/local/bin/docker-entrypoint.sh && \
     echo 'fi' >> /usr/local/bin/docker-entrypoint.sh && \
-    echo '' >> /usr/local/bin/docker-entrypoint.sh && \
-    echo '# Check if Vite manifest exists, if not, try to build' >> /usr/local/bin/docker-entrypoint.sh && \
-    echo 'if [ ! -f /var/www/public/build/manifest.json ]; then' >> /usr/local/bin/docker-entrypoint.sh && \
-    echo '    echo "⚠ Manifest not found, attempting to build assets..."' >> /usr/local/bin/docker-entrypoint.sh && \
-    echo '    cd /var/www' >> /usr/local/bin/docker-entrypoint.sh && \
-    echo '    if [ -f package.json ] && command -v npm >/dev/null 2>&1; then' >> /usr/local/bin/docker-entrypoint.sh && \
-    echo '        npm run build 2>&1 || echo "⚠ Build failed, but continuing..."' >> /usr/local/bin/docker-entrypoint.sh && \
-    echo '        if [ -f public/build/manifest.json ]; then' >> /usr/local/bin/docker-entrypoint.sh && \
-    echo '            echo "✓ Build successful!"' >> /usr/local/bin/docker-entrypoint.sh && \
-    echo '        else' >> /usr/local/bin/docker-entrypoint.sh && \
-    echo '            echo "⚠ Build completed but manifest still not found"' >> /usr/local/bin/docker-entrypoint.sh && \
-    echo '        fi' >> /usr/local/bin/docker-entrypoint.sh && \
-    echo '    else' >> /usr/local/bin/docker-entrypoint.sh && \
-    echo '        echo "⚠ npm not available, skipping build"' >> /usr/local/bin/docker-entrypoint.sh && \
-    echo '    fi' >> /usr/local/bin/docker-entrypoint.sh && \
-    echo 'fi' >> /usr/local/bin/docker-entrypoint.sh && \
-    echo '' >> /usr/local/bin/docker-entrypoint.sh && \
-    echo '# Clear Laravel cache to ensure new APP_URL is used' >> /usr/local/bin/docker-entrypoint.sh && \
-    echo 'cd /var/www && php artisan config:clear 2>/dev/null || true' >> /usr/local/bin/docker-entrypoint.sh && \
-    echo 'cd /var/www && php artisan route:clear 2>/dev/null || true' >> /usr/local/bin/docker-entrypoint.sh && \
-    echo 'cd /var/www && php artisan view:clear 2>/dev/null || true' >> /usr/local/bin/docker-entrypoint.sh && \
     echo '' >> /usr/local/bin/docker-entrypoint.sh && \
     echo '# Start supervisor' >> /usr/local/bin/docker-entrypoint.sh && \
     echo 'exec /usr/bin/supervisord -c /etc/supervisor/conf.d/supervisord.conf' >> /usr/local/bin/docker-entrypoint.sh && \
