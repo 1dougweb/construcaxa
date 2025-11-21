@@ -19,19 +19,10 @@ use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\ReceiptController;
 use App\Http\Controllers\FinancialDashboardController;
 use App\Http\Controllers\ProjectFinancialBalanceController;
-use App\Http\Controllers\LicenseController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 
-// License routes (must be accessible even without valid license)
-Route::middleware(['auth'])->prefix('license')->name('license.')->group(function () {
-    Route::get('configure', [LicenseController::class, 'configure'])->name('configure');
-    Route::post('store', [LicenseController::class, 'store'])->name('store');
-    Route::get('validate', [LicenseController::class, 'validateLicense'])->name('validate');
-    Route::get('status', [LicenseController::class, 'status'])->name('status');
-});
-
-Route::middleware(['auth', \App\Http\Middleware\CheckLicense::class])->group(function () {
+Route::middleware(['auth'])->group(function () {
     Route::get('/', function () {
         return view('dashboard');
     })->name('dashboard');
