@@ -72,48 +72,73 @@ class LicenseService
             $deviceId = License::generateDeviceId();
             $domain = request()->getHost();
 
+            // Dados da requisição conforme esperado pelo servidor de licenças
             $requestData = [
                 'token' => $token,
                 'domain' => $domain,
                 'device_id' => $deviceId,
             ];
 
-            // Add API key if configured
-            if ($apiKey) {
-                $requestData['api_key'] = $apiKey;
-            }
-
             // Garantir que a URL não termina com / e adicionar o endpoint
             $serverUrl = rtrim($serverUrl, '/');
             $fullUrl = $serverUrl . '/api/license/validate';
+            
+            // Preparar headers - API key deve ir no header, não no body
+            $headers = [
+                'Accept' => 'application/json',
+                'Content-Type' => 'application/json',
+            ];
+            
+            // Adicionar API key no header conforme esperado pelo servidor
+            // O servidor aceita X-API-Key ou Authorization: Bearer {key}
+            if ($apiKey) {
+                $headers['X-API-Key'] = $apiKey;
+                // Alternativa: usar Authorization Bearer
+                // $headers['Authorization'] = 'Bearer ' . $apiKey;
+            }
             
             Log::info('Validando licença', [
                 'url' => $fullUrl,
                 'server_url' => $serverUrl,
                 'has_api_key' => !empty($apiKey),
                 'token_preview' => substr($token, 0, 10) . '...',
-                'domain' => request()->getHost(),
+                'domain' => $domain,
+                'device_id' => $deviceId,
             ]);
 
             $response = Http::timeout(10)
-                ->withHeaders($apiKey ? ['Authorization' => 'Bearer ' . $apiKey] : [])
+                ->withHeaders($headers)
                 ->post($fullUrl, $requestData);
 
             if (!$response->successful()) {
                 $errorBody = $response->body();
+                $errorJson = $response->json();
+                
                 Log::error('Erro na validação de licença', [
                     'status' => $response->status(),
                     'body' => $errorBody,
+                    'json' => $errorJson,
                     'url' => $fullUrl,
+                    'headers_sent' => array_keys($headers),
                 ]);
-                throw new \Exception('Erro ao comunicar com o servidor de licença (Status: ' . $response->status() . '): ' . $errorBody);
+                
+                $errorMessage = $errorJson['message'] ?? $errorJson['error'] ?? $errorBody;
+                throw new \Exception('Erro ao comunicar com o servidor de licença (Status: ' . $response->status() . '): ' . $errorMessage);
             }
 
             $data = $response->json();
             
+            if (!isset($data['valid'])) {
+                Log::warning('Resposta inválida do servidor', [
+                    'data' => $data,
+                ]);
+                throw new \Exception('Resposta inválida do servidor de licenças');
+            }
+            
             Log::info('Resposta da validação', [
-                'valid' => $data['valid'] ?? false,
+                'valid' => $data['valid'],
                 'message' => $data['message'] ?? 'Sem mensagem',
+                'has_license_data' => isset($data['license']),
             ]);
 
             $result = [
