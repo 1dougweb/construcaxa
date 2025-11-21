@@ -1,0 +1,13 @@
+{
+  "name": "Stock Master",
+  "short_name": "Stock Master",
+  "description": "Sistema de gestão de estoque e projetos",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#1E2780",
+  "orientation": "portrait-primary",
+  "scope": "/",
+  "icons": []
+}
+

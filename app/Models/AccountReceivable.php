@@ -1,0 +1,99 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\SoftDeletes;
+
+class AccountReceivable extends Model
+{
+    use HasFactory, SoftDeletes;
+
+    const STATUS_PENDING = 'pending';
+    const STATUS_RECEIVED = 'received';
+    const STATUS_OVERDUE = 'overdue';
+    const STATUS_CANCELLED = 'cancelled';
+
+    protected $fillable = [
+        'client_id',
+        'project_id',
+        'number',
+        'description',
+        'amount',
+        'due_date',
+        'received_date',
+        'status',
+        'notes',
+        'user_id',
+    ];
+
+    protected $casts = [
+        'amount' => 'decimal:2',
+        'due_date' => 'date',
+        'received_date' => 'date',
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
+        'deleted_at' => 'datetime',
+    ];
+
+    public static function getStatusOptions(): array
+    {
+        return [
+            self::STATUS_PENDING => 'Pendente',
+            self::STATUS_RECEIVED => 'Recebida',
+            self::STATUS_OVERDUE => 'Vencida',
+            self::STATUS_CANCELLED => 'Cancelada',
+        ];
+    }
+
+    public function getStatusColorAttribute(): string
+    {
+        return match($this->status) {
+            self::STATUS_RECEIVED => 'bg-green-100 text-green-800 border-green-200',
+            self::STATUS_OVERDUE => 'bg-red-100 text-red-800 border-red-200',
+            self::STATUS_CANCELLED => 'bg-gray-100 text-gray-800 border-gray-200',
+            self::STATUS_PENDING => 'bg-yellow-100 text-yellow-800 border-yellow-200',
+            default => 'bg-gray-100 text-gray-800 border-gray-200',
+        };
+    }
+
+    public function getStatusLabelAttribute(): string
+    {
+        return self::getStatusOptions()[$this->status] ?? ucfirst($this->status);
+    }
+
+    public function client(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'client_id');
+    }
+
+    public function project(): BelongsTo
+    {
+        return $this->belongsTo(Project::class);
+    }
+
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
+    }
+
+    public function generateNumber(): string
+    {
+        $year = date('Y');
+        $prefix = "CR{$year}";
+        
+        $lastReceivable = static::where('number', 'like', "{$prefix}%")
+            ->orderByRaw('CAST(SUBSTRING(number, ' . (strlen($prefix) + 1) . ') AS UNSIGNED) DESC')
+            ->first();
+        
+        if ($lastReceivable && preg_match('/CR\d{4}(\d+)/', $lastReceivable->number, $matches)) {
+            $nextNumber = intval($matches[1]) + 1;
+        } else {
+            $nextNumber = 1;
+        }
+        
+        return $prefix . str_pad($nextNumber, 4, '0', STR_PAD_LEFT);
+    }
+}
