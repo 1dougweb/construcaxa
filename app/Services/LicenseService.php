@@ -53,6 +53,25 @@ class LicenseService
         $apiKey = env('LICENSE_API_KEY', '');
         // Se preferir colocar diretamente, descomente e configure:
         // $apiKey = 'sua-chave-api-aqui';
+        
+        // Log para debug
+        if (empty($apiKey)) {
+            Log::warning('API Key não configurada - a validação pode falhar', [
+                'hint' => 'Configure LICENSE_API_KEY no .env ou diretamente no código (linha 53)',
+            ]);
+        }
+        
+        // Log para debug (mostra apenas parte da chave por segurança)
+        if (empty($apiKey)) {
+            Log::warning('API Key não configurada', [
+                'hint' => 'Configure LICENSE_API_KEY no .env ou diretamente no código (linha 53)',
+            ]);
+        } else {
+            Log::debug('API Key configurada', [
+                'preview' => substr($apiKey, 0, 8) . '...' . substr($apiKey, -4),
+                'length' => strlen($apiKey),
+            ]);
+        }
 
         if (!$token || !$serverUrl) {
             return [
@@ -120,9 +139,21 @@ class LicenseService
                     'json' => $errorJson,
                     'url' => $fullUrl,
                     'headers_sent' => array_keys($headers),
+                    'api_key_configured' => !empty($apiKey),
+                    'api_key_preview' => $apiKey ? (substr($apiKey, 0, 8) . '...' . substr($apiKey, -4)) : 'NÃO CONFIGURADA',
                 ]);
                 
                 $errorMessage = $errorJson['message'] ?? $errorJson['error'] ?? $errorBody;
+                
+                // Mensagem mais clara para erro 401 (API key inválida)
+                if ($response->status() === 401) {
+                    if (empty($apiKey)) {
+                        $errorMessage = 'API key não configurada. Configure LICENSE_API_KEY no arquivo .env ou diretamente no código (app/Services/LicenseService.php linha 53).';
+                    } else {
+                        $errorMessage = 'API key inválida, expirada ou desativada. Verifique se a chave está correta no arquivo .env (LICENSE_API_KEY) ou no código.';
+                    }
+                }
+                
                 throw new \Exception('Erro ao comunicar com o servidor de licença (Status: ' . $response->status() . '): ' . $errorMessage);
             }
 
