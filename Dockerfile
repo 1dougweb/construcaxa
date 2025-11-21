@@ -63,9 +63,27 @@ RUN cd /var/www && \
 
 # Install Node dependencies and build assets
 RUN cd /var/www && \
+    echo "=== Node version ===" && \
+    node --version && \
+    echo "=== NPM version ===" && \
+    npm --version && \
+    echo "=== Checking for package.json ===" && \
     if [ -f package.json ]; then \
-        npm install --legacy-peer-deps || npm install; \
-        npm run build || (echo "Build failed, continuing..." && mkdir -p public/build); \
+        echo "package.json found!" && \
+        cat package.json | head -20 && \
+        echo "=== Installing npm dependencies ===" && \
+        (npm install --legacy-peer-deps 2>&1 || npm install 2>&1) || echo "npm install had issues but continuing..."; \
+        echo "=== Dependencies installed, running build ===" && \
+        npm run build 2>&1 && echo "✓ Build successful!" || (echo "✗ Build failed!" && mkdir -p public/build); \
+        echo "=== Build completed, checking output ===" && \
+        ls -la public/build/ && \
+        if [ -f public/build/manifest.json ]; then \
+            echo "✓ manifest.json found!"; \
+        else \
+            echo "✗ manifest.json NOT found!"; \
+        fi; \
+    else \
+        echo "✗ package.json NOT found, skipping npm build"; \
     fi
 
 # Ensure build directory has correct permissions
