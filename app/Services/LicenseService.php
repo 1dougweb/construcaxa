@@ -114,9 +114,21 @@ class LicenseService
             
             // Adicionar API key no header conforme esperado pelo servidor
             // O servidor aceita X-API-Key ou Authorization: Bearer {key}
+            // IMPORTANTE: A API key deve começar com "ls_" e ter 51 caracteres (ls_ + 48 chars)
             if ($apiKey) {
+                // Remover espaços em branco que possam ter sido adicionados acidentalmente
+                $apiKey = trim($apiKey);
+                
+                // Verificar formato básico da chave
+                if (!str_starts_with($apiKey, 'ls_')) {
+                    Log::warning('API Key não começa com "ls_" - pode estar incorreta', [
+                        'preview' => substr($apiKey, 0, 10) . '...',
+                        'length' => strlen($apiKey),
+                    ]);
+                }
+                
                 $headers['X-API-Key'] = $apiKey;
-                // Alternativa: usar Authorization Bearer
+                // Alternativa: usar Authorization Bearer (descomente se necessário)
                 // $headers['Authorization'] = 'Bearer ' . $apiKey;
             }
             
