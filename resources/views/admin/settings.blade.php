@@ -47,6 +47,50 @@
                             </div>
                         </div>
 
+                        <div class="mb-6">
+                            <h3 class="text-lg font-medium text-gray-900 mb-4">Servidor de Licenças</h3>
+                            
+                            <div class="mb-4">
+                                <label for="license_server_url" class="block text-sm font-medium text-gray-700 mb-2">
+                                    URL do Servidor de Licenças
+                                </label>
+                                <input 
+                                    type="url" 
+                                    name="license_server_url" 
+                                    id="license_server_url"
+                                    value="{{ old('license_server_url', $settings['license_server_url']) }}"
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                                    placeholder="https://license-server.example.com"
+                                >
+                                @error('license_server_url')
+                                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                @enderror
+                                <p class="mt-1 text-sm text-gray-500">
+                                    URL do servidor de licenças para validação.
+                                </p>
+                            </div>
+
+                            <div class="mb-4">
+                                <label for="license_api_key" class="block text-sm font-medium text-gray-700 mb-2">
+                                    Chave da API do Servidor de Licenças
+                                </label>
+                                <input 
+                                    type="password" 
+                                    name="license_api_key" 
+                                    id="license_api_key"
+                                    value="{{ old('license_api_key', $settings['license_api_key']) }}"
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                                    placeholder="Cole aqui a chave da API"
+                                >
+                                @error('license_api_key')
+                                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                @enderror
+                                <p class="mt-1 text-sm text-gray-500">
+                                    Chave da API para autenticação no servidor de licenças. Esta chave é armazenada de forma segura no servidor.
+                                </p>
+                            </div>
+                        </div>
+
                         <div class="flex justify-end">
                             <button 
                                 type="submit"

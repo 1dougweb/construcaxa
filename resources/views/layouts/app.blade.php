@@ -68,6 +68,17 @@
                     <a href="{{ url('/reports') }}" target="_self" class="block px-6 py-3 hover:bg-indigo-700 {{ request()->routeIs('reports.*') ? 'bg-indigo-700' : '' }}">
                         <i class="fas fa-chart-bar mr-2"></i> Relatórios
                     </a>
+                    
+                    @hasanyrole('manager|admin')
+                    <div class="mt-4 pt-4 border-t border-indigo-700">
+                        <a href="{{ route('license.configure') }}" target="_self" class="block px-6 py-3 hover:bg-indigo-700 {{ request()->routeIs('license.*') ? 'bg-indigo-700' : '' }}">
+                            <i class="fas fa-key mr-2"></i> Licença
+                        </a>
+                        <a href="{{ route('admin.settings') }}" target="_self" class="block px-6 py-3 hover:bg-indigo-700 {{ request()->routeIs('admin.settings') ? 'bg-indigo-700' : '' }}">
+                            <i class="fas fa-cog mr-2"></i> Configurações
+                        </a>
+                    </div>
+                    @endhasanyrole
                 </div>
             </nav>
 

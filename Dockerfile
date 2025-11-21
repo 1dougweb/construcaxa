@@ -74,7 +74,12 @@ RUN cd /var/www && \
         echo "=== Installing npm dependencies ===" && \
         (npm install --legacy-peer-deps 2>&1 || npm install 2>&1) || echo "npm install had issues but continuing..."; \
         echo "=== Dependencies installed, running build ===" && \
-        npm run build 2>&1 && echo "✓ Build successful!" || (echo "✗ Build failed!" && mkdir -p public/build); \
+        npm run build 2>&1 || (echo "✗ Build failed, will retry at runtime" && mkdir -p public/build); \
+        if [ -f public/build/manifest.json ]; then \
+            echo "✓ Build successful! manifest.json created during build"; \
+        else \
+            echo "⚠ Build did not create manifest.json, will be created at runtime"; \
+        fi; \
         echo "=== Build completed, checking output ===" && \
         ls -la public/build/ && \
         if [ -f public/build/manifest.json ]; then \
@@ -177,7 +182,8 @@ RUN mkdir -p /var/www/database && \
 
 # Create entrypoint script inline (no need to copy file)
 RUN echo '#!/bin/bash' > /usr/local/bin/docker-entrypoint.sh && \
-    echo 'set -e' >> /usr/local/bin/docker-entrypoint.sh && \
+    echo '# Do not exit on error for build steps' >> /usr/local/bin/docker-entrypoint.sh && \
+    echo 'set +e' >> /usr/local/bin/docker-entrypoint.sh && \
     echo '' >> /usr/local/bin/docker-entrypoint.sh && \
     echo '# Create SQLite database if using SQLite' >> /usr/local/bin/docker-entrypoint.sh && \
     echo 'if [ "${DB_CONNECTION:-sqlite}" = "sqlite" ]; then' >> /usr/local/bin/docker-entrypoint.sh && \
@@ -186,6 +192,27 @@ RUN echo '#!/bin/bash' > /usr/local/bin/docker-entrypoint.sh && \
     echo '        touch /var/www/database/database.sqlite' >> /usr/local/bin/docker-entrypoint.sh && \
     echo '        chown -R www:www /var/www/database' >> /usr/local/bin/docker-entrypoint.sh && \
     echo '        chmod 664 /var/www/database/database.sqlite' >> /usr/local/bin/docker-entrypoint.sh && \
+    echo '    fi' >> /usr/local/bin/docker-entrypoint.sh && \
+    echo 'fi' >> /usr/local/bin/docker-entrypoint.sh && \
+    echo '' >> /usr/local/bin/docker-entrypoint.sh && \
+    echo '# Check and build Vite assets if manifest is missing' >> /usr/local/bin/docker-entrypoint.sh && \
+    echo 'if [ ! -f /var/www/public/build/manifest.json ]; then' >> /usr/local/bin/docker-entrypoint.sh && \
+    echo '    echo "⚠ Vite manifest not found, building assets..."' >> /usr/local/bin/docker-entrypoint.sh && \
+    echo '    cd /var/www' >> /usr/local/bin/docker-entrypoint.sh && \
+    echo '    if [ -f package.json ] && command -v npm >/dev/null 2>&1; then' >> /usr/local/bin/docker-entrypoint.sh && \
+    echo '        echo "Running npm install..."' >> /usr/local/bin/docker-entrypoint.sh && \
+    echo '        npm install --legacy-peer-deps 2>&1 || npm install 2>&1 || echo "npm install had issues"' >> /usr/local/bin/docker-entrypoint.sh && \
+    echo '        echo "Running npm run build..."' >> /usr/local/bin/docker-entrypoint.sh && \
+    echo '        npm run build 2>&1 || echo "Build failed"' >> /usr/local/bin/docker-entrypoint.sh && \
+    echo '        if [ -f public/build/manifest.json ]; then' >> /usr/local/bin/docker-entrypoint.sh && \
+    echo '            echo "✓ Build successful! manifest.json created"' >> /usr/local/bin/docker-entrypoint.sh && \
+    echo '            chown -R www:www /var/www/public/build' >> /usr/local/bin/docker-entrypoint.sh && \
+    echo '        else' >> /usr/local/bin/docker-entrypoint.sh && \
+    echo '            echo "✗ Build completed but manifest.json still not found"' >> /usr/local/bin/docker-entrypoint.sh && \
+    echo '            ls -la public/build/ 2>/dev/null || echo "Build directory does not exist"' >> /usr/local/bin/docker-entrypoint.sh && \
+    echo '        fi' >> /usr/local/bin/docker-entrypoint.sh && \
+    echo '    else' >> /usr/local/bin/docker-entrypoint.sh && \
+    echo '        echo "⚠ npm not available, cannot build assets"' >> /usr/local/bin/docker-entrypoint.sh && \
     echo '    fi' >> /usr/local/bin/docker-entrypoint.sh && \
     echo 'fi' >> /usr/local/bin/docker-entrypoint.sh && \
     echo '' >> /usr/local/bin/docker-entrypoint.sh && \
