@@ -65,7 +65,7 @@ RUN cd /var/www && \
 RUN cd /var/www && \
     if [ -f package.json ]; then \
         npm install --legacy-peer-deps || npm install; \
-        npm run build || (echo "Build failed, continuing..." && mkdir -p public/build); \
+        APP_URL=${APP_URL:-https://localhost} npm run build || (echo "Build failed, continuing..." && mkdir -p public/build); \
     fi
 
 # Ensure build directory has correct permissions
@@ -82,6 +82,11 @@ RUN echo '<IfModule mod_rewrite.c>' > /var/www/.htaccess && \
 # Configure Nginx (as root, before switching user)
 COPY nginx/nginx.conf /etc/nginx/sites-available/default
 RUN sed -i 's/fastcgi_pass app:9000;/fastcgi_pass 127.0.0.1:9000;/g' /etc/nginx/sites-available/default || true
+# Add headers for HTTPS detection behind proxy - pass through proxy headers or use defaults
+RUN sed -i '/fastcgi_param SCRIPT_FILENAME/a\        fastcgi_param HTTP_X_FORWARDED_PROTO ${http_x_forwarded_proto:-$scheme};' /etc/nginx/sites-available/default && \
+    sed -i '/fastcgi_param HTTP_X_FORWARDED_PROTO/a\        fastcgi_param HTTP_X_FORWARDED_FOR ${http_x_forwarded_for:-$remote_addr};' /etc/nginx/sites-available/default && \
+    sed -i '/fastcgi_param HTTP_X_FORWARDED_FOR/a\        fastcgi_param HTTP_X_FORWARDED_HOST ${http_x_forwarded_host:-$host};' /etc/nginx/sites-available/default && \
+    sed -i '/fastcgi_param HTTP_X_FORWARDED_HOST/a\        fastcgi_param HTTP_X_FORWARDED_PORT ${http_x_forwarded_port:-$server_port};' /etc/nginx/sites-available/default || true
 RUN rm -f /etc/nginx/sites-enabled/default && \
     ln -sf /etc/nginx/sites-available/default /etc/nginx/sites-enabled/default || true
 
@@ -146,6 +151,11 @@ RUN if [ ! -f /var/www/.env ]; then \
     chown www:www /var/www/.env; \
     fi
 
+# Set environment variables for HTTPS detection
+ENV APP_URL=${APP_URL:-https://localhost}
+ENV ASSET_URL=
+ENV FORCE_HTTPS=true
+
 # Create SQLite database file if using SQLite (for development)
 RUN mkdir -p /var/www/database && \
     touch /var/www/database/database.sqlite && \
@@ -156,6 +166,16 @@ RUN mkdir -p /var/www/database && \
 RUN echo '#!/bin/bash' > /usr/local/bin/docker-entrypoint.sh && \
     echo 'set -e' >> /usr/local/bin/docker-entrypoint.sh && \
     echo '' >> /usr/local/bin/docker-entrypoint.sh && \
+    echo '# Fix APP_URL to use HTTPS if not set or if using HTTP' >> /usr/local/bin/docker-entrypoint.sh && \
+    echo 'if [ -f /var/www/.env ]; then' >> /usr/local/bin/docker-entrypoint.sh && \
+    echo '    if grep -q "^APP_URL=http://" /var/www/.env; then' >> /usr/local/bin/docker-entrypoint.sh && \
+    echo '        sed -i "s|^APP_URL=http://|APP_URL=https://|g" /var/www/.env || true' >> /usr/local/bin/docker-entrypoint.sh && \
+    echo '    fi' >> /usr/local/bin/docker-entrypoint.sh && \
+    echo '    if ! grep -q "^APP_URL=" /var/www/.env; then' >> /usr/local/bin/docker-entrypoint.sh && \
+    echo '        echo "APP_URL=https://localhost" >> /var/www/.env' >> /usr/local/bin/docker-entrypoint.sh && \
+    echo '    fi' >> /usr/local/bin/docker-entrypoint.sh && \
+    echo 'fi' >> /usr/local/bin/docker-entrypoint.sh && \
+    echo '' >> /usr/local/bin/docker-entrypoint.sh && \
     echo '# Create SQLite database if using SQLite' >> /usr/local/bin/docker-entrypoint.sh && \
     echo 'if [ "${DB_CONNECTION:-sqlite}" = "sqlite" ]; then' >> /usr/local/bin/docker-entrypoint.sh && \
     echo '    mkdir -p /var/www/database' >> /usr/local/bin/docker-entrypoint.sh && \
@@ -165,6 +185,11 @@ RUN echo '#!/bin/bash' > /usr/local/bin/docker-entrypoint.sh && \
     echo '        chmod 664 /var/www/database/database.sqlite' >> /usr/local/bin/docker-entrypoint.sh && \
     echo '    fi' >> /usr/local/bin/docker-entrypoint.sh && \
     echo 'fi' >> /usr/local/bin/docker-entrypoint.sh && \
+    echo '' >> /usr/local/bin/docker-entrypoint.sh && \
+    echo '# Clear Laravel cache to ensure new APP_URL is used' >> /usr/local/bin/docker-entrypoint.sh && \
+    echo 'cd /var/www && php artisan config:clear 2>/dev/null || true' >> /usr/local/bin/docker-entrypoint.sh && \
+    echo 'cd /var/www && php artisan route:clear 2>/dev/null || true' >> /usr/local/bin/docker-entrypoint.sh && \
+    echo 'cd /var/www && php artisan view:clear 2>/dev/null || true' >> /usr/local/bin/docker-entrypoint.sh && \
     echo '' >> /usr/local/bin/docker-entrypoint.sh && \
     echo '# Start supervisor' >> /usr/local/bin/docker-entrypoint.sh && \
     echo 'exec /usr/bin/supervisord -c /etc/supervisor/conf.d/supervisord.conf' >> /usr/local/bin/docker-entrypoint.sh && \

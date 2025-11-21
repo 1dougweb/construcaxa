@@ -12,4 +12,13 @@ export default defineConfig({
             refresh: true,
         }),
     ],
+    server: {
+        hmr: {
+            host: process.env.VITE_HOST || 'localhost',
+            protocol: process.env.VITE_PROTOCOL || 'http',
+        },
+    },
+    build: {
+        manifest: true,
+    },
 });
