@@ -30,8 +30,29 @@ class LicenseService
         }
 
         $token = $token ?? $license->license_token;
-        $serverUrl = $serverUrl ?? $license->license_server_url ?? Setting::get('license_server_url', env('LICENSE_SERVER_URL'));
-        $apiKey = Setting::get('license_api_key', '');
+        
+        // ============================================
+        // CONFIGURAÇÃO DA URL DA API E API KEY
+        // ============================================
+        // Configure a URL da API do servidor de licenças:
+        // Opção 1: Via .env (recomendado)
+        //   Adicione no .env: LICENSE_SERVER_URL=https://seu-servidor.com
+        //   Adicione no .env: LICENSE_API_KEY=sua-chave-api
+        //
+        // Opção 2: Diretamente no código (substitua os valores abaixo)
+        //   $serverUrl = 'https://seu-servidor-de-licencas.com';
+        //   $apiKey = 'sua-chave-api-aqui';
+        // ============================================
+        
+        // URL do servidor de licenças - configure aqui ou no .env
+        $serverUrl = $serverUrl ?? env('LICENSE_SERVER_URL', 'https://automacao-license-server.qiqivn.easypanel.host');
+        // Se preferir colocar diretamente, descomente e configure:
+        // $serverUrl = 'https://seu-servidor-de-licencas.com';
+        
+        // API Key para autenticação - configure aqui ou no .env
+        $apiKey = env('LICENSE_API_KEY', '');
+        // Se preferir colocar diretamente, descomente e configure:
+        // $apiKey = 'sua-chave-api-aqui';
 
         if (!$token || !$serverUrl) {
             return [
@@ -162,12 +183,13 @@ class LicenseService
         $license = License::current() ?? new License();
         
         $license->license_token = $token;
-        $license->license_server_url = $serverUrl ?? Setting::get('license_server_url', env('LICENSE_SERVER_URL'));
+        // URL vem do código (.env ou diretamente configurada)
+        $license->license_server_url = $serverUrl ?? env('LICENSE_SERVER_URL', 'https://seu-servidor-de-licencas.com');
         $license->save();
 
         // Clear cache and validate
         $this->clearCache();
-        $result = $this->validate($token, $license->license_server_url);
+        $result = $this->validate($token, null); // null para usar a URL do código
 
         return $result['valid'] ?? false;
     }

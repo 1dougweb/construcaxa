@@ -40,17 +40,11 @@ class LicenseController extends Controller
             'license_token' => 'required|string|min:10',
         ]);
 
-        $serverUrl = Setting::get('license_server_url', env('LICENSE_SERVER_URL'));
-
-        if (!$serverUrl) {
-            return redirect()->back()
-                ->withInput()
-                ->withErrors(['license_token' => 'URL do servidor de licença não configurada. Configure em Configurações do Sistema.']);
-        }
-
+        // URL e API key vêm do código (.env ou diretamente no LicenseService)
+        // Não são mais configuradas via frontend por segurança
         $result = $this->licenseService->store(
             $request->license_token,
-            $serverUrl
+            null // URL vem do código
         );
 
         if ($result) {
