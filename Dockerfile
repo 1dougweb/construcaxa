@@ -64,12 +64,29 @@ RUN cd /var/www && \
 # Install Node dependencies and build assets
 RUN cd /var/www && \
     if [ -f package.json ]; then \
-        npm install --legacy-peer-deps || npm install; \
-        APP_URL=${APP_URL:-https://localhost} npm run build || (echo "Build failed, continuing..." && mkdir -p public/build); \
+        echo "Installing npm dependencies..." && \
+        npm install --legacy-peer-deps || npm install || (echo "npm install failed" && exit 1); \
+        echo "Building assets..." && \
+        npm run build || (echo "Build failed!" && exit 1); \
+        echo "Build completed. Checking manifest..." && \
+        if [ -f public/build/manifest.json ]; then \
+            echo "✓ manifest.json found!"; \
+            ls -lh public/build/manifest.json; \
+        else \
+            echo "✗ ERROR: manifest.json NOT found after build!"; \
+            ls -la public/build/ 2>/dev/null || echo "Build directory does not exist"; \
+            exit 1; \
+        fi; \
     fi
 
-# Ensure build directory has correct permissions
+# Ensure build directory exists and has correct permissions
 RUN mkdir -p /var/www/public/build && \
+    if [ -f /var/www/public/build/manifest.json ]; then \
+        echo "Manifest.json found!"; \
+    else \
+        echo "WARNING: manifest.json not found after build!"; \
+        ls -la /var/www/public/build/ || true; \
+    fi && \
     chown -R www:www /var/www/public/build && \
     chmod -R 755 /var/www/public/build || true
 
@@ -184,6 +201,12 @@ RUN echo '#!/bin/bash' > /usr/local/bin/docker-entrypoint.sh && \
     echo '        chown -R www:www /var/www/database' >> /usr/local/bin/docker-entrypoint.sh && \
     echo '        chmod 664 /var/www/database/database.sqlite' >> /usr/local/bin/docker-entrypoint.sh && \
     echo '    fi' >> /usr/local/bin/docker-entrypoint.sh && \
+    echo 'fi' >> /usr/local/bin/docker-entrypoint.sh && \
+    echo '' >> /usr/local/bin/docker-entrypoint.sh && \
+    echo '# Check if Vite manifest exists, if not, try to build' >> /usr/local/bin/docker-entrypoint.sh && \
+    echo 'if [ ! -f /var/www/public/build/manifest.json ]; then' >> /usr/local/bin/docker-entrypoint.sh && \
+    echo '    echo "Manifest not found, attempting to build assets..."' >> /usr/local/bin/docker-entrypoint.sh && \
+    echo '    cd /var/www && npm run build 2>&1 || echo "Build failed, but continuing..."' >> /usr/local/bin/docker-entrypoint.sh && \
     echo 'fi' >> /usr/local/bin/docker-entrypoint.sh && \
     echo '' >> /usr/local/bin/docker-entrypoint.sh && \
     echo '# Clear Laravel cache to ensure new APP_URL is used' >> /usr/local/bin/docker-entrypoint.sh && \
