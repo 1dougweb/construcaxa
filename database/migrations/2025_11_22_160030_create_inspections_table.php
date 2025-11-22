@@ -11,6 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
+        Schema::dropIfExists('inspections');
+        
         Schema::create('inspections', function (Blueprint $table) {
             $table->id();
             $table->foreignId('client_id')->constrained('clients')->cascadeOnDelete();
@@ -19,7 +21,7 @@ return new class extends Migration
             $table->date('inspection_date');
             $table->text('address')->nullable();
             $table->text('description')->nullable();
-            $table->foreignId('inspector_id')->constrained('users')->nullOnDelete();
+            $table->foreignId('inspector_id')->nullable()->constrained('users')->nullOnDelete();
             $table->enum('status', ['draft', 'pending', 'approved', 'rejected'])->default('draft');
             $table->json('photos')->nullable();
             $table->string('pdf_path')->nullable();

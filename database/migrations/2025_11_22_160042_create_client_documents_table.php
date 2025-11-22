@@ -11,6 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
+        Schema::dropIfExists('client_documents');
+        
         Schema::create('client_documents', function (Blueprint $table) {
             $table->id();
             $table->foreignId('client_id')->constrained('clients')->cascadeOnDelete();
@@ -19,7 +21,7 @@ return new class extends Migration
             $table->string('file_path');
             $table->unsignedBigInteger('related_id')->nullable();
             $table->string('related_type')->nullable();
-            $table->foreignId('uploaded_by')->constrained('users')->nullOnDelete();
+            $table->foreignId('uploaded_by')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamps();
             $table->softDeletes();
             
