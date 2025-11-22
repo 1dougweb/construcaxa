@@ -9,3 +9,4 @@ docker-compose -f docker-compose.prod.yml down
 
 echo "✅ Ambiente parado!"
 
+

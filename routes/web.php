@@ -4,6 +4,7 @@ use App\Http\Controllers\ProductController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\MaterialRequestController;
 use App\Http\Controllers\SupplierController;
+use App\Http\Controllers\SupplierCategoryController;
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\DashboardController;
@@ -12,6 +13,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\AttendanceController;
 use App\Http\Controllers\PermissionController;
 use App\Http\Controllers\EquipmentController;
+use App\Http\Controllers\EquipmentCategoryController;
 use App\Http\Controllers\EquipmentRequestController;
 use App\Http\Controllers\AccountPayableController;
 use App\Http\Controllers\AccountReceivableController;
@@ -33,19 +35,20 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/profile/photo', [ProfileController::class, 'updatePhoto'])->name('profile.photo');
     Route::put('/profile/password', [ProfileController::class, 'updatePassword'])->name('profile.password');
 
+    // Produtos - Criação (deve vir antes das rotas com parâmetros)
+    Route::middleware(['permission:create products'])->group(function () {
+        Route::get('products/create', [ProductController::class, 'create'])->name('products.create');
+        Route::post('products', [ProductController::class, 'store'])->name('products.store');
+        Route::post('products/generate-sku', [ProductController::class, 'generateSKU'])->name('products.generate-sku');
+    });
+
     // Produtos - Visualização (todos autenticados)
     Route::middleware(['permission:view products'])->group(function () {
     Route::get('products', [ProductController::class, 'index'])->name('products.index');
         Route::get('products/{product}/stock-history', [ProductController::class, 'stockHistory'])->name('products.stock-history');
     });
     
-    // Produtos - Criação/Edição (apenas admin/manager)
-    Route::middleware(['permission:create products'])->group(function () {
-    Route::get('products/create', [ProductController::class, 'create'])->name('products.create');
-    Route::post('products', [ProductController::class, 'store'])->name('products.store');
-        Route::post('products/generate-sku', [ProductController::class, 'generateSKU'])->name('products.generate-sku');
-    });
-    
+    // Produtos - Edição/Exclusão (apenas admin/manager)
     Route::middleware(['permission:edit products'])->group(function () {
     Route::get('products/{product}/edit', [ProductController::class, 'edit'])->name('products.edit');
     Route::put('products/{product}', [ProductController::class, 'update'])->name('products.update');
@@ -55,25 +58,27 @@ Route::middleware(['auth'])->group(function () {
     Route::delete('products/{product}', [ProductController::class, 'destroy'])->name('products.destroy');
     });
 
+    // Categorias - Aninhadas em Products
+    // Categorias - Criação (deve vir antes das rotas com parâmetros)
+    Route::middleware(['permission:create categories'])->prefix('products/categories')->name('categories.')->group(function () {
+        Route::get('create', [CategoryController::class, 'create'])->name('create');
+        Route::post('', [CategoryController::class, 'store'])->name('store');
+    });
+    
     // Categorias - Visualização
-    Route::middleware(['permission:view categories'])->group(function () {
-        Route::get('categories', [CategoryController::class, 'index'])->name('categories.index');
-        Route::get('categories/{category}', [CategoryController::class, 'show'])->name('categories.show');
+    Route::middleware(['permission:view categories'])->prefix('products/categories')->name('categories.')->group(function () {
+        Route::get('', [CategoryController::class, 'index'])->name('index');
+        Route::get('{category}', [CategoryController::class, 'show'])->name('show');
     });
     
-    // Categorias - Criação/Edição/Exclusão (apenas admin/manager)
-    Route::middleware(['permission:create categories'])->group(function () {
-        Route::get('categories/create', [CategoryController::class, 'create'])->name('categories.create');
-        Route::post('categories', [CategoryController::class, 'store'])->name('categories.store');
+    // Categorias - Edição/Exclusão (apenas admin/manager)
+    Route::middleware(['permission:edit categories'])->prefix('products/categories')->name('categories.')->group(function () {
+        Route::get('{category}/edit', [CategoryController::class, 'edit'])->name('edit');
+        Route::put('{category}', [CategoryController::class, 'update'])->name('update');
     });
     
-    Route::middleware(['permission:edit categories'])->group(function () {
-        Route::get('categories/{category}/edit', [CategoryController::class, 'edit'])->name('categories.edit');
-        Route::put('categories/{category}', [CategoryController::class, 'update'])->name('categories.update');
-    });
-    
-    Route::middleware(['permission:delete categories'])->group(function () {
-        Route::delete('categories/{category}', [CategoryController::class, 'destroy'])->name('categories.destroy');
+    Route::middleware(['permission:delete categories'])->prefix('products/categories')->name('categories.')->group(function () {
+        Route::delete('{category}', [CategoryController::class, 'destroy'])->name('destroy');
     });
 
     // Requisições de Material - Visualização e criação
@@ -117,6 +122,28 @@ Route::middleware(['auth'])->group(function () {
         Route::get('suppliers/create', [SupplierController::class, 'create'])->name('suppliers.create');
         Route::post('suppliers', [SupplierController::class, 'store'])->name('suppliers.store');
         Route::post('suppliers/fetch-cnpj', [SupplierController::class, 'fetchCNPJ'])->name('suppliers.fetch-cnpj');
+    });
+    
+    // Categorias de Fornecedores - DEVE VIR ANTES das rotas suppliers/{supplier}
+    // Categorias de Fornecedores - Criação
+    Route::middleware(['permission:create suppliers'])->prefix('suppliers/categories')->name('supplier-categories.')->group(function () {
+        Route::get('create', [SupplierCategoryController::class, 'create'])->name('create');
+        Route::post('', [SupplierCategoryController::class, 'store'])->name('store');
+    });
+    
+    // Categorias de Fornecedores - Visualização
+    Route::middleware(['permission:view suppliers'])->prefix('suppliers/categories')->name('supplier-categories.')->group(function () {
+        Route::get('', [SupplierCategoryController::class, 'index'])->name('index');
+    });
+    
+    // Categorias de Fornecedores - Edição/Exclusão
+    Route::middleware(['permission:edit suppliers'])->prefix('suppliers/categories')->name('supplier-categories.')->group(function () {
+        Route::get('{supplierCategory}/edit', [SupplierCategoryController::class, 'edit'])->name('edit');
+        Route::put('{supplierCategory}', [SupplierCategoryController::class, 'update'])->name('update');
+    });
+    
+    Route::middleware(['permission:delete suppliers'])->prefix('suppliers/categories')->name('supplier-categories.')->group(function () {
+        Route::delete('{supplierCategory}', [SupplierCategoryController::class, 'destroy'])->name('destroy');
     });
     
     // Fornecedores - Visualização
@@ -193,6 +220,25 @@ Route::middleware(['auth'])->group(function () {
     // Movimentações de Estoque (apenas admin/manager)
     Route::middleware(['permission:manage stock'])->group(function () {
     Route::resource('stock-movements', StockMovementController::class);
+    });
+
+    // Categorias de Equipamentos - DEVE VIR ANTES das rotas equipment/{equipment}
+    Route::middleware(['permission:create products'])->prefix('equipment/categories')->name('equipment-categories.')->group(function () {
+        Route::get('create', [EquipmentCategoryController::class, 'create'])->name('create');
+        Route::post('', [EquipmentCategoryController::class, 'store'])->name('store');
+    });
+    
+    Route::middleware(['permission:view products'])->prefix('equipment/categories')->name('equipment-categories.')->group(function () {
+        Route::get('', [EquipmentCategoryController::class, 'index'])->name('index');
+    });
+    
+    Route::middleware(['permission:edit products'])->prefix('equipment/categories')->name('equipment-categories.')->group(function () {
+        Route::get('{equipmentCategory}/edit', [EquipmentCategoryController::class, 'edit'])->name('edit');
+        Route::put('{equipmentCategory}', [EquipmentCategoryController::class, 'update'])->name('update');
+    });
+    
+    Route::middleware(['permission:delete products'])->prefix('equipment/categories')->name('equipment-categories.')->group(function () {
+        Route::delete('{equipmentCategory}', [EquipmentCategoryController::class, 'destroy'])->name('destroy');
     });
 
     // Equipamentos - Criação/Edição (apenas admin/manager) - DEVE VIR ANTES DAS ROTAS COM PARÂMETROS
@@ -389,11 +435,39 @@ Route::middleware(['auth'])->group(function () {
         Route::delete('contracts/{contract}', [\App\Http\Controllers\ContractController::class, 'destroy'])->name('contracts.destroy');
     });
 
+    // Inspections Routes
+    // IMPORTANTE: A rota 'create' deve vir ANTES da rota '{inspection}' para evitar conflito de rotas
+    Route::middleware(['role_or_permission:manager|admin|create inspections'])->group(function () {
+        Route::get('inspections/create', [\App\Http\Controllers\InspectionController::class, 'create'])->name('inspections.create');
+        Route::post('inspections', [\App\Http\Controllers\InspectionController::class, 'store'])->name('inspections.store');
+    });
+    Route::middleware(['role_or_permission:manager|admin|view inspections'])->group(function () {
+        Route::get('inspections', [\App\Http\Controllers\InspectionController::class, 'index'])->name('inspections.index');
+        Route::get('inspections/{inspection}', [\App\Http\Controllers\InspectionController::class, 'show'])->name('inspections.show');
+        Route::get('inspections/{inspection}/pdf', [\App\Http\Controllers\InspectionController::class, 'generatePDF'])->name('inspections.pdf');
+    });
+    Route::middleware(['role_or_permission:manager|admin|edit inspections'])->group(function () {
+        Route::get('inspections/{inspection}/edit', [\App\Http\Controllers\InspectionController::class, 'edit'])->name('inspections.edit');
+        Route::put('inspections/{inspection}', [\App\Http\Controllers\InspectionController::class, 'update'])->name('inspections.update');
+        Route::patch('inspections/{inspection}/approve', [\App\Http\Controllers\InspectionController::class, 'approve'])->name('inspections.approve');
+        Route::post('inspections/{inspection}/upload-signed', [\App\Http\Controllers\InspectionController::class, 'uploadSignedDocument'])->name('inspections.upload-signed');
+    });
+    Route::middleware(['role_or_permission:manager|admin|delete inspections'])->group(function () {
+        Route::delete('inspections/{inspection}', [\App\Http\Controllers\InspectionController::class, 'destroy'])->name('inspections.destroy');
+    });
+
+    // Client Documents Routes
+    Route::middleware(['role_or_permission:manager|admin|edit clients'])->group(function () {
+        Route::post('clients/{client}/documents', [\App\Http\Controllers\ClientDocumentController::class, 'store'])->name('clients.documents.store');
+        Route::delete('client-documents/{clientDocument}', [\App\Http\Controllers\ClientDocumentController::class, 'destroy'])->name('client-documents.destroy');
+    });
+
     // API Routes for Search
     Route::middleware(['auth'])->prefix('api')->group(function () {
         Route::get('services/search', [\App\Http\Controllers\ServiceController::class, 'search'])->name('api.services.search');
         Route::get('labor-types/search', [\App\Http\Controllers\LaborTypeController::class, 'search'])->name('api.labor-types.search');
         Route::get('clients/fetch-cnpj', [\App\Http\Controllers\ClientController::class, 'fetchCnpj'])->name('api.clients.fetch-cnpj');
+        Route::get('clients/{client}/last-inspection', [\App\Http\Controllers\InspectionController::class, 'getLastInspection'])->name('api.clients.last-inspection');
     });
 
     // Financeiro - Sistema Financeiro

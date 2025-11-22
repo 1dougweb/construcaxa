@@ -22,10 +22,16 @@ class Supplier extends Model
         'whatsapp',
         'email',
         'contact_person',
+        'supplier_category_id',
     ];
 
     public function products()
     {
         return $this->hasMany(Product::class);
+    }
+
+    public function category()
+    {
+        return $this->belongsTo(SupplierCategory::class, 'supplier_category_id');
     }
 }

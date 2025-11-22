@@ -36,3 +36,4 @@ Write-Host "📝 Acesse: http://localhost:$env:APP_PORT" -ForegroundColor Green
 Write-Host "✅ Ambiente de desenvolvimento iniciado!" -ForegroundColor Green
 Write-Host "💡 Para executar npm run dev, use: docker-compose -f docker-compose.prod.yml exec php npm run dev" -ForegroundColor Cyan
 
+

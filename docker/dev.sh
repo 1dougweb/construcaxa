@@ -34,3 +34,4 @@ docker-compose -f docker-compose.prod.yml exec -d php sh -c "npm run dev" || ech
 echo "✅ Ambiente de desenvolvimento iniciado!"
 echo "📝 Acesse: http://localhost:${APP_PORT:-80}"
 
+

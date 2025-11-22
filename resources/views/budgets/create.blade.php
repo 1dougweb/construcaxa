@@ -14,7 +14,7 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Cliente *</label>
-                        <select name="client_id" required class="w-full border-gray-300 rounded-md">
+                        <select name="client_id" id="client_id" required class="w-full border-gray-300 rounded-md">
                             <option value="">Selecione um cliente</option>
                             @foreach($clients as $client)
                                 <option value="{{ $client->id }}" {{ old('client_id') == $client->id ? 'selected' : '' }}>
@@ -23,6 +23,15 @@
                             @endforeach
                         </select>
                         @error('client_id')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Vistoria</label>
+                        <select name="inspection_id" id="inspection_id" class="w-full border-gray-300 rounded-md">
+                            <option value="">Nenhuma vistoria selecionada</option>
+                        </select>
+                        <p class="text-xs text-gray-500 mt-1" id="inspection-info"></p>
+                        @error('inspection_id')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
                     </div>
 
                     <div>
@@ -117,7 +126,18 @@
         
         // Map products for JavaScript
         $productsData = $products->map(function($p) {
-            return ['id' => $p->id, 'name' => $p->name];
+            $photos = $p->photos ?? [];
+            $firstPhoto = null;
+            if (is_array($photos) && count($photos) > 0) {
+                $firstPhoto = $photos[0];
+            }
+            return [
+                'id' => $p->id, 
+                'name' => $p->name,
+                'sku' => $p->sku ?? '',
+                'price' => $p->price ?? 0,
+                'photo' => $firstPhoto
+            ];
         })->values();
         
         // Map services for JavaScript (using data from controller)
@@ -194,8 +214,8 @@
                         </button>
                     </div>
                     <input type="hidden" name="items[${index}][item_type]" value="product">
-                    <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
-                        <div class="md:col-span-2">
+                    <div class="grid grid-cols-6 gap-3">
+                        <div class="col-span-2">
                             <label class="block text-xs text-gray-600 mb-1">Produto</label>
                             <div class="relative">
                                 <input type="text" 
@@ -203,10 +223,10 @@
                                        placeholder="Buscar produto..."
                                        data-index="${index}">
                                 <input type="hidden" name="items[${index}][product_id]" value="${item ? (item.product_id || '') : ''}">
-                                <div class="product-results absolute z-10 w-full bg-white border border-gray-300 rounded-md shadow-lg hidden max-h-48 overflow-y-auto"></div>
+                                <div class="product-results absolute z-10 w-full bg-white border border-gray-300 rounded-md shadow-lg hidden max-h-64 overflow-y-auto mt-1"></div>
                             </div>
                         </div>
-                        <div class="md:col-span-2">
+                        <div class="col-span-2">
                             <label class="block text-xs text-gray-600 mb-1">Descrição *</label>
                             <input type="text" name="items[${index}][description]" value="${item ? (item.description || '') : ''}" required class="w-full border-gray-300 rounded-md text-sm">
                         </div>
@@ -389,10 +409,26 @@
                     if (filteredProducts.length > 0) {
                         let resultsHtml = '';
                         filteredProducts.slice(0, 10).forEach(product => {
+                            const photoUrl = product.photo ? `/storage/${product.photo}` : null;
                             resultsHtml += `
-                                <div class="product-option p-2 hover:bg-gray-100 cursor-pointer border-b last:border-b-0" 
-                                     data-id="${product.id}" data-name="${product.name}">
-                                    <div class="font-medium text-sm">${product.name}</div>
+                                <div class="product-option p-2 hover:bg-gray-100 cursor-pointer border-b last:border-b-0 flex items-center gap-3" 
+                                     data-id="${product.id}" 
+                                     data-name="${product.name}"
+                                     data-price="${product.price || 0}">
+                                    ${photoUrl ? `
+                                        <img src="${photoUrl}" alt="${product.name}" class="w-12 h-12 object-cover rounded border border-gray-200 flex-shrink-0">
+                                    ` : `
+                                        <div class="w-12 h-12 bg-gray-200 rounded border border-gray-300 flex items-center justify-center flex-shrink-0">
+                                            <svg class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                            </svg>
+                                        </div>
+                                    `}
+                                    <div class="flex-1 min-w-0">
+                                        <div class="font-medium text-sm truncate">${product.name}</div>
+                                        ${product.sku ? `<div class="text-xs text-gray-500">SKU: ${product.sku}</div>` : ''}
+                                        <div class="text-xs font-semibold text-indigo-600">R$ ${parseFloat(product.price || 0).toFixed(2).replace('.', ',')}</div>
+                                    </div>
                                 </div>
                             `;
                         });
@@ -404,16 +440,28 @@
                             option.addEventListener('click', function() {
                                 const productId = this.dataset.id;
                                 const productName = this.dataset.name;
+                                const productPrice = parseFloat(this.dataset.price) || 0;
                                 
                                 searchInput.value = productName;
                                 hiddenInput.value = productId;
                                 resultsDiv.classList.add('hidden');
                                 
-                                // Auto-fill description if empty
+                                // Auto-fill description, quantity and price
                                 const descriptionInput = container.querySelector('input[name*="[description]"]');
+                                const quantityInput = container.querySelector('input[name*="[quantity]"]');
+                                const priceInput = container.querySelector('input[name*="[unit_price]"]');
+                                
                                 if (!descriptionInput.value) {
                                     descriptionInput.value = productName;
                                 }
+                                if (!quantityInput.value || quantityInput.value === '0') {
+                                    quantityInput.value = '1';
+                                }
+                                if (!priceInput.value || priceInput.value === '0') {
+                                    priceInput.value = productPrice.toFixed(2);
+                                }
+                                
+                                calculateTotals();
                             });
                         });
                     } else {
@@ -609,8 +657,48 @@
             addItem('product');
             const discountInput = document.querySelector('[name="discount"]');
             discountInput.addEventListener('input', calculateTotals);
+            
+            // Buscar última vistoria quando cliente for selecionado
+            const clientSelect = document.getElementById('client_id');
+            if (clientSelect) {
+                clientSelect.addEventListener('change', function() {
+                    const clientId = this.value;
+                    const inspectionSelect = document.getElementById('inspection_id');
+                    const inspectionInfo = document.getElementById('inspection-info');
+                    
+                    // Limpar seleção anterior
+                    inspectionSelect.innerHTML = '<option value="">Nenhuma vistoria selecionada</option>';
+                    inspectionInfo.textContent = '';
+                    
+                    if (!clientId) {
+                        return;
+                    }
+                    
+                    // Buscar última vistoria aprovada
+                    fetch(`/api/clients/${clientId}/last-inspection`)
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success && data.inspection) {
+                                const option = document.createElement('option');
+                                option.value = data.inspection.id;
+                                option.textContent = `${data.inspection.number} - v${data.inspection.version} (${data.inspection.inspection_date})`;
+                                option.selected = true;
+                                inspectionSelect.appendChild(option);
+                                
+                                inspectionInfo.textContent = `Última vistoria: ${data.inspection.description || 'Sem descrição'}`;
+                                inspectionInfo.className = 'text-xs text-green-600 mt-1';
+                            } else {
+                                inspectionInfo.textContent = 'Nenhuma vistoria aprovada encontrada para este cliente';
+                                inspectionInfo.className = 'text-xs text-gray-500 mt-1';
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Erro ao buscar vistoria:', error);
+                            inspectionInfo.textContent = '';
+                        });
+                });
+            }
         });
     </script>
     @endpush
 </x-app-layout>
-

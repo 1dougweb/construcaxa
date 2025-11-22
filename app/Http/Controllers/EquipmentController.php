@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Equipment;
-use App\Models\Category;
+use App\Models\EquipmentCategory;
 use App\Models\Employee;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -13,7 +13,7 @@ class EquipmentController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Equipment::with(['category', 'currentEmployee']);
+        $query = Equipment::with(['equipmentCategory', 'currentEmployee']);
 
         // Filtros
         if ($request->filled('search')) {
@@ -24,20 +24,19 @@ class EquipmentController extends Controller
             $query->byStatus($request->status);
         }
 
-        if ($request->filled('category_id')) {
-            $query->where('category_id', $request->category_id);
+        if ($request->filled('equipment_category_id')) {
+            $query->where('equipment_category_id', $request->equipment_category_id);
         }
 
         $equipment = $query->latest()->paginate(10);
-        $categories = Category::orderBy('name')->get();
+        $equipmentCategories = EquipmentCategory::orderBy('name')->get();
 
-        return view('equipment.index', compact('equipment', 'categories'));
+        return view('equipment.index', compact('equipment', 'equipmentCategories'));
     }
 
     public function create()
     {
-        $categories = Category::orderBy('name')->get();
-        return view('equipment.create', compact('categories'));
+        return view('equipment.create');
     }
 
     public function store(Request $request)
@@ -46,7 +45,7 @@ class EquipmentController extends Controller
             'name' => 'required|string|max:255',
             'serial_number' => 'required|string|max:255|unique:equipment,serial_number',
             'description' => 'nullable|string',
-            'category_id' => 'nullable|exists:categories,id',
+            'equipment_category_id' => 'nullable|exists:equipment_categories,id',
             'purchase_price' => 'nullable|numeric|min:0',
             'purchase_date' => 'nullable|date',
             'notes' => 'nullable|string',
@@ -69,7 +68,7 @@ class EquipmentController extends Controller
                 'name' => $validated['name'],
                 'serial_number' => $validated['serial_number'],
                 'description' => $validated['description'],
-                'category_id' => $validated['category_id'],
+                'equipment_category_id' => $validated['equipment_category_id'] ?? null,
                 'purchase_price' => $validated['purchase_price'],
                 'purchase_date' => $validated['purchase_date'],
                 'notes' => $validated['notes'],
@@ -78,25 +77,25 @@ class EquipmentController extends Controller
             ]);
 
             DB::commit();
-            return redirect()->route('equipment.index')
-                ->with('success', 'Equipamento cadastrado com sucesso!');
+            session()->flash('success', 'Equipamento cadastrado com sucesso!');
+            return redirect()->route('equipment.index');
 
         } catch (\Exception $e) {
             DB::rollBack();
-            return back()->with('error', 'Erro ao cadastrar equipamento: ' . $e->getMessage());
+            session()->flash('error', 'Erro ao cadastrar equipamento: ' . $e->getMessage());
+            return back();
         }
     }
 
     public function show(Equipment $equipment)
     {
-        $equipment->load(['category', 'currentEmployee', 'movements.employee', 'movements.user']);
+        $equipment->load(['equipmentCategory', 'currentEmployee', 'movements.employee', 'movements.user']);
         return view('equipment.show', compact('equipment'));
     }
 
     public function edit(Equipment $equipment)
     {
-        $categories = Category::orderBy('name')->get();
-        return view('equipment.edit', compact('equipment', 'categories'));
+        return view('equipment.edit', compact('equipment'));
     }
 
     public function update(Request $request, Equipment $equipment)
@@ -105,7 +104,7 @@ class EquipmentController extends Controller
             'name' => 'required|string|max:255',
             'serial_number' => 'required|string|max:255|unique:equipment,serial_number,' . $equipment->id,
             'description' => 'nullable|string',
-            'category_id' => 'nullable|exists:categories,id',
+            'equipment_category_id' => 'nullable|exists:equipment_categories,id',
             'purchase_price' => 'nullable|numeric|min:0',
             'purchase_date' => 'nullable|date',
             'notes' => 'nullable|string',
@@ -129,7 +128,7 @@ class EquipmentController extends Controller
                 'name' => $validated['name'],
                 'serial_number' => $validated['serial_number'],
                 'description' => $validated['description'],
-                'category_id' => $validated['category_id'],
+                'equipment_category_id' => $validated['equipment_category_id'] ?? null,
                 'purchase_price' => $validated['purchase_price'],
                 'purchase_date' => $validated['purchase_date'],
                 'notes' => $validated['notes'],
@@ -138,12 +137,13 @@ class EquipmentController extends Controller
             ]);
 
             DB::commit();
-            return redirect()->route('equipment.show', $equipment)
-                ->with('success', 'Equipamento atualizado com sucesso!');
+            session()->flash('success', 'Equipamento atualizado com sucesso!');
+            return redirect()->route('equipment.show', $equipment);
 
         } catch (\Exception $e) {
             DB::rollBack();
-            return back()->with('error', 'Erro ao atualizar equipamento: ' . $e->getMessage());
+            session()->flash('error', 'Erro ao atualizar equipamento: ' . $e->getMessage());
+            return back();
         }
     }
 
@@ -153,7 +153,8 @@ class EquipmentController extends Controller
         try {
             // Verificar se o equipamento está emprestado
             if ($equipment->isBorrowed()) {
-                return back()->with('error', 'Não é possível excluir um equipamento que está emprestado.');
+                session()->flash('error', 'Não é possível excluir um equipamento que está emprestado.');
+                return back();
             }
 
             // Deletar fotos do storage
@@ -166,12 +167,13 @@ class EquipmentController extends Controller
             $equipment->delete();
             DB::commit();
 
-            return redirect()->route('equipment.index')
-                ->with('success', 'Equipamento excluído com sucesso!');
+            session()->flash('success', 'Equipamento excluído com sucesso!');
+            return redirect()->route('equipment.index');
 
         } catch (\Exception $e) {
             DB::rollBack();
-            return back()->with('error', 'Erro ao excluir equipamento: ' . $e->getMessage());
+            session()->flash('error', 'Erro ao excluir equipamento: ' . $e->getMessage());
+            return back();
         }
     }
 

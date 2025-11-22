@@ -129,6 +129,37 @@
             border-radius: 5px;
             margin-top: 20px;
         }
+        .photos-section {
+            margin-top: 30px;
+            page-break-inside: avoid;
+        }
+        .photos-title {
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: #333;
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 5px;
+        }
+        .photos-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .photo-item {
+            width: 100%;
+            margin-bottom: 10px;
+            page-break-inside: avoid;
+        }
+        .photo-item img {
+            width: 100%;
+            height: auto;
+            max-height: 400px;
+            object-fit: contain;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
     </style>
 </head>
 <body>
@@ -284,6 +315,33 @@
             <span class="total-value">R$ {{ number_format($budget->total, 2, ',', '.') }}</span>
         </div>
     </div>
+
+    <!-- Photos Section -->
+    @if($budget->photos && count($budget->photos) > 0)
+        <div class="photos-section">
+            <div class="photos-title">Fotos do Orçamento</div>
+            <div class="photos-grid">
+                @foreach($budget->photos as $photo)
+                    @php
+                        $photoPath = storage_path('app/public/' . $photo);
+                        if (file_exists($photoPath)) {
+                            $imageData = base64_encode(file_get_contents($photoPath));
+                            $imageInfo = getimagesize($photoPath);
+                            $mimeType = $imageInfo['mime'];
+                            $imageSrc = 'data:' . $mimeType . ';base64,' . $imageData;
+                        } else {
+                            $imageSrc = '';
+                        }
+                    @endphp
+                    @if($imageSrc)
+                        <div class="photo-item">
+                            <img src="{{ $imageSrc }}" alt="Foto do orçamento" style="width: 100%; height: auto; max-height: 400px; object-fit: contain;">
+                        </div>
+                    @endif
+                @endforeach
+            </div>
+        </div>
+    @endif
 
     <!-- Notes Section -->
     @if($budget->notes)

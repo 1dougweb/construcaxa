@@ -27,8 +27,13 @@ class AppServiceProvider extends ServiceProvider
     {
         Livewire::component('supplier-list', SupplierList::class);
         Livewire::component('supplier-form', SupplierForm::class);
+        Livewire::component('supplier-category-list', \App\Http\Livewire\SupplierCategoryList::class);
         Livewire::component('material-request-list', MaterialRequestList::class);
         Livewire::component('product-form', ProductForm::class);
+        Livewire::component('category-list', \App\Http\Livewire\CategoryList::class);
+        Livewire::component('equipment-form', \App\Http\Livewire\EquipmentForm::class);
+        Livewire::component('equipment-category-list', \App\Http\Livewire\EquipmentCategoryList::class);
+        Livewire::component('budget-form', \App\Http\Livewire\BudgetForm::class);
 
         // Validação de CNPJ
         Validator::extend('formato_cnpj', function ($attribute, $value, $parameters, $validator) {

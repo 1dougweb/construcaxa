@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Client;
 use App\Models\Employee;
 use App\Models\Project;
 use App\Models\ProjectBudget;
@@ -372,8 +373,9 @@ class ProjectController extends Controller
     public function budgetsCreate()
     {
         abort_unless(auth()->user()->can('manage budgets') || auth()->user()->hasAnyRole(['manager','admin']), 403);
+        
         // Get clients
-        $clients = \App\Models\Client::active()->orderBy('name')->get();
+        $clients = Client::active()->orderBy('name')->get();
         
         // Load active services with categories
         $services = Service::active()->with('category')->orderBy('name')->get();
@@ -390,6 +392,7 @@ class ProjectController extends Controller
         
         $data = $request->validate([
             'client_id' => ['required', 'exists:clients,id'],
+            'inspection_id' => ['nullable', 'exists:inspections,id'],
             'version' => ['required', 'integer', 'min:1'],
             'discount' => ['nullable', 'numeric', 'min:0'],
             'status' => ['required', 'in:pending,under_review,approved,rejected,cancelled'],
@@ -423,6 +426,7 @@ class ProjectController extends Controller
         try {
             $budget = ProjectBudget::create([
                 'client_id' => $data['client_id'],
+                'inspection_id' => $data['inspection_id'] ?? null,
                 'project_id' => null, // Will be set when approved
                 'version' => $data['version'],
                 'subtotal' => $subtotal,
@@ -482,7 +486,7 @@ class ProjectController extends Controller
         abort_unless(auth()->user()->can('manage budgets') || auth()->user()->hasAnyRole(['manager','admin']), 403);
         $budget->load(['items.product', 'items.service', 'items.laborType', 'project', 'client']);
         // Get clients
-        $clients = \App\Models\Client::active()->orderBy('name')->get();
+        $clients = Client::active()->orderBy('name')->get();
         
         // Load active services with categories
         $services = Service::active()->with('category')->orderBy('name')->get();
@@ -499,6 +503,7 @@ class ProjectController extends Controller
         
         $data = $request->validate([
             'client_id' => ['required', 'exists:clients,id'],
+            'inspection_id' => ['nullable', 'exists:inspections,id'],
             'version' => ['required', 'integer', 'min:1'],
             'discount' => ['nullable', 'numeric', 'min:0'],
             'status' => ['required', 'in:pending,under_review,approved,rejected,cancelled'],
@@ -535,6 +540,7 @@ class ProjectController extends Controller
             
             $budget->update([
                 'client_id' => $data['client_id'],
+                'inspection_id' => $data['inspection_id'] ?? null,
                 'version' => $data['version'],
                 'subtotal' => $subtotal,
                 'discount' => $discount,

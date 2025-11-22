@@ -57,6 +57,16 @@ class Client extends Model
         return $this->hasMany(ProjectBudget::class);
     }
 
+    public function inspections(): HasMany
+    {
+        return $this->hasMany(Inspection::class);
+    }
+
+    public function documents(): HasMany
+    {
+        return $this->hasMany(ClientDocument::class);
+    }
+
     // Scopes
     public function scopeActive($query)
     {

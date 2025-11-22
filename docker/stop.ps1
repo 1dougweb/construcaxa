@@ -6,3 +6,4 @@ docker-compose -f docker-compose.prod.yml down
 
 Write-Host "✅ Ambiente parado!" -ForegroundColor Green
 
+

@@ -6,9 +6,13 @@ use App\Models\Product;
 use App\Models\Category;
 use App\Models\Supplier;
 use Livewire\Component;
+use Livewire\WithFileUploads;
+use Illuminate\Support\Facades\Storage;
 
 class ProductForm extends Component
 {
+    use WithFileUploads;
+
     public $product;
     public $name;
     public $description;
@@ -19,6 +23,9 @@ class ProductForm extends Component
     public $supplier_id;
     public $measurement_unit = 'unit';
     public $unit_label;
+    public $featured_photo;
+    public $featured_photo_path;
+    public $showDeleteModal = false;
     
     public $categories;
     public $suppliers;
@@ -32,7 +39,14 @@ class ProductForm extends Component
         'min_stock' => 'required|numeric|min:0',
         'category_id' => 'required|exists:categories,id',
         'supplier_id' => 'required|exists:suppliers,id',
-        'measurement_unit' => 'required|in:unit,weight,length'
+        'measurement_unit' => 'required|in:unit,weight,length',
+        'featured_photo' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp,avif|max:2048',
+    ];
+
+    protected $messages = [
+        'featured_photo.image' => 'O arquivo deve ser uma imagem válida.',
+        'featured_photo.mimes' => 'A imagem deve ser nos formatos: JPEG, PNG, JPG, GIF, WEBP ou AVIF.',
+        'featured_photo.max' => 'A imagem deve ter no máximo 2MB.',
     ];
 
     public function mount($product = null)
@@ -49,6 +63,11 @@ class ProductForm extends Component
             $this->supplier_id = $product->supplier_id;
             $this->measurement_unit = $product->measurement_unit;
             $this->unit_label = $product->unit_label;
+            
+            // Carregar foto destacada se existir
+            if ($product->photos && is_array($product->photos) && count($product->photos) > 0) {
+                $this->featured_photo_path = $product->photos[0];
+            }
         } else {
             $this->unit_label = Product::UNIT_TYPES[$this->measurement_unit]['unit'];
         }
@@ -62,6 +81,52 @@ class ProductForm extends Component
     {
         // Define a unidade padrão baseada no tipo selecionado
         $this->unit_label = Product::UNIT_TYPES[$value]['unit'];
+    }
+
+    public function updatedFeaturedPhoto()
+    {
+        $this->validate([
+            'featured_photo' => 'image|mimes:jpeg,png,jpg,gif,webp,avif|max:2048',
+        ], [
+            'featured_photo.image' => 'O arquivo deve ser uma imagem válida.',
+            'featured_photo.mimes' => 'A imagem deve ser nos formatos: JPEG, PNG, JPG, GIF, WEBP ou AVIF.',
+            'featured_photo.max' => 'A imagem deve ter no máximo 2MB.',
+        ]);
+        
+        // Limpar foto antiga quando uma nova é carregada
+        $this->featured_photo_path = null;
+    }
+
+    public function confirmDeletePhoto()
+    {
+        $this->showDeleteModal = true;
+    }
+
+    public function cancelDeletePhoto()
+    {
+        $this->showDeleteModal = false;
+    }
+
+    public function deletePhoto()
+    {
+        if ($this->featured_photo_path) {
+            // Se é um produto existente, deletar do storage e atualizar
+            if ($this->product) {
+                Storage::disk('public')->delete($this->featured_photo_path);
+                
+                // Remover do array de fotos
+                $photos = $this->product->photos ?? [];
+                $photos = array_filter($photos, function($photo) {
+                    return $photo !== $this->featured_photo_path;
+                });
+                $this->product->update(['photos' => array_values($photos)]);
+            }
+            // Se é um upload temporário, apenas limpar
+        }
+        
+        $this->featured_photo_path = null;
+        $this->featured_photo = null;
+        $this->showDeleteModal = false;
     }
 
     private function generateSKU($name)
@@ -99,6 +164,34 @@ class ProductForm extends Component
         
         // Define a unidade padrão baseada no tipo selecionado
         $validatedData['unit_label'] = Product::UNIT_TYPES[$validatedData['measurement_unit']]['unit'];
+        
+        // Upload da foto destacada
+        if ($this->featured_photo) {
+            $photoPath = $this->featured_photo->store('products/photos', 'public');
+            
+            // Se já existe foto destacada, deletar a antiga
+            if ($this->featured_photo_path) {
+                Storage::disk('public')->delete($this->featured_photo_path);
+            }
+            
+            // Adicionar foto ao array de fotos
+            $photos = $this->product && $this->product->photos ? $this->product->photos : [];
+            // Remove a foto antiga se existir
+            $photos = array_filter($photos, function($photo) {
+                return $photo !== $this->featured_photo_path;
+            });
+            array_unshift($photos, $photoPath); // Adiciona no início
+            $validatedData['photos'] = array_values($photos);
+        } elseif ($this->product && $this->featured_photo_path) {
+            // Se não há upload novo mas há foto destacada existente, manter o array de fotos
+            $photos = $this->product->photos ?? [];
+            // Garantir que a foto destacada está no início
+            $photos = array_filter($photos, function($photo) {
+                return $photo !== $this->featured_photo_path;
+            });
+            array_unshift($photos, $this->featured_photo_path);
+            $validatedData['photos'] = array_values($photos);
+        }
         
         if ($this->product) {
             // Atualização

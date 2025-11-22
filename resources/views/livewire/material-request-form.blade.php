@@ -6,14 +6,57 @@
     </x-slot>
                     <form wire:submit.prevent="save">
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <!-- OS (Ordem de Serviço) -->
+                            <div class="col-span-2">
+                                <x-label for="osSearch" value="{{ __('Ordem de Serviço (OS)') }}" />
+                                <div class="mt-1 relative">
+                                    @if($selectedServiceOrder)
+                                        <div class="flex items-center justify-between p-3 bg-gray-50 border border-gray-300 rounded-md">
+                                            <div>
+                                                <div class="font-medium text-gray-900">{{ $selectedServiceOrder->number }}</div>
+                                                <div class="text-sm text-gray-500">{{ $selectedServiceOrder->client_name }}</div>
+                                            </div>
+                                            <button type="button" wire:click="clearServiceOrder" class="text-red-600 hover:text-red-900">
+                                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                                </svg>
+                                            </button>
+                                        </div>
+                                    @else
+                                        <x-input 
+                                            id="osSearch" 
+                                            type="text" 
+                                            class="block w-full" 
+                                            wire:model.live.debounce.300ms="osSearch" 
+                                            placeholder="Digite para buscar OS por número ou cliente..." 
+                                        />
+                                        <input type="hidden" wire:model="service_order_id" />
+                                        
+                                        @if($osSearchResults && count($osSearchResults) > 0)
+                                            <div class="absolute z-10 mt-1 w-full bg-white shadow-lg max-h-60 rounded-md py-1 text-base ring-1 ring-black ring-opacity-5 overflow-auto focus:outline-none">
+                                                @foreach($osSearchResults as $os)
+                                                    <button 
+                                                        type="button"
+                                                        wire:click="selectServiceOrder({{ $os->id }})"
+                                                        class="w-full text-left px-4 py-2 hover:bg-indigo-50 hover:text-indigo-900 cursor-pointer"
+                                                    >
+                                                        <div class="font-medium">{{ $os->number }}</div>
+                                                        <div class="text-sm text-gray-500">{{ $os->client_name }}</div>
+                                                    </button>
+                                                @endforeach
+                                            </div>
+                                        @endif
+                                    @endif
+                                </div>
+                                <x-input-error for="service_order_id" class="mt-2" />
+                            </div>
+                            
                             <!-- Número -->
                             <div class="col-span-2">
-                                <x-label for="number" value="{{ __('Número OS') }}" />
-                                <div class="mt-1 flex rounded-md max-w-lg">
-                                    <span class="inline-flex items-center px-4 rounded-l-md border border-r-0 border-gray-300 bg-gray-50 text-gray-500 text-base font-medium">
-                                        OS
-                                    </span>
-                                    <x-input id="number" type="text" class="rounded-none rounded-r-md text-lg" wire:model="number" placeholder="Digite o número da OS" />
+                                <x-label for="number" value="{{ __('Número da Requisição') }}" />
+                                <div class="mt-1 flex max-w-lg rounded-md">
+                                    <span class="inline-flex items-center px-4 rounded-l-md border border-r-0 border-gray-300 bg-gray-50 text-gray-500">REQ</span>
+                                    <x-input id="number" type="text" class="rounded-none rounded-r-md bg-gray-50" wire:model="number" readonly />
                                 </div>
                                 <x-input-error for="number" class="mt-2" />
                             </div>
@@ -32,13 +75,46 @@
 
                             <!-- Obra (em andamento) -->
                             <div class="col-span-2">
-                                <x-label for="project_id" value="{{ __('Obra (em andamento)') }}" />
-                                <x-select id="project_id" class="mt-1 block w-full" wire:model="project_id">
-                                    <option value="">Selecione uma obra (opcional)</option>
-                                    @foreach($projects as $project)
-                                        <option value="{{ $project->id }}">{{ $project->name }} ({{ $project->code }})</option>
-                                    @endforeach
-                                </x-select>
+                                <x-label for="projectSearch" value="{{ __('Obra (em andamento)') }}" />
+                                <div class="mt-1 relative">
+                                    @if($selectedProject)
+                                        <div class="flex items-center justify-between p-3 bg-gray-50 border border-gray-300 rounded-md">
+                                            <div>
+                                                <div class="font-medium text-gray-900">{{ $selectedProject->name }}</div>
+                                                <div class="text-sm text-gray-500">{{ $selectedProject->code }}</div>
+                                            </div>
+                                            <button type="button" wire:click="clearProject" class="text-red-600 hover:text-red-900">
+                                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                                </svg>
+                                            </button>
+                                        </div>
+                                    @else
+                                        <x-input 
+                                            id="projectSearch" 
+                                            type="text" 
+                                            class="block w-full" 
+                                            wire:model.live.debounce.300ms="projectSearch" 
+                                            placeholder="Digite para buscar obra por nome ou código..." 
+                                        />
+                                        <input type="hidden" wire:model="project_id" />
+                                        
+                                        @if($projectSearchResults && count($projectSearchResults) > 0)
+                                            <div class="absolute z-10 mt-1 w-full bg-white shadow-lg max-h-60 rounded-md py-1 text-base ring-1 ring-black ring-opacity-5 overflow-auto focus:outline-none">
+                                                @foreach($projectSearchResults as $project)
+                                                    <button 
+                                                        type="button"
+                                                        wire:click="selectProject({{ $project->id }})"
+                                                        class="w-full text-left px-4 py-2 hover:bg-indigo-50 hover:text-indigo-900 cursor-pointer"
+                                                    >
+                                                        <div class="font-medium">{{ $project->name }}</div>
+                                                        <div class="text-sm text-gray-500">{{ $project->code }}</div>
+                                                    </button>
+                                                @endforeach
+                                            </div>
+                                        @endif
+                                    @endif
+                                </div>
                                 <x-input-error for="project_id" class="mt-2" />
                             </div>
 
@@ -143,9 +219,9 @@
                             <a href="{{ route('material-requests.index') }}" class="inline-flex items-center px-4 py-2 bg-gray-800 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700 focus:bg-gray-700 active:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition ease-in-out duration-150">
                                 {{ __('Cancelar') }}
                             </a>
-                            <x-button>
+                            <x-button-loading>
                                 {{ __('Salvar') }}
-                            </x-button>
+                            </x-button-loading>
                         </div>
                     </form>
 </div>

@@ -29,6 +29,10 @@ class MaterialRequestForm extends Component
     public $searchResults = [];
     public $osSearch = '';
     public $osSearchResults = [];
+    public $projectSearch = '';
+    public $projectSearchResults = [];
+    public $selectedServiceOrder = null;
+    public $selectedProject = null;
 
     protected function rules()
     {
@@ -89,6 +93,16 @@ class MaterialRequestForm extends Component
             $this->service_order_id = $materialRequest->service_order_id;
             $this->notes = $materialRequest->notes;
             
+            $materialRequest->load(['serviceOrder', 'project']);
+            
+            if ($materialRequest->serviceOrder) {
+                $this->selectedServiceOrder = $materialRequest->serviceOrder;
+            }
+            
+            if ($materialRequest->project) {
+                $this->selectedProject = $materialRequest->project;
+            }
+            
             foreach ($materialRequest->items as $item) {
                 $this->selectedProducts[] = [
                     'id' => $item->product_id,
@@ -98,7 +112,17 @@ class MaterialRequestForm extends Component
                     'price' => $item->price,
                 ];
             }
+        } else {
+            // Gerar número automaticamente para nova requisição
+            $this->number = $this->generateRequestNumber();
         }
+    }
+
+    private function generateRequestNumber()
+    {
+        $lastNumber = MaterialRequest::where('number', 'like', 'REQ%')->max('number');
+        $nextNumber = $lastNumber ? (intval(substr($lastNumber, 3)) + 1) : 1;
+        return 'REQ' . str_pad($nextNumber, 4, '0', STR_PAD_LEFT);
     }
 
     public function updatedSearch()
@@ -119,12 +143,30 @@ class MaterialRequestForm extends Component
     public function updatedOsSearch()
     {
         if (strlen($this->osSearch) >= 2) {
-            $this->osSearchResults = ServiceOrder::search($this->osSearch)
-                ->whereIn('status', ['pending', 'in_progress'])
-                ->take(5)
-                ->get();
+            $this->osSearchResults = ServiceOrder::where(function($query) {
+                $query->where('number', 'like', "%{$this->osSearch}%")
+                    ->orWhere('client_name', 'like', "%{$this->osSearch}%");
+            })
+            ->whereIn('status', ['pending', 'in_progress'])
+            ->take(5)
+            ->get();
         } else {
             $this->osSearchResults = [];
+        }
+    }
+
+    public function updatedProjectSearch()
+    {
+        if (strlen($this->projectSearch) >= 2) {
+            $this->projectSearchResults = Project::where(function($query) {
+                $query->where('name', 'like', "%{$this->projectSearch}%")
+                    ->orWhere('code', 'like', "%{$this->projectSearch}%");
+            })
+            ->where('status', 'in_progress')
+            ->take(5)
+            ->get();
+        } else {
+            $this->projectSearchResults = [];
         }
     }
 
@@ -156,10 +198,42 @@ class MaterialRequestForm extends Component
         
         if ($serviceOrder) {
             $this->service_order_id = $serviceOrder->id;
+            $this->selectedServiceOrder = $serviceOrder;
+            // Não alterar o número da requisição quando selecionar uma OS
+            // O número da requisição é gerado automaticamente
         }
         
         $this->osSearch = '';
         $this->osSearchResults = [];
+    }
+
+    public function selectProject($projectId)
+    {
+        $project = Project::find($projectId);
+        
+        if ($project) {
+            $this->project_id = $project->id;
+            $this->selectedProject = $project;
+        }
+        
+        $this->projectSearch = '';
+        $this->projectSearchResults = [];
+    }
+
+    public function clearServiceOrder()
+    {
+        $this->service_order_id = null;
+        $this->selectedServiceOrder = null;
+        $this->osSearch = '';
+        $this->osSearchResults = [];
+    }
+
+    public function clearProject()
+    {
+        $this->project_id = null;
+        $this->selectedProject = null;
+        $this->projectSearch = '';
+        $this->projectSearchResults = [];
     }
 
     public function removeProduct($index)
@@ -196,6 +270,11 @@ class MaterialRequestForm extends Component
 
     public function save()
     {
+        // Gerar número automaticamente se não existir
+        if (empty($this->number)) {
+            $this->number = $this->generateRequestNumber();
+        }
+
         $this->validate();
 
         // Verificar ações conflitantes

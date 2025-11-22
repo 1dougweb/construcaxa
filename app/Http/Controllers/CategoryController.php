@@ -13,6 +13,12 @@ class CategoryController extends Controller
         return view('categories.index');
     }
 
+    public function show(Category $category)
+    {
+        $category->loadCount('products');
+        return view('categories.show', compact('category'));
+    }
+
     public function create()
     {
         return view('categories.create');

@@ -7,3 +7,4 @@ docker-compose -f docker-compose.prod.yml exec php npm run build
 
 echo "✅ Build concluído!"
 
+

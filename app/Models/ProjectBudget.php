@@ -19,7 +19,7 @@ class ProjectBudget extends Model
     const STATUS_CANCELLED = 'cancelled';
 
     protected $fillable = [
-        'project_id', 'client_id', 'version', 'subtotal', 'discount', 'total', 'status', 'sent_at', 'approved_at', 'approved_by', 'notes',
+        'project_id', 'client_id', 'inspection_id', 'version', 'subtotal', 'discount', 'total', 'status', 'sent_at', 'approved_at', 'approved_by', 'notes', 'photos',
     ];
 
     protected $casts = [
@@ -28,6 +28,7 @@ class ProjectBudget extends Model
         'total' => 'decimal:2',
         'sent_at' => 'datetime',
         'approved_at' => 'datetime',
+        'photos' => 'array',
     ];
 
     /**
@@ -90,5 +91,10 @@ class ProjectBudget extends Model
     public function invoice()
     {
         return $this->hasOne(Invoice::class, 'budget_id');
+    }
+
+    public function inspection(): BelongsTo
+    {
+        return $this->belongsTo(Inspection::class);
     }
 }

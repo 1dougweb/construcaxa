@@ -20,6 +20,8 @@ class SupplierForm extends Component
     public $whatsapp;
     public $email;
     public $contact_person;
+    public $supplier_category_id;
+    public $supplierCategories;
 
     protected $rules = [
         'cnpj' => 'required|string|min:14|max:18',
@@ -33,6 +35,7 @@ class SupplierForm extends Component
         'whatsapp' => 'nullable|string|max:20',
         'email' => 'required|email|max:255',
         'contact_person' => 'required|string|max:255',
+        'supplier_category_id' => 'nullable|exists:supplier_categories,id',
     ];
 
     protected $messages = [
@@ -64,6 +67,8 @@ class SupplierForm extends Component
 
     public function mount($supplier = null)
     {
+        $this->supplierCategories = \App\Models\SupplierCategory::orderBy('name')->get();
+        
         if ($supplier) {
             $this->supplier = $supplier;
             $this->cnpj = $supplier->cnpj;
@@ -77,6 +82,7 @@ class SupplierForm extends Component
             $this->whatsapp = $supplier->whatsapp;
             $this->email = $supplier->email;
             $this->contact_person = $supplier->contact_person;
+            $this->supplier_category_id = $supplier->supplier_category_id;
         }
     }
 
@@ -97,6 +103,7 @@ class SupplierForm extends Component
                 'whatsapp' => $this->whatsapp,
                 'email' => $this->email,
                 'contact_person' => $this->contact_person,
+                'supplier_category_id' => $this->supplier_category_id,
             ];
 
             if ($this->supplier) {

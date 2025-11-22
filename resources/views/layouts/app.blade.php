@@ -32,7 +32,7 @@
         <x-banner />
 
         <!-- Notification container for dynamic notifications -->
-        <div id="notifications-container" class="fixed bottom-0 right-0 m-6 z-50 space-y-3"></div>
+        <div id="notifications-container" class="fixed top-0 right-0 m-6 z-50 space-y-3"></div>
 
         <div class="min-h-screen bg-gray-100">
             <!-- Left Sidebar Navigation -->
@@ -49,7 +49,7 @@
                         <i class="fas fa-box mr-2"></i> Produtos
                     </a>
                     
-                    <a href="{{ url('/categories') }}" target="_self" class="block px-6 py-3 hover:bg-indigo-700 {{ request()->routeIs('categories.*') ? 'bg-indigo-700' : '' }}">
+                    <a href="{{ route('categories.index') }}" target="_self" class="block px-6 py-3 hover:bg-indigo-700 {{ request()->routeIs('categories.*') ? 'bg-indigo-700' : '' }}">
                         <i class="fas fa-tags mr-2"></i> Categorias
                     </a>
                     

@@ -58,12 +58,6 @@
 
     <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg">
         <div class="p-6 lg:p-8 bg-white border-b border-gray-200">
-            @if (session('success'))
-                <div class="mb-4 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative" role="alert">
-                    <span class="block sm:inline">{{ session('success') }}</span>
-                </div>
-            @endif
-
             <div class="flex justify-between items-center mb-4">
                 <div class="flex gap-2">
                     @if($searchTerm)
@@ -89,6 +83,9 @@
                 <table class="min-w-full divide-y divide-gray-200">
                     <thead>
                         <tr>
+                            <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Foto
+                            </th>
                             <th wire:click="sortBy('sku')" class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer">
                                 SKU
                                 @if ($sortField === 'sku')
@@ -145,6 +142,116 @@
                     <tbody class="bg-white divide-y divide-gray-200">
                         @forelse ($products as $product)
                             <tr>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    @if($product->photos && is_array($product->photos) && count($product->photos) > 0)
+                                        <div x-data="{ 
+                                            open: false, 
+                                            currentIndex: 0,
+                                            images: @js(array_map(function($photo) { return asset('storage/' . $photo); }, $product->photos ?? [])),
+                                            openLightbox(index) {
+                                                this.currentIndex = index;
+                                                this.open = true;
+                                                document.body.style.overflow = 'hidden';
+                                            },
+                                            closeLightbox() {
+                                                this.open = false;
+                                                document.body.style.overflow = '';
+                                            },
+                                            nextImage() {
+                                                this.currentIndex = (this.currentIndex + 1) % this.images.length;
+                                            },
+                                            prevImage() {
+                                                this.currentIndex = (this.currentIndex - 1 + this.images.length) % this.images.length;
+                                            }
+                                        }" @keydown.escape="closeLightbox()" @keydown.arrow-left="prevImage()" @keydown.arrow-right="nextImage()">
+                                            <div class="w-16 h-16 rounded overflow-hidden cursor-pointer hover:opacity-80 transition-opacity">
+                                                <img 
+                                                    src="{{ asset('storage/' . $product->photos[0]) }}" 
+                                                    alt="{{ $product->name }}"
+                                                    class="w-full h-full object-cover border border-gray-200 rounded-md"
+                                                    @click="openLightbox(0)"
+                                                >
+                                            </div>
+                                            
+                                            <!-- Lightbox -->
+                                            <div 
+                                                x-show="open"
+                                                x-cloak
+                                                @click.self="closeLightbox()"
+                                                class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-90"
+                                                x-transition:enter="transition ease-out duration-300"
+                                                x-transition:enter-start="opacity-0"
+                                                x-transition:enter-end="opacity-100"
+                                                x-transition:leave="transition ease-in duration-200"
+                                                x-transition:leave-start="opacity-100"
+                                                x-transition:leave-end="opacity-0"
+                                            >
+                                                <!-- Botão Fechar (redondo) -->
+                                                <button 
+                                                    @click="closeLightbox()"
+                                                    class="absolute top-4 right-4 w-12 h-12 rounded-full bg-white bg-opacity-20 hover:bg-opacity-30 text-white flex items-center justify-center transition-all duration-200 z-10"
+                                                >
+                                                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                                    </svg>
+                                                </button>
+                                                
+                                                <!-- Botão Anterior (redondo) -->
+                                                <button 
+                                                    @click="prevImage()"
+                                                    x-show="images.length > 1"
+                                                    class="absolute left-4 w-12 h-12 rounded-full bg-white bg-opacity-20 hover:bg-opacity-30 text-white flex items-center justify-center transition-all duration-200 z-10"
+                                                >
+                                                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                                                    </svg>
+                                                </button>
+                                                
+                                                <!-- Botão Próximo (redondo) -->
+                                                <button 
+                                                    @click="nextImage()"
+                                                    x-show="images.length > 1"
+                                                    class="absolute right-4 w-12 h-12 rounded-full bg-white bg-opacity-20 hover:bg-opacity-30 text-white flex items-center justify-center transition-all duration-200 z-10"
+                                                >
+                                                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                                                    </svg>
+                                                </button>
+                                                
+                                                <!-- Imagem -->
+                                                <div 
+                                                    class="max-w-7xl max-h-[90vh] mx-4"
+                                                    x-transition:enter="transition ease-out duration-300"
+                                                    x-transition:enter-start="opacity-0 scale-95"
+                                                    x-transition:enter-end="opacity-100 scale-100"
+                                                    x-transition:leave="transition ease-in duration-200"
+                                                    x-transition:leave-start="opacity-100 scale-100"
+                                                    x-transition:leave-end="opacity-0 scale-95"
+                                                >
+                                                    <img 
+                                                        :src="images[currentIndex]" 
+                                                        :alt="'{{ $product->name }} - ' + (currentIndex + 1)"
+                                                        class="max-w-full max-h-[90vh] object-contain rounded-lg shadow-2xl"
+                                                    >
+                                                </div>
+                                                
+                                                <!-- Indicador de imagem -->
+                                                <div 
+                                                    x-show="images.length > 1"
+                                                    class="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-black bg-opacity-50 text-white px-4 py-2 rounded-full text-sm"
+                                                >
+                                                    <span x-text="currentIndex + 1"></span> / <span x-text="images.length"></span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    @else
+                                        <div class="w-16 h-16 bg-gray-200 rounded flex items-center justify-center">
+                                            <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                            </svg>
+                                        </div>
+                                    @endif
+                                </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                     {{ $product->sku }}
                                 </td>
@@ -199,7 +306,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="{{ (auth()->user()->can('edit products') || auth()->user()->can('delete products')) ? '7' : '6' }}" class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">
+                                <td colspan="{{ (auth()->user()->can('edit products') || auth()->user()->can('delete products')) ? '8' : '7' }}" class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">
                                     Nenhum produto encontrado.
                                 </td>
                             </tr>

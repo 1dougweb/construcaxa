@@ -26,6 +26,7 @@ class EquipmentRequestForm extends Component
     public $searchResults = [];
     public $osSearch = '';
     public $osSearchResults = [];
+    public $selectedServiceOrder = null;
 
     protected function rules()
     {
@@ -84,6 +85,16 @@ class EquipmentRequestForm extends Component
             $this->notes = $equipmentRequest->notes;
             $this->expected_return_date = $equipmentRequest->expected_return_date?->format('Y-m-d');
             
+            $equipmentRequest->load('serviceOrder');
+            if ($equipmentRequest->serviceOrder) {
+                $this->selectedServiceOrder = $equipmentRequest->serviceOrder;
+            }
+            
+            $equipmentRequest->load('serviceOrder');
+            if ($equipmentRequest->serviceOrder) {
+                $this->selectedServiceOrder = $equipmentRequest->serviceOrder;
+            }
+            
             foreach ($equipmentRequest->items as $item) {
                 $this->selectedEquipment[] = [
                     'id' => $item->equipment_id,
@@ -93,7 +104,16 @@ class EquipmentRequestForm extends Component
                     'condition_notes' => $item->condition_notes,
                 ];
             }
+        } else {
+            $this->number = $this->generateRequestNumber();
         }
+    }
+
+    private function generateRequestNumber()
+    {
+        $lastNumber = EquipmentRequest::where('number', 'like', 'REQ-EQ%')->max('number');
+        $nextNumber = $lastNumber ? (intval(substr($lastNumber, 6)) + 1) : 1;
+        return 'REQ-EQ' . str_pad($nextNumber, 4, '0', STR_PAD_LEFT);
     }
 
     public function updatedSearch()
@@ -122,17 +142,36 @@ class EquipmentRequestForm extends Component
 
     public function updatedOsSearch()
     {
-        $this->osSearchResults = [];
-        
         if (strlen($this->osSearch) >= 2) {
             $this->osSearchResults = ServiceOrder::where(function($q) {
                 $q->where('number', 'like', "%{$this->osSearch}%")
                   ->orWhere('client_name', 'like', "%{$this->osSearch}%");
             })
             ->whereIn('status', ['pending', 'in_progress'])
-            ->take(10)
+            ->take(5)
             ->get();
+        } else {
+            $this->osSearchResults = [];
         }
+    }
+
+    public function selectServiceOrder($serviceOrderId)
+    {
+        $serviceOrder = ServiceOrder::find($serviceOrderId);
+        if ($serviceOrder) {
+            $this->service_order_id = $serviceOrder->id;
+            $this->selectedServiceOrder = $serviceOrder;
+        }
+        $this->osSearch = '';
+        $this->osSearchResults = [];
+    }
+
+    public function clearServiceOrder()
+    {
+        $this->service_order_id = null;
+        $this->selectedServiceOrder = null;
+        $this->osSearch = '';
+        $this->osSearchResults = [];
     }
 
     public function updatedType()
@@ -171,17 +210,6 @@ class EquipmentRequestForm extends Component
         $this->searchResults = [];
     }
 
-    public function selectServiceOrder($serviceOrderId)
-    {
-        $serviceOrder = ServiceOrder::find($serviceOrderId);
-        
-        if ($serviceOrder) {
-            $this->service_order_id = $serviceOrder->id;
-        }
-        
-        $this->osSearch = '';
-        $this->osSearchResults = [];
-    }
 
     public function removeEquipment($index)
     {
@@ -213,6 +241,10 @@ class EquipmentRequestForm extends Component
 
     public function save()
     {
+        if (empty($this->number)) {
+            $this->number = $this->generateRequestNumber();
+        }
+        
         $this->validate();
 
         DB::beginTransaction();

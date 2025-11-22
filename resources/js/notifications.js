@@ -3,16 +3,63 @@
  */
 class NotificationManager {
     constructor() {
+        this.container = null;
+        this.init();
+    }
+
+    init() {
+        // Aguardar o DOM estar pronto
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', () => {
+                this.container = this.createContainer();
+                this.setupLivewireListeners();
+                this.checkFlashMessages();
+            });
+        } else {
+            // DOM já está pronto
         this.container = this.createContainer();
-        document.body.appendChild(this.container);
         this.setupLivewireListeners();
+            this.checkFlashMessages();
+        }
     }
 
     createContainer() {
-        const container = document.createElement('div');
+        // Verificar se o container já existe no DOM
+        let container = document.getElementById('notifications-container');
+        if (!container) {
+            container = document.createElement('div');
         container.id = 'notifications-container';
-        container.className = 'fixed bottom-0 right-0 m-6 z-50 space-y-3';
+            container.className = 'fixed top-0 right-0 m-6 space-y-3';
+            container.style.zIndex = '9999';
+            container.style.pointerEvents = 'none';
+            document.body.appendChild(container);
+        }
         return container;
+    }
+
+    checkFlashMessages() {
+        // Verificar se há mensagens flash para exibir
+        const successEl = document.querySelector('meta[name="notification-success"]');
+        const errorEl = document.querySelector('meta[name="notification-error"]');
+        const infoEl = document.querySelector('meta[name="notification-info"]');
+        
+        if (successEl && successEl.content) {
+            setTimeout(() => {
+                this.show(successEl.content, 'success');
+            }, 100);
+        }
+        
+        if (errorEl && errorEl.content) {
+            setTimeout(() => {
+                this.show(errorEl.content, 'error');
+            }, 100);
+        }
+        
+        if (infoEl && infoEl.content) {
+            setTimeout(() => {
+                this.show(infoEl.content, 'info');
+            }, 100);
+        }
     }
 
     setupLivewireListeners() {
@@ -39,12 +86,24 @@ class NotificationManager {
      * @param {number} duration - Duração em milissegundos
      */
     show(message, type = 'success', duration = 6000) {
+        // Garantir que o container existe
+        if (!this.container) {
+            this.container = this.createContainer();
+        }
+
         const notification = this.createNotification(message, type);
         this.container.appendChild(notification);
 
+        // Animação de entrada
+        setTimeout(() => {
+            notification.style.opacity = '1';
+            notification.style.transform = 'translateX(0)';
+        }, 10);
+
         // Remover após a duração especificada
         setTimeout(() => {
-            notification.classList.add('opacity-0');
+            notification.style.opacity = '0';
+            notification.style.transform = 'translateX(100%)';
             setTimeout(() => {
                 if (notification.parentNode === this.container) {
                     this.container.removeChild(notification);
@@ -56,11 +115,53 @@ class NotificationManager {
     createNotification(message, type) {
         const notification = document.createElement('div');
         const bgColor = this.getBackgroundColor(type);
+        const icon = this.getIcon(type);
         
-        notification.className = `${bgColor} text-white px-6 py-4 rounded-lg shadow-lg transform transition-all duration-500`;
-        notification.textContent = message;
+        notification.className = `${bgColor} text-white px-6 py-4 rounded-lg shadow-lg flex items-center min-w-[300px] max-w-md`;
+        notification.style.opacity = '0';
+        notification.style.transform = 'translateX(100%)';
+        notification.style.transition = 'opacity 0.3s ease-in-out, transform 0.3s ease-in-out';
+        notification.style.pointerEvents = 'auto';
+        notification.style.cursor = 'pointer';
+        notification.innerHTML = `
+            <div class="flex-shrink-0 mr-3">
+                ${icon}
+            </div>
+            <div class="flex-1">
+                ${message}
+            </div>
+        `;
+        
+        // Permitir fechar ao clicar
+        notification.addEventListener('click', () => {
+            notification.style.opacity = '0';
+            notification.style.transform = 'translateX(100%)';
+            setTimeout(() => {
+                if (notification.parentNode === this.container) {
+                    this.container.removeChild(notification);
+                }
+            }, 300);
+        });
         
         return notification;
+    }
+
+    getIcon(type) {
+        const icons = {
+            success: `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+            </svg>`,
+            error: `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>`,
+            warning: `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+            </svg>`,
+            info: `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>`
+        };
+        return icons[type] || icons.success;
     }
 
     getBackgroundColor(type) {
@@ -74,25 +175,16 @@ class NotificationManager {
     }
 }
 
-// Inicializar gerenciador de notificações
+// Inicializar gerenciador de notificações apenas se ainda não foi inicializado
+if (!window.notificationManager) {
 window.notificationManager = new NotificationManager();
+}
 
-// Inicializar notificações da sessão flash
-document.addEventListener('DOMContentLoaded', () => {
-    // Verificar se há mensagens flash para exibir
-    const successEl = document.querySelector('meta[name="notification-success"]');
-    const errorEl = document.querySelector('meta[name="notification-error"]');
-    const infoEl = document.querySelector('meta[name="notification-info"]');
-    
-    if (successEl && successEl.content) {
-        window.notificationManager.show(successEl.content, 'success');
+// Função de teste para verificar se as notificações estão funcionando
+window.testNotification = function(type = 'success') {
+    if (window.notificationManager) {
+        window.notificationManager.show('Notificação de teste!', type);
+    } else {
+        console.error('NotificationManager não foi inicializado');
     }
-    
-    if (errorEl && errorEl.content) {
-        window.notificationManager.show(errorEl.content, 'error');
-    }
-    
-    if (infoEl && infoEl.content) {
-        window.notificationManager.show(infoEl.content, 'info');
-    }
-}); 
+}; 

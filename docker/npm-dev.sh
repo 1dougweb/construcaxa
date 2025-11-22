@@ -6,3 +6,4 @@ echo "💡 Pressione Ctrl+C para parar"
 
 docker-compose -f docker-compose.prod.yml exec php npm run dev
 
+

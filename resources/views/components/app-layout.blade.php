@@ -7,6 +7,17 @@
 
         <title>{{ config('app.name', 'Laravel') }}</title>
 
+        <!-- Notificações de sessão flash -->
+        @if(session('success'))
+            <meta name="notification-success" content="{{ session('success') }}">
+        @endif
+        @if(session('error'))
+            <meta name="notification-error" content="{{ session('error') }}">
+        @endif
+        @if(session('info'))
+            <meta name="notification-info" content="{{ session('info') }}">
+        @endif
+
         <!-- PWA Meta Tags -->
         <meta name="theme-color" content="#1E2780">
         <meta name="mobile-web-app-capable" content="yes">
@@ -36,7 +47,7 @@
         <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
 
         <!-- Scripts -->
-        @vite(['resources/css/app.css', 'resources/js/app.js'])
+        @vite(['resources/css/app.css', 'resources/js/app.js', 'resources/js/notifications.js'])
 
         <!-- Icons -->
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
@@ -80,6 +91,9 @@
         </style>
     </head>
     <body class="font-sans antialiased">
+        <!-- Notification container for dynamic notifications -->
+        <div id="notifications-container" class="fixed top-0 right-0 m-6 space-y-3" style="z-index: 9999; pointer-events: none;"></div>
+
         <div class="min-h-screen bg-gray-100" x-data="{ sidebarOpen: false }">
             <!-- Mobile top bar -->
             <div class="h-16 bg-white border-b border-gray-200 px-4 flex items-center justify-between lg:hidden">
@@ -415,7 +429,6 @@
         </div>
 
         @livewireScripts
-        <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
         <script src="https://unpkg.com/imask"></script>
         <script src="{{ asset('js/pwa.js') }}"></script>
         @stack('scripts')

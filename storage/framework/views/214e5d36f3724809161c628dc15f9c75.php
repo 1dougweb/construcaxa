@@ -239,7 +239,7 @@
             <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
                 <div class="col-span-full">
                     <div class="text-center py-12">
-                        <div class="text-gray-400 text-6xl mb-4">📋</div>
+                        <div class="text-gray-400 text-6xl mb-4"><i class="bi bi-clipboard2-check-fill"></i></div>
                         <h3 class="text-lg font-medium text-gray-900 mb-2">Nenhum orçamento encontrado</h3>
                         <p class="text-gray-600 mb-4">Comece criando seu primeiro orçamento.</p>
                         <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('manage budgets')): ?>

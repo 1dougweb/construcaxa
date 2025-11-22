@@ -30,3 +30,4 @@ $env:APP_PORT = if ($env:APP_PORT) { $env:APP_PORT } else { "80" }
 Write-Host "✅ Ambiente de produção iniciado!" -ForegroundColor Green
 Write-Host "📝 Acesse: http://localhost:$env:APP_PORT" -ForegroundColor Green
 
+

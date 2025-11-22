@@ -17,6 +17,7 @@ class Equipment extends Model
         'photos',
         'status',
         'category_id',
+        'equipment_category_id',
         'current_employee_id',
         'purchase_price',
         'purchase_date',
@@ -35,6 +36,11 @@ class Equipment extends Model
     public function category()
     {
         return $this->belongsTo(Category::class);
+    }
+
+    public function equipmentCategory()
+    {
+        return $this->belongsTo(EquipmentCategory::class);
     }
 
     public function currentEmployee()

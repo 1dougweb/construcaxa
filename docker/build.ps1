@@ -12,3 +12,4 @@ docker-compose -f docker-compose.prod.yml build
 
 Write-Host "✅ Build concluído com sucesso!" -ForegroundColor Green
 
+

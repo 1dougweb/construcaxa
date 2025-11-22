@@ -92,6 +92,18 @@
                     <x-input id="email" type="email" class="mt-1 block w-full" wire:model.defer="email" />
                     <x-input-error for="email" class="mt-2" />
                 </div>
+
+                <!-- Categoria -->
+                <div class="col-span-1">
+                    <x-label for="supplier_category_id" value="{{ __('Categoria') }}" />
+                    <select id="supplier_category_id" wire:model.defer="supplier_category_id" class="border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm block mt-1 w-full">
+                        <option value="">Selecione uma categoria</option>
+                        @foreach($supplierCategories as $category)
+                            <option value="{{ $category->id }}">{{ $category->name }}</option>
+                        @endforeach
+                    </select>
+                    <x-input-error for="supplier_category_id" class="mt-2" />
+                </div>
             </div>
 
             <!-- Botões -->
@@ -99,9 +111,9 @@
                 <a href="{{ route('suppliers.index') }}" class="inline-flex items-center px-4 py-2 bg-gray-800 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700 focus:bg-gray-700 active:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition ease-in-out duration-150">
                     {{ __('Cancelar') }}
                 </a>
-                <x-button>
+                <x-button-loading>
                     {{ __('Salvar') }}
-                </x-button>
+                </x-button-loading>
             </div>
         </div>
     </form>
@@ -453,8 +465,8 @@
                     }
                     
                     // Mostrar loading
-                    document.getElementById('address').value = 'Carregando...';
-                    document.getElementById('city').value = 'Carregando...';
+                    document.getElementById('address').placeholder = 'Carregando...';
+                    document.getElementById('city').placeholder = 'Carregando...';
                     document.getElementById('state').value = '';
                     
                     fetch(`https://viacep.com.br/ws/${cep}/json/`)
@@ -535,7 +547,7 @@
                         const element = document.getElementById(field);
                         if (element) {
                             element.classList.add('bg-gray-100');
-                            element.value = 'Carregando...';
+                            element.placeholder = 'Carregando...';
                             // Desativar campo durante o carregamento
                             element.setAttribute('readonly', 'readonly');
                         }
@@ -611,7 +623,7 @@
                                           
                     loadingFields.forEach(field => {
                         const element = document.getElementById(field);
-                        if (element && element.value === 'Carregando...') {
+                        if (element && element.placeholder === 'Carregando...') {
                             element.value = '';
                             element.classList.remove('bg-gray-100');
                             element.removeAttribute('readonly');

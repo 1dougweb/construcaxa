@@ -65,6 +65,11 @@ class InitialDataSeeder extends Seeder
             'create contracts',
             'edit contracts',
             'delete contracts',
+            // Vistorias
+            'view inspections',
+            'create inspections',
+            'edit inspections',
+            'delete inspections',
         ];
 
         foreach ($permissions as $permission) {
@@ -124,6 +129,11 @@ class InitialDataSeeder extends Seeder
             'create contracts',
             'edit contracts',
             'delete contracts',
+            // Vistorias
+            'view inspections',
+            'create inspections',
+            'edit inspections',
+            'delete inspections',
         ]);
 
         $employeeRole->givePermissionTo([

@@ -14,6 +14,12 @@ class SupplierList extends Component
     public $search = '';
     public $perPage = 10;
     public $supplierToDelete = null;
+    public $categoryFilter = '';
+
+    protected $queryString = [
+        'search' => ['except' => ''],
+        'categoryFilter' => ['except' => ''],
+    ];
 
     public function confirmDelete($supplierId)
     {
@@ -52,6 +58,7 @@ class SupplierList extends Component
     {
         $this->searchTerm = '';
         $this->search = '';
+        $this->categoryFilter = '';
         $this->resetPage();
     }
 
@@ -60,21 +67,42 @@ class SupplierList extends Component
         $this->resetPage();
     }
 
+    public function updatingSearchTerm()
+    {
+        $this->resetPage();
+    }
+
+    public function updatedCategoryFilter()
+    {
+        $this->resetPage();
+    }
+
     public function render()
     {
-        $suppliers = Supplier::query()
-            ->when($this->search, function ($query) {
-                $query->where(function ($query) {
-                    $query->where('company_name', 'like', '%' . $this->search . '%')
-                        ->orWhere('trading_name', 'like', '%' . $this->search . '%')
-                        ->orWhere('cnpj', 'like', '%' . $this->search . '%');
+        $search = $this->searchTerm ?: $this->search;
+        
+        $suppliers = Supplier::with('category')
+            ->when($search, function ($query) use ($search) {
+                $query->where(function ($query) use ($search) {
+                    $query->where('company_name', 'like', '%' . $search . '%')
+                        ->orWhere('trading_name', 'like', '%' . $search . '%')
+                        ->orWhere('cnpj', 'like', '%' . $search . '%')
+                        ->orWhere('email', 'like', '%' . $search . '%')
+                        ->orWhere('phone', 'like', '%' . $search . '%')
+                        ->orWhere('city', 'like', '%' . $search . '%');
                 });
+            })
+            ->when($this->categoryFilter, function ($query) {
+                $query->where('supplier_category_id', $this->categoryFilter);
             })
             ->orderBy('company_name')
             ->paginate($this->perPage);
 
+        $categories = \App\Models\SupplierCategory::orderBy('name')->get();
+
         return view('livewire.supplier-list', [
-            'suppliers' => $suppliers
+            'suppliers' => $suppliers,
+            'categories' => $categories,
         ]);
     }
 }

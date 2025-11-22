@@ -15,3 +15,4 @@ docker-compose -f docker-compose.prod.yml build
 
 echo "✅ Build concluído com sucesso!"
 
+

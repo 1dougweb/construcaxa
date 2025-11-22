@@ -32,3 +32,4 @@ docker-compose -f docker-compose.prod.yml exec php php artisan view:cache
 echo "✅ Ambiente de produção iniciado!"
 echo "📝 Acesse: http://localhost:${APP_PORT:-80}"
 
+

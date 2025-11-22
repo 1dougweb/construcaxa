@@ -17,6 +17,18 @@ class CategoryList extends Component
 
     protected $listeners = ['refresh' => '$refresh'];
 
+    // Garantir que a busca funcione
+    public function updatedSearch($value)
+    {
+        $this->resetPage();
+    }
+
+    // Resetar paginação quando a busca mudar
+    public function updatingSearch()
+    {
+        $this->resetPage();
+    }
+
     public function sortBy($field)
     {
         if ($this->sortField === $field) {
@@ -40,22 +52,38 @@ class CategoryList extends Component
     public function delete()
     {
         if ($this->categoryToDelete) {
+            try {
+                $categoryName = $this->categoryToDelete->name;
+                
             if ($this->categoryToDelete->products()->exists()) {
                 session()->flash('error', 'Não é possível excluir uma categoria que possui produtos.');
             } else {
                 $this->categoryToDelete->delete();
-                session()->flash('success', 'Categoria excluída com sucesso!');
+                    session()->flash('success', 'Categoria "' . $categoryName . '" excluída com sucesso!');
+                    $this->resetPage(); // Resetar paginação após deletar
+                }
+            } catch (\Exception $e) {
+                session()->flash('error', 'Erro ao excluir categoria: ' . $e->getMessage());
             }
         }
         $this->categoryToDelete = null;
+    }
+
+    public function clearSearch()
+    {
+        $this->search = '';
+        $this->resetPage();
     }
 
     public function render()
     {
         $categories = Category::withCount('products')
             ->when($this->search, function ($query) {
-                $query->where('name', 'like', '%' . $this->search . '%')
-                    ->orWhere('sku_prefix', 'like', '%' . $this->search . '%');
+                $query->where(function($q) {
+                    $q->where('name', 'like', '%' . $this->search . '%')
+                      ->orWhere('sku_prefix', 'like', '%' . $this->search . '%')
+                      ->orWhere('description', 'like', '%' . $this->search . '%');
+                });
             })
             ->orderBy($this->sortField, $this->sortDirection)
             ->paginate(10);
