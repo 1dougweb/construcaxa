@@ -1,5 +1,5 @@
 <div>
-    <div class="bg-white shadow rounded-md p-6">
+    <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 bg-white dark:bg-gray-800 shadow rounded-md p-6 border border-gray-200 dark:border-gray-700">
         <form wire:submit.prevent="save">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <!-- Cliente -->
@@ -62,22 +62,22 @@
                 <!-- Fotos -->
                 <div class="col-span-2">
                     <x-label for="tempPhotos" value="{{ __('Fotos') }}" />
-                    <input type="file" id="tempPhotos" class="mt-1 block w-full" wire:model="tempPhotos" multiple accept="image/*" />
+                    <input type="file" id="tempPhotos" class="mt-1 block w-full border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 rounded-md" wire:model="tempPhotos" multiple accept="image/*" />
                     <x-input-error for="tempPhotos" class="mt-2" />
-                    <p class="mt-1 text-sm text-gray-500">Você pode selecionar múltiplas fotos</p>
+                    <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Você pode selecionar múltiplas fotos</p>
                 </div>
 
                 <!-- Fotos Existentes e Temporárias -->
                 @if((isset($photos) && count($photos) > 0) || (isset($tempPhotos) && count($tempPhotos) > 0))
                 <div class="col-span-2">
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Fotos Adicionadas</label>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Fotos Adicionadas</label>
                     <div class="grid grid-cols-4 gap-4">
                         @if(isset($photos))
                             @foreach($photos as $index => $photo)
                                 <div class="relative">
-                                    <img src="{{ asset('storage/' . $photo) }}" alt="Foto" class="w-full h-32 object-cover rounded">
+                                    <img src="{{ asset('storage/' . $photo) }}" alt="Foto" class="w-full h-32 object-cover rounded border border-gray-200 dark:border-gray-700">
                                     <button type="button" wire:click="removePhoto({{ $index }})" 
-                                            class="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 hover:bg-red-600">
+                                            class="absolute top-1 right-1 bg-red-500 dark:bg-red-600 text-white rounded-full p-1 hover:bg-red-600 dark:hover:bg-red-700">
                                         <i class="bi bi-x"></i>
                                     </button>
                                 </div>
@@ -86,9 +86,9 @@
                         @if(isset($tempPhotos))
                             @foreach($tempPhotos as $index => $photo)
                                 <div class="relative">
-                                    <img src="{{ $photo->temporaryUrl() }}" alt="Foto temporária" class="w-full h-32 object-cover rounded">
+                                    <img src="{{ $photo->temporaryUrl() }}" alt="Foto temporária" class="w-full h-32 object-cover rounded border border-gray-200 dark:border-gray-700">
                                     <button type="button" wire:click="removePhoto({{ count($photos ?? []) + $index }})" 
-                                            class="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 hover:bg-red-600">
+                                            class="absolute top-1 right-1 bg-red-500 dark:bg-red-600 text-white rounded-full p-1 hover:bg-red-600 dark:hover:bg-red-700">
                                         <i class="bi bi-x"></i>
                                     </button>
                                 </div>
@@ -109,11 +109,11 @@
             <!-- Botões -->
             <div class="mt-6 flex justify-end space-x-2">
                 <a href="{{ route('inspections.index') }}" 
-                   class="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700">
+                   class="px-4 py-2 bg-gray-600 dark:bg-gray-700 text-white rounded-md hover:bg-gray-700 dark:hover:bg-gray-600">
                     Cancelar
                 </a>
                 <button type="submit" 
-                        class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700">
+                        class="px-4 py-2 bg-indigo-600 dark:bg-indigo-700 text-white rounded-md hover:bg-indigo-700 dark:hover:bg-indigo-600">
                     Salvar Vistoria
                 </button>
             </div>

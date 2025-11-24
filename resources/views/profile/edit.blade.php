@@ -1,6 +1,6 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+        <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
             {{ __('Perfil') }}
         </h2>
     </x-slot>
@@ -8,21 +8,21 @@
     <div class="py-6">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             @if (session('status'))
-                <div class="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 mb-4" role="alert">
+                <div class="bg-green-100 dark:bg-green-900/50 border-l-4 border-green-500 dark:border-green-400 text-green-700 dark:text-green-300 p-4 mb-4" role="alert">
                     {{ session('status') }}
                 </div>
             @endif
 
             <!-- Card Único -->
-            <div class="bg-white shadow sm:rounded-lg">
+            <div class="bg-white dark:bg-gray-800 shadow sm:rounded-lg border border-gray-200 dark:border-gray-700">
                 <div class="p-4 sm:p-8">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <!-- Coluna Esquerda - Informações do Perfil -->
                         <div>
-                            <h2 class="text-lg font-medium text-gray-900">
+                            <h2 class="text-lg font-medium text-gray-900 dark:text-gray-100">
                                 {{ __('Informações de Perfil') }}
                             </h2>
-                            <p class="mt-1 text-sm text-gray-600">
+                            <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
                                 {{ __('Atualize as informações do seu perfil e endereço de e-mail.') }}
                             </p>
 
@@ -62,7 +62,7 @@
 
                                 <div>
                                     <x-label for="bio" value="{{ __('Biografia') }}" />
-                                    <textarea id="bio" name="bio" class="border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm mt-1 block w-full" rows="4">{{ old('bio', $user->bio) }}</textarea>
+                                    <textarea id="bio" name="bio" class="border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-400 focus:ring-indigo-500 dark:focus:ring-indigo-400 rounded-md shadow-sm mt-1 block w-full" rows="4">{{ old('bio', $user->bio) }}</textarea>
                                     <x-input-error for="bio" class="mt-2" :messages="$errors->get('bio')" />
                                 </div>
 
@@ -78,20 +78,20 @@
                         <div class="space-y-6">
                             <!-- Foto de Perfil -->
                             <div class="mb-10">
-                                <h2 class="text-lg font-medium text-gray-900">
+                                <h2 class="text-lg font-medium text-gray-900 dark:text-gray-100">
                                     {{ __('Foto de Perfil') }}
                                 </h2>
-                                <p class="mt-1 text-sm text-gray-600">
+                                <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
                                     {{ __('Atualize sua foto de perfil.') }}
                                 </p>
 
                                 <div class="mt-6 flex items-center">
                                     <div class="mr-4">
                                         @if ($user->profile_photo)
-                                            <img src="{{ Storage::disk('public')->url($user->profile_photo) }}" alt="{{ $user->name }}" class="rounded-full h-20 w-20 object-cover">
+                                            <img src="{{ Storage::disk('public')->url($user->profile_photo) }}" alt="{{ $user->name }}" class="rounded-full h-20 w-20 object-cover border-2 border-gray-200 dark:border-gray-700">
                                         @else
-                                            <div class="rounded-full h-20 w-20 bg-gray-200 flex items-center justify-center">
-                                                <span class="text-gray-500 text-xl">{{ substr($user->name, 0, 1) }}</span>
+                                            <div class="rounded-full h-20 w-20 bg-gray-200 dark:bg-gray-700 flex items-center justify-center border-2 border-gray-300 dark:border-gray-600">
+                                                <span class="text-gray-500 dark:text-gray-400 text-xl">{{ substr($user->name, 0, 1) }}</span>
                                             </div>
                                         @endif
                                     </div>
@@ -114,14 +114,14 @@
                                 </div>
                             </div>
 
-                            <hr class="border-gray-200">
+                            <hr class="border-gray-200 dark:border-gray-700">
 
                             <!-- Alterar Senha -->
                             <div class="pt-6">
-                                <h2 class="text-lg font-medium text-gray-900">
+                                <h2 class="text-lg font-medium text-gray-900 dark:text-gray-100">
                                     {{ __('Alterar Senha') }}
                                 </h2>
-                                <p class="mt-1 text-sm text-gray-600">
+                                <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
                                     {{ __('Certifique-se de que sua conta esteja usando uma senha longa e aleatória para se manter segura.') }}
                                 </p>
 

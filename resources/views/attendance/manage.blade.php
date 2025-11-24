@@ -1,10 +1,10 @@
 <x-app-layout>
     <x-slot name="header">
         <div class="flex items-center justify-between">
-            <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+            <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
                 {{ __('Gestão de Pontos') }}
             </h2>
-            <a href="{{ route('attendance.export', request()->query()) }}" class="inline-flex items-center px-3 py-2 bg-indigo-600 text-white rounded-md text-sm hover:bg-indigo-700">
+            <a href="{{ route('attendance.export', request()->query()) }}" class="inline-flex items-center px-3 py-2 bg-indigo-600 dark:bg-indigo-700 text-white rounded-md text-sm hover:bg-indigo-700 dark:hover:bg-indigo-600">
                 {{ __('Exportar CSV') }}
             </a>
         </div>
@@ -12,8 +12,8 @@
 
     <div class="py-6">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg">
-                <div class="p-6 lg:p-8 bg-white border-b border-gray-200">
+            <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-xl sm:rounded-lg border border-gray-200 dark:border-gray-700">
+                <div class="p-6 lg:p-8 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
                     <form method="GET" class="grid grid-cols-1 md:grid-cols-5 gap-4 mb-4">
                         <div>
                             <x-label for="employee" value="{{ __('Funcionário (ID)') }}" />
@@ -21,7 +21,7 @@
                         </div>
                         <div>
                             <x-label for="type" value="{{ __('Tipo') }}" />
-                            <select id="type" name="type" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm">
+                            <select id="type" name="type" class="mt-1 block w-full border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 rounded-md shadow-sm">
                                 <option value="">--</option>
                                 <option value="entry" @selected($filters['type']==='entry')>Entrada</option>
                                 <option value="exit" @selected($filters['type']==='exit')>Saída</option>
@@ -41,58 +41,58 @@
                     </form>
 
                     <div class="overflow-x-auto">
-                        <table class="min-w-full divide-y divide-gray-200 text-sm">
-                            <thead class="bg-gray-50">
+                        <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700 text-sm">
+                            <thead class="bg-gray-50 dark:bg-gray-700/50">
                                 <tr>
-                                    <th class="px-3 py-2 text-left font-medium text-gray-700">{{ __('Data') }}</th>
-                                    <th class="px-3 py-2 text-left font-medium text-gray-700">{{ __('Hora') }}</th>
-                                    <th class="px-3 py-2 text-left font-medium text-gray-700">{{ __('Tipo') }}</th>
-                                    <th class="px-3 py-2 text-left font-medium text-gray-700">{{ __('Funcionário') }}</th>
-                                    <th class="px-3 py-2 text-left font-medium text-gray-700">{{ __('Localização') }}</th>
-                                    <th class="px-3 py-2 text-left font-medium text-gray-700">{{ __('Precisão') }}</th>
-                                    <th class="px-3 py-2 text-left font-medium text-gray-700">{{ __('Ações') }}</th>
+                                    <th class="px-3 py-2 text-left font-medium text-gray-700 dark:text-gray-300">{{ __('Data') }}</th>
+                                    <th class="px-3 py-2 text-left font-medium text-gray-700 dark:text-gray-300">{{ __('Hora') }}</th>
+                                    <th class="px-3 py-2 text-left font-medium text-gray-700 dark:text-gray-300">{{ __('Tipo') }}</th>
+                                    <th class="px-3 py-2 text-left font-medium text-gray-700 dark:text-gray-300">{{ __('Funcionário') }}</th>
+                                    <th class="px-3 py-2 text-left font-medium text-gray-700 dark:text-gray-300">{{ __('Localização') }}</th>
+                                    <th class="px-3 py-2 text-left font-medium text-gray-700 dark:text-gray-300">{{ __('Precisão') }}</th>
+                                    <th class="px-3 py-2 text-left font-medium text-gray-700 dark:text-gray-300">{{ __('Ações') }}</th>
                                 </tr>
                             </thead>
-                            <tbody class="divide-y divide-gray-100">
+                            <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-100 dark:divide-gray-700">
                                 @forelse ($attendances as $row)
                                     @php
                                         $employee = \App\Models\Employee::where('user_id', $row->user_id)->first();
                                     @endphp
-                                    <tr>
-                                        <td class="px-3 py-2">{{ optional($row->punched_date)->format('Y-m-d') }}</td>
-                                        <td class="px-3 py-2">{{ optional($row->punched_at)->format('H:i') }}</td>
+                                    <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/50">
+                                        <td class="px-3 py-2 text-gray-900 dark:text-gray-100">{{ optional($row->punched_date)->format('Y-m-d') }}</td>
+                                        <td class="px-3 py-2 text-gray-900 dark:text-gray-100">{{ optional($row->punched_at)->format('H:i') }}</td>
                                         <td class="px-3 py-2">
-                                            <span class="inline-flex px-2 py-0.5 rounded text-xs font-medium {{ $row->type==='entry' ? 'bg-green-100 text-green-800' : 'bg-indigo-100 text-indigo-800' }}">
+                                            <span class="inline-flex px-2 py-0.5 rounded text-xs font-medium {{ $row->type==='entry' ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300' : 'bg-indigo-100 dark:bg-indigo-900/30 text-indigo-800 dark:text-indigo-300' }}">
                                                 {{ $row->type==='entry' ? 'Entrada' : 'Saída' }}
                                             </span>
                                         </td>
-                                        <td class="px-3 py-2">{{ optional($row->user)->name }} (ID {{ $row->user_id }})</td>
+                                        <td class="px-3 py-2 text-gray-900 dark:text-gray-100">{{ optional($row->user)->name }} (ID {{ $row->user_id }})</td>
                                         <td class="px-3 py-2">
                                             @if($row->latitude && $row->longitude)
                                                 <button 
                                                     type="button"
                                                     @click="openMapModal({{ $row->latitude }}, {{ $row->longitude }}, '{{ $row->id }}', '{{ optional($row->punched_date)->format('d/m/Y') }}', '{{ optional($row->punched_at)->format('H:i') }}', '{{ $row->type === 'entry' ? 'Entrada' : 'Saída' }}', '{{ optional($row->user)->name }}', {{ $row->accuracy ?? 'null' }})"
-                                                    class="text-indigo-600 hover:text-indigo-800 hover:underline text-sm font-medium">
+                                                    class="text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 hover:underline text-sm font-medium">
                                                     Ver no Mapa
                                                 </button>
                                             @else
-                                                <span class="text-gray-400 text-sm">N/A</span>
+                                                <span class="text-gray-400 dark:text-gray-500 text-sm">N/A</span>
                                             @endif
                                         </td>
-                                        <td class="px-3 py-2">{{ $row->accuracy ? number_format($row->accuracy, 1) . ' m' : '-' }}</td>
+                                        <td class="px-3 py-2 text-gray-900 dark:text-gray-100">{{ $row->accuracy ? number_format($row->accuracy, 1) . ' m' : '-' }}</td>
                                         <td class="px-3 py-2">
                                             @if($employee)
-                                                <a href="{{ route('employees.show', $employee) }}" class="text-indigo-600 hover:text-indigo-800 hover:underline text-sm font-medium">
+                                                <a href="{{ route('employees.show', $employee) }}" class="text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 hover:underline text-sm font-medium">
                                                     Ver Perfil
                                                 </a>
                                             @else
-                                                <span class="text-gray-400 text-sm">-</span>
+                                                <span class="text-gray-400 dark:text-gray-500 text-sm">-</span>
                                             @endif
                                         </td>
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="7" class="px-3 py-6 text-center text-gray-500">{{ __('Sem registros') }}</td>
+                                        <td colspan="7" class="px-3 py-6 text-center text-gray-500 dark:text-gray-400">{{ __('Sem registros') }}</td>
                                     </tr>
                                 @endforelse
                             </tbody>
@@ -140,31 +140,31 @@
              x-transition:leave="transition ease-in duration-200"
              x-transition:leave-start="opacity-100 scale-100"
              x-transition:leave-end="opacity-0 scale-95"
-             class="relative bg-white rounded-lg shadow-2xl p-6 w-full max-w-4xl mx-4"
+             class="relative bg-white dark:bg-gray-800 rounded-lg shadow-2xl p-6 w-full max-w-4xl mx-4 border border-gray-200 dark:border-gray-700"
              style="max-height: calc(100vh - 3rem); overflow-y: auto;"
              @click.stop>
             <div class="flex items-center justify-between mb-4">
                 <div>
-                    <h3 class="font-semibold text-gray-900 text-lg">Localização do Ponto</h3>
-                    <div class="mt-1 text-sm text-gray-600" x-show="date && time && type && employee">
+                    <h3 class="font-semibold text-gray-900 dark:text-gray-100 text-lg">Localização do Ponto</h3>
+                    <div class="mt-1 text-sm text-gray-600 dark:text-gray-400" x-show="date && time && type && employee">
                         <span x-text="date"></span> às <span x-text="time"></span> • 
                         <span x-text="type"></span> • 
                         <span x-text="employee"></span>
                         <span x-show="accuracy" x-text="' • Precisão: ' + accuracy + ' m'"></span>
                     </div>
                 </div>
-                <button @click="open = false; closeMap()" class="text-gray-400 hover:text-gray-600 transition-colors p-1 rounded-full hover:bg-gray-100 focus:outline-none">
+                <button @click="open = false; closeMap()" class="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-400 transition-colors p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                     </svg>
                 </button>
             </div>
             
-            <div x-show="address" class="mb-4 p-3 bg-gray-50 rounded-md">
-                <p class="text-sm text-gray-700"><strong>Endereço:</strong> <span x-text="address || 'Carregando...'"></span></p>
+            <div x-show="address" class="mb-4 p-3 bg-gray-50 dark:bg-gray-700/50 rounded-md border border-gray-200 dark:border-gray-700">
+                <p class="text-sm text-gray-700 dark:text-gray-300"><strong class="text-gray-900 dark:text-gray-100">Endereço:</strong> <span x-text="address || 'Carregando...'"></span></p>
             </div>
 
-            <div id="map-container" class="w-full h-96 rounded-md border border-gray-300" style="min-height: 384px;"></div>
+            <div id="map-container" class="w-full h-96 rounded-md border border-gray-300 dark:border-gray-600" style="min-height: 384px;"></div>
         </div>
     </div>
 
@@ -173,6 +173,7 @@
         let mapInstance = null;
         let markerInstance = null;
         let currentModalData = null;
+        let mapObserver = null;
 
         window.openMapModal = function(lat, lng, attendanceId, date, time, type, employee, accuracy) {
             const modal = document.getElementById('location-map-modal');
@@ -247,6 +248,12 @@
                 }
                 mapInstance = null;
             }
+            
+            if (mapObserver) {
+                mapObserver.disconnect();
+                mapObserver = null;
+            }
+            
             modal.style.display = 'none';
         };
 
@@ -282,11 +289,97 @@
             }
 
             const position = { lat: parseFloat(lat), lng: parseFloat(lng) };
+            
+            // Verificar se está em dark mode
+            const isDarkMode = document.documentElement.classList.contains('dark');
+            
+            // Estilos do mapa para dark mode
+            const darkMapStyles = [
+                {elementType: 'geometry', stylers: [{color: '#242f3e'}]},
+                {elementType: 'labels.text.stroke', stylers: [{color: '#242f3e'}]},
+                {elementType: 'labels.text.fill', stylers: [{color: '#746855'}]},
+                {
+                    featureType: 'administrative.locality',
+                    elementType: 'labels.text.fill',
+                    stylers: [{color: '#d59563'}]
+                },
+                {
+                    featureType: 'poi',
+                    elementType: 'labels.text.fill',
+                    stylers: [{color: '#d59563'}]
+                },
+                {
+                    featureType: 'poi.park',
+                    elementType: 'geometry',
+                    stylers: [{color: '#263c3f'}]
+                },
+                {
+                    featureType: 'poi.park',
+                    elementType: 'labels.text.fill',
+                    stylers: [{color: '#6b9a76'}]
+                },
+                {
+                    featureType: 'road',
+                    elementType: 'geometry',
+                    stylers: [{color: '#38414e'}]
+                },
+                {
+                    featureType: 'road',
+                    elementType: 'geometry.stroke',
+                    stylers: [{color: '#212a37'}]
+                },
+                {
+                    featureType: 'road',
+                    elementType: 'labels.text.fill',
+                    stylers: [{color: '#9ca5b3'}]
+                },
+                {
+                    featureType: 'road.highway',
+                    elementType: 'geometry',
+                    stylers: [{color: '#746855'}]
+                },
+                {
+                    featureType: 'road.highway',
+                    elementType: 'geometry.stroke',
+                    stylers: [{color: '#1f2835'}]
+                },
+                {
+                    featureType: 'road.highway',
+                    elementType: 'labels.text.fill',
+                    stylers: [{color: '#f3d19c'}]
+                },
+                {
+                    featureType: 'transit',
+                    elementType: 'geometry',
+                    stylers: [{color: '#2f3948'}]
+                },
+                {
+                    featureType: 'transit.station',
+                    elementType: 'labels.text.fill',
+                    stylers: [{color: '#d59563'}]
+                },
+                {
+                    featureType: 'water',
+                    elementType: 'geometry',
+                    stylers: [{color: '#17263c'}]
+                },
+                {
+                    featureType: 'water',
+                    elementType: 'labels.text.fill',
+                    stylers: [{color: '#515c6d'}]
+                },
+                {
+                    featureType: 'water',
+                    elementType: 'labels.text.stroke',
+                    stylers: [{color: '#17263c'}]
+                }
+            ];
 
             mapInstance = new google.maps.Map(container, {
                 zoom: 17,
                 center: position,
                 mapTypeId: 'roadmap',
+                styles: isDarkMode ? darkMapStyles : [],
             });
 
             // Adicionar marcador
@@ -311,13 +404,16 @@
                 });
             }
 
+            // Verificar se está em dark mode
+            const isDarkMode = document.documentElement.classList.contains('dark');
+            
             // Info window com informações
             const infoWindow = new google.maps.InfoWindow({
                 content: `
-                    <div class="p-2">
-                        <p class="font-semibold text-gray-900">Localização do Ponto</p>
-                        <p class="text-sm text-gray-600 mt-1">Lat: ${position.lat.toFixed(5)}, Lng: ${position.lng.toFixed(5)}</p>
-                        ${accuracy ? `<p class="text-sm text-gray-600">Precisão: ${accuracy.toFixed(1)} m</p>` : ''}
+                    <div class="p-2 ${isDarkMode ? 'dark' : ''}">
+                        <p class="font-semibold text-gray-900 dark:text-gray-100">Localização do Ponto</p>
+                        <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">Lat: ${position.lat.toFixed(5)}, Lng: ${position.lng.toFixed(5)}</p>
+                        ${accuracy ? `<p class="text-sm text-gray-600 dark:text-gray-400">Precisão: ${accuracy.toFixed(1)} m</p>` : ''}
                     </div>
                 `
             });
@@ -331,6 +427,25 @@
                 google.maps.event.trigger(mapInstance, 'resize');
                 mapInstance.setCenter(position);
             }, 100);
+            
+            // Observar mudanças no tema
+            if (mapObserver) {
+                mapObserver.disconnect();
+            }
+            
+            mapObserver = new MutationObserver(() => {
+                const currentDarkMode = document.documentElement.classList.contains('dark');
+                if (mapInstance) {
+                    mapInstance.setOptions({
+                        styles: currentDarkMode ? darkMapStyles : []
+                    });
+                }
+            });
+            
+            mapObserver.observe(document.documentElement, {
+                attributes: true,
+                attributeFilter: ['class']
+            });
         }
     </script>
     @else

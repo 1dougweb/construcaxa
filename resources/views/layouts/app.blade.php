@@ -29,8 +29,6 @@
         @livewireStyles
     </head>
     <body class="font-sans antialiased">
-        <x-banner />
-
         <!-- Notification container for dynamic notifications -->
         <div id="notifications-container" class="fixed top-0 right-0 m-6 z-50 space-y-3"></div>
 

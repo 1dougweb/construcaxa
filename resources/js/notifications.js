@@ -14,12 +14,14 @@ class NotificationManager {
                 this.container = this.createContainer();
                 this.setupLivewireListeners();
                 this.checkFlashMessages();
+                this.setupThemeObserver();
             });
         } else {
             // DOM já está pronto
-        this.container = this.createContainer();
-        this.setupLivewireListeners();
+            this.container = this.createContainer();
+            this.setupLivewireListeners();
             this.checkFlashMessages();
+            this.setupThemeObserver();
         }
     }
 
@@ -28,7 +30,7 @@ class NotificationManager {
         let container = document.getElementById('notifications-container');
         if (!container) {
             container = document.createElement('div');
-        container.id = 'notifications-container';
+            container.id = 'notifications-container';
             container.className = 'fixed top-0 right-0 m-6 space-y-3';
             container.style.zIndex = '9999';
             container.style.pointerEvents = 'none';
@@ -74,9 +76,11 @@ class NotificationManager {
     }
 
     listenToLivewireEvents() {
-        Livewire.on('notification', (data) => {
-            this.show(data.message, data.type || 'info');
-        });
+        if (window.Livewire) {
+            Livewire.on('notification', (data) => {
+                this.show(data.message, data.type || 'info');
+            });
+        }
     }
 
     /**
@@ -117,12 +121,14 @@ class NotificationManager {
         const bgColor = this.getBackgroundColor(type);
         const icon = this.getIcon(type);
         
-        notification.className = `${bgColor} text-white px-6 py-4 rounded-lg shadow-lg flex items-center min-w-[300px] max-w-md`;
+        notification.className = `${bgColor} text-white px-6 py-4 rounded-lg shadow-lg flex items-center min-w-[300px] max-w-md border border-white/20`;
         notification.style.opacity = '0';
         notification.style.transform = 'translateX(100%)';
         notification.style.transition = 'opacity 0.3s ease-in-out, transform 0.3s ease-in-out';
         notification.style.pointerEvents = 'auto';
         notification.style.cursor = 'pointer';
+        notification.setAttribute('data-notification', 'true');
+        
         notification.innerHTML = `
             <div class="flex-shrink-0 mr-3">
                 ${icon}
@@ -130,10 +136,16 @@ class NotificationManager {
             <div class="flex-1">
                 ${message}
             </div>
+            <button class="ml-3 text-white/80 hover:text-white transition-colors" aria-label="Fechar">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+            </button>
         `;
         
-        // Permitir fechar ao clicar
-        notification.addEventListener('click', () => {
+        // Permitir fechar ao clicar no botão ou na notificação
+        const closeBtn = notification.querySelector('button');
+        const closeNotification = () => {
             notification.style.opacity = '0';
             notification.style.transform = 'translateX(100%)';
             setTimeout(() => {
@@ -141,7 +153,14 @@ class NotificationManager {
                     this.container.removeChild(notification);
                 }
             }, 300);
+        };
+        
+        closeBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            closeNotification();
         });
+        
+        notification.addEventListener('click', closeNotification);
         
         return notification;
     }
@@ -165,20 +184,36 @@ class NotificationManager {
     }
 
     getBackgroundColor(type) {
+        // Cores que funcionam bem em ambos os temas com dark mode
         switch (type) {
-            case 'success': return 'bg-green-500';
-            case 'error': return 'bg-red-500';
-            case 'warning': return 'bg-yellow-500';
-            case 'info': return 'bg-blue-500';
-            default: return 'bg-green-500';
+            case 'success': return 'bg-green-500 dark:bg-green-600';
+            case 'error': return 'bg-red-500 dark:bg-red-600';
+            case 'warning': return 'bg-yellow-500 dark:bg-yellow-600';
+            case 'info': return 'bg-blue-500 dark:bg-blue-600';
+            default: return 'bg-green-500 dark:bg-green-600';
         }
+    }
+
+    // Detectar mudanças no tema (para futuras melhorias)
+    setupThemeObserver() {
+        // Observer pode ser usado para atualizar notificações existentes quando o tema mudar
+        // Por enquanto, apenas as novas notificações usarão o tema correto
     }
 }
 
 // Inicializar gerenciador de notificações apenas se ainda não foi inicializado
 if (!window.notificationManager) {
-window.notificationManager = new NotificationManager();
+    window.notificationManager = new NotificationManager();
 }
+
+// Função global para exibir notificações de qualquer lugar
+window.showNotification = function(message, type = 'success', duration = 6000) {
+    if (window.notificationManager) {
+        window.notificationManager.show(message, type, duration);
+    } else {
+        console.error('NotificationManager não foi inicializado');
+    }
+};
 
 // Função de teste para verificar se as notificações estão funcionando
 window.testNotification = function(type = 'success') {
@@ -187,4 +222,4 @@ window.testNotification = function(type = 'success') {
     } else {
         console.error('NotificationManager não foi inicializado');
     }
-}; 
+};

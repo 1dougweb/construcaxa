@@ -1,15 +1,15 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+        <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
             {{ __('Dashboard') }}
         </h2>
     </x-slot>
 
     <div class="py-6">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg">
+            <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-xl sm:rounded-lg">
                 <div class="p-6">
-                    <h1 class="text-2xl font-bold text-gray-900 mb-6">Bem-vindo ao Sistema de Gestão de Construcaxa</h1>
+                    <h1 class="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-6">Bem-vindo ao Sistema de Gestão de Construcaxa</h1>
                     
 
                     @hasanyrole('manager|admin')
@@ -227,24 +227,24 @@
 
                     <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
                         <!-- Gráfico Receitas vs Despesas -->
-                        <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg p-6">
-                            <h2 class="text-xl font-semibold text-gray-900 mb-4">Receitas vs Despesas</h2>
+                        <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-xl sm:rounded-lg p-6">
+                            <h2 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">Receitas vs Despesas</h2>
                             <div class="chart-container" style="position: relative; height:300px;">
                                 <canvas id="incomeExpenseChart"></canvas>
                             </div>
                         </div>
 
                         <!-- Gráfico Contas a Pagar por Status -->
-                        <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg p-6">
-                            <h2 class="text-xl font-semibold text-gray-900 mb-4">Contas a Pagar por Status</h2>
+                        <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-xl sm:rounded-lg p-6">
+                            <h2 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">Contas a Pagar por Status</h2>
                             <div class="chart-container" style="position: relative; height:300px;">
                                 <canvas id="payablesStatusChart"></canvas>
                             </div>
                         </div>
                     </div>
 
-                    <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg p-6 mb-8">
-                        <h2 class="text-xl font-semibold text-gray-900 mb-4">Contas a Receber por Status</h2>
+                    <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-xl sm:rounded-lg p-6 mb-8">
+                        <h2 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">Contas a Receber por Status</h2>
                         <div class="chart-container" style="position: relative; height:300px;">
                             <canvas id="receivablesStatusChart"></canvas>
                         </div>
@@ -253,6 +253,42 @@
                     @push('scripts')
                     <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
                     <script>
+                        // Função para detectar dark mode
+                        function isDarkMode() {
+                            return document.documentElement.classList.contains('dark');
+                        }
+
+                        // Função para obter cores baseado no tema
+                        function getChartColors() {
+                            const dark = isDarkMode();
+                            return {
+                                text: dark ? '#E5E7EB' : '#374151',
+                                textSecondary: dark ? '#9CA3AF' : '#6B7280',
+                                grid: dark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)',
+                                border: dark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)',
+                                background: dark ? 'rgba(31, 41, 55, 0.5)' : 'rgba(255, 255, 255, 0.5)',
+                                // Cores dos datasets (mantém as mesmas)
+                                income: {
+                                    border: '#16a34a',
+                                    background: dark ? 'rgba(22, 163, 74, 0.2)' : 'rgba(22, 163, 74, 0.1)'
+                                },
+                                expense: {
+                                    border: '#dc2626',
+                                    background: dark ? 'rgba(220, 38, 38, 0.2)' : 'rgba(220, 38, 38, 0.1)'
+                                },
+                                payables: {
+                                    border: '#dc2626',
+                                    background: dark ? 'rgba(220, 38, 38, 0.2)' : 'rgba(220, 38, 38, 0.1)',
+                                    pointBorder: dark ? '#1F2937' : '#ffffff'
+                                },
+                                receivables: {
+                                    border: '#16a34a',
+                                    background: dark ? 'rgba(22, 163, 74, 0.2)' : 'rgba(22, 163, 74, 0.1)',
+                                    pointBorder: dark ? '#1F2937' : '#ffffff'
+                                }
+                            };
+                        }
+
                         // Aguardar Chart.js carregar
                         function initFinancialCharts() {
                             if (typeof Chart === 'undefined') {
@@ -268,12 +304,15 @@
                             const payablesByStatus = @json($payablesByStatus ?? ['pending' => 0, 'paid' => 0, 'overdue' => 0]);
                             const receivablesByStatus = @json($receivablesByStatus ?? ['pending' => 0, 'received' => 0, 'overdue' => 0]);
 
+                            const colors = getChartColors();
+
                             console.log('Inicializando gráficos financeiros...', {
                                 monthsData,
                                 incomeData,
                                 expenseData,
                                 payablesByStatus,
-                                receivablesByStatus
+                                receivablesByStatus,
+                                darkMode: isDarkMode()
                             });
 
                             // Gráfico Receitas vs Despesas
@@ -292,8 +331,8 @@
                                             {
                                                 label: 'Receitas',
                                                 data: incomeData.length > 0 ? incomeData : [0],
-                                                borderColor: '#16a34a', // green-600
-                                                backgroundColor: 'rgba(22, 163, 74, 0.1)', // green-600 com opacidade
+                                                borderColor: colors.income.border,
+                                                backgroundColor: colors.income.background,
                                                 borderWidth: 3,
                                                 tension: 0.4,
                                                 fill: true,
@@ -303,8 +342,8 @@
                                             {
                                                 label: 'Despesas',
                                                 data: expenseData.length > 0 ? expenseData : [0],
-                                                borderColor: '#dc2626', // red-600
-                                                backgroundColor: 'rgba(220, 38, 38, 0.1)', // red-600 com opacidade
+                                                borderColor: colors.expense.border,
+                                                backgroundColor: colors.expense.background,
                                                 borderWidth: 3,
                                                 tension: 0.4,
                                                 fill: true,
@@ -319,11 +358,19 @@
                                         plugins: {
                                             legend: {
                                                 position: 'top',
+                                                labels: {
+                                                    color: colors.text
+                                                }
                                             },
                                             title: {
                                                 display: false
                                             },
                                             tooltip: {
+                                                backgroundColor: colors.background,
+                                                titleColor: colors.text,
+                                                bodyColor: colors.text,
+                                                borderColor: colors.border,
+                                                borderWidth: 1,
                                                 callbacks: {
                                                     label: function(context) {
                                                         return context.dataset.label + ': R$ ' + context.parsed.y.toLocaleString('pt-BR', {minimumFractionDigits: 2});
@@ -335,9 +382,21 @@
                                             y: {
                                                 beginAtZero: true,
                                                 ticks: {
+                                                    color: colors.textSecondary,
                                                     callback: function(value) {
                                                         return 'R$ ' + Math.round(value).toLocaleString('pt-BR');
                                                     }
+                                                },
+                                                grid: {
+                                                    color: colors.grid
+                                                }
+                                            },
+                                            x: {
+                                                ticks: {
+                                                    color: colors.textSecondary
+                                                },
+                                                grid: {
+                                                    color: colors.grid
                                                 }
                                             }
                                         }
@@ -366,15 +425,15 @@
                                                 payablesByStatus.paid || 0,
                                                 payablesByStatus.overdue || 0
                                             ],
-                                            borderColor: '#dc2626', // red-600
-                                            backgroundColor: 'rgba(220, 38, 38, 0.1)', // red-600 com opacidade
+                                            borderColor: colors.payables.border,
+                                            backgroundColor: colors.payables.background,
                                             borderWidth: 3,
                                             tension: 0.4,
                                             fill: true,
                                             pointRadius: 6,
                                             pointHoverRadius: 8,
-                                            pointBackgroundColor: '#dc2626',
-                                            pointBorderColor: '#ffffff',
+                                            pointBackgroundColor: colors.payables.border,
+                                            pointBorderColor: colors.payables.pointBorder,
                                             pointBorderWidth: 2
                                         }]
                                     },
@@ -386,6 +445,11 @@
                                                 display: false
                                             },
                                             tooltip: {
+                                                backgroundColor: colors.background,
+                                                titleColor: colors.text,
+                                                bodyColor: colors.text,
+                                                borderColor: colors.border,
+                                                borderWidth: 1,
                                                 callbacks: {
                                                     label: function(context) {
                                                         const label = context.label || '';
@@ -399,17 +463,22 @@
                                             y: {
                                                 beginAtZero: true,
                                                 ticks: {
+                                                    color: colors.textSecondary,
                                                     stepSize: 1,
                                                     callback: function(value) {
                                                         return Math.round(value);
                                                     }
                                                 },
                                                 grid: {
-                                                    color: 'rgba(0, 0, 0, 0.05)'
+                                                    color: colors.grid
                                                 }
                                             },
                                             x: {
+                                                ticks: {
+                                                    color: colors.textSecondary
+                                                },
                                                 grid: {
+                                                    color: colors.grid,
                                                     display: false
                                                 }
                                             }
@@ -439,15 +508,15 @@
                                                 receivablesByStatus.received || 0,
                                                 receivablesByStatus.overdue || 0
                                             ],
-                                            borderColor: '#16a34a', // green-600
-                                            backgroundColor: 'rgba(22, 163, 74, 0.1)', // green-600 com opacidade
+                                            borderColor: colors.receivables.border,
+                                            backgroundColor: colors.receivables.background,
                                             borderWidth: 3,
                                             tension: 0.4,
                                             fill: true,
                                             pointRadius: 6,
                                             pointHoverRadius: 8,
-                                            pointBackgroundColor: '#16a34a',
-                                            pointBorderColor: '#ffffff',
+                                            pointBackgroundColor: colors.receivables.border,
+                                            pointBorderColor: colors.receivables.pointBorder,
                                             pointBorderWidth: 2
                                         }]
                                     },
@@ -459,6 +528,11 @@
                                                 display: false
                                             },
                                             tooltip: {
+                                                backgroundColor: colors.background,
+                                                titleColor: colors.text,
+                                                bodyColor: colors.text,
+                                                borderColor: colors.border,
+                                                borderWidth: 1,
                                                 callbacks: {
                                                     label: function(context) {
                                                         const label = context.label || '';
@@ -472,17 +546,22 @@
                                             y: {
                                                 beginAtZero: true,
                                                 ticks: {
+                                                    color: colors.textSecondary,
                                                     stepSize: 1,
                                                     callback: function(value) {
                                                         return Math.round(value);
                                                     }
                                                 },
                                                 grid: {
-                                                    color: 'rgba(0, 0, 0, 0.05)'
+                                                    color: colors.grid
                                                 }
                                             },
                                             x: {
+                                                ticks: {
+                                                    color: colors.textSecondary
+                                                },
                                                 grid: {
+                                                    color: colors.grid,
                                                     display: false
                                                 }
                                             }
@@ -493,6 +572,28 @@
                                 console.error('Canvas receivablesStatusChart não encontrado');
                             }
                         }
+
+                        // Função para atualizar gráficos quando o tema mudar
+                        function updateChartsTheme() {
+                            if (window.incomeExpenseChartInstance || window.payablesStatusChartInstance || window.receivablesStatusChartInstance) {
+                                initFinancialCharts();
+                            }
+                        }
+
+                        // Observar mudanças no tema
+                        const observer = new MutationObserver(function(mutations) {
+                            mutations.forEach(function(mutation) {
+                                if (mutation.attributeName === 'class') {
+                                    updateChartsTheme();
+                                }
+                            });
+                        });
+
+                        // Observar mudanças na classe 'dark' do documento
+                        observer.observe(document.documentElement, {
+                            attributes: true,
+                            attributeFilter: ['class']
+                        });
 
                         // Inicializar quando DOM estiver pronto e Chart.js carregado
                         if (document.readyState === 'loading') {
@@ -576,35 +677,35 @@
                     <!-- Seções principais (Gestão) -->
                     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                         <!-- Requisições recentes -->
-                        <div class="lg:col-span-2 bg-white border border-gray-200 rounded-lg shadow-md">
-                            <div class="p-4 border-b border-gray-200">
-                                <h2 class="text-lg font-semibold text-gray-900">Requisições Recentes</h2>
+                        <div class="lg:col-span-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-md">
+                            <div class="p-4 border-b border-gray-200 dark:border-gray-700">
+                                <h2 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Requisições Recentes</h2>
                             </div>
                             <div class="p-4">
                                 <div class="overflow-x-auto">
-                                    <table class="min-w-full divide-y divide-gray-200">
-                                        <thead class="bg-gray-50">
+                                    <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                                        <thead class="bg-gray-50 dark:bg-gray-700">
                                             <tr>
-                                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Número</th>
-                                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Data</th>
-                                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ações</th>
+                                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Número</th>
+                                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Data</th>
+                                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Ações</th>
                                             </tr>
                                         </thead>
-                                        <tbody class="bg-white divide-y divide-gray-200">
+                                        <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                                             @foreach(\App\Models\MaterialRequest::with('items')->latest()->take(5)->get() as $request)
                                                 <tr>
                                                     <td class="px-6 py-4 whitespace-nowrap">
-                                                        <div class="text-sm font-medium text-gray-900">
+                                                        <div class="text-sm font-medium text-gray-900 dark:text-gray-100">
                                                             #{{ $request->number }}
                                                         </div>
                                                     </td>
                                                     <td class="px-6 py-4 whitespace-nowrap">
-                                                        <div class="text-sm text-gray-500">
+                                                        <div class="text-sm text-gray-500 dark:text-gray-400">
                                                             {{ $request->created_at->format('d/m/Y H:i') }}
                                                         </div>
                                                     </td>
                                                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                                        <a href="{{ route('material-requests.show', $request) }}" class="text-indigo-600 hover:text-indigo-900">
+                                                        <a href="{{ route('material-requests.show', $request) }}" class="text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-300">
                                                             Detalhes
                                                         </a>
                                                     </td>
@@ -615,7 +716,7 @@
                                 </div>
                                 
                                 <div class="mt-4 text-right">
-                                    <a href="{{ route('material-requests.index') }}" class="text-indigo-600 hover:text-indigo-900 font-medium">
+                                    <a href="{{ route('material-requests.index') }}" class="text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-300 font-medium">
                                         Ver todas as requisições →
                                     </a>
                                 </div>
@@ -623,25 +724,25 @@
                         </div>
 
                         <!-- Produtos em estoque baixo -->
-                        <div class="bg-white border border-gray-200 rounded-lg shadow-md">
-                            <div class="p-4 border-b border-gray-200">
-                                <h2 class="text-lg font-semibold text-gray-900">Produtos com Estoque Baixo</h2>
+                        <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-md">
+                            <div class="p-4 border-b border-gray-200 dark:border-gray-700">
+                                <h2 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Produtos com Estoque Baixo</h2>
                             </div>
                             <div class="p-4">
-                                <ul class="divide-y divide-gray-200">
+                                <ul class="divide-y divide-gray-200 dark:divide-gray-700">
                                     @foreach(\App\Models\Product::whereRaw('stock <= min_stock')->orderBy('stock', 'asc')->take(5)->get() as $product)
                                         <li class="py-3">
                                             <div class="flex items-center justify-between">
                                                 <div>
-                                                    <h3 class="text-sm font-medium text-gray-900">{{ $product->name }}</h3>
-                                                    <p class="text-xs text-gray-500">SKU: {{ $product->sku }}</p>
+                                                    <h3 class="text-sm font-medium text-gray-900 dark:text-gray-100">{{ $product->name }}</h3>
+                                                    <p class="text-xs text-gray-500 dark:text-gray-400">SKU: {{ $product->sku }}</p>
                                                 </div>
                                                 <div class="text-right">
-                                                    <p class="text-sm font-medium text-red-600">{{ $product->stock }} / {{ $product->min_stock }}</p>
-                                                    <p class="text-xs text-gray-500">Estoque / Mínimo</p>
+                                                    <p class="text-sm font-medium text-red-600 dark:text-red-400">{{ $product->stock }} / {{ $product->min_stock }}</p>
+                                                    <p class="text-xs text-gray-500 dark:text-gray-400">Estoque / Mínimo</p>
                                                 </div>
                                             </div>
-                                            <div class="mt-2 w-full bg-gray-200 rounded-full h-2">
+                                            <div class="mt-2 w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
                                                 @php
                                                     $percentage = $product->min_stock > 0 ? min(100, ($product->stock / $product->min_stock) * 100) : 0;
                                                     $colorClass = $percentage <= 30 ? 'bg-red-600' : ($percentage <= 70 ? 'bg-yellow-500' : 'bg-green-500');
@@ -653,7 +754,7 @@
                                 </ul>
                                 
                                 <div class="mt-4 text-right">
-                                    <a href="{{ route('products.index') }}" class="text-indigo-600 hover:text-indigo-900 font-medium">
+                                    <a href="{{ route('products.index') }}" class="text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-300 font-medium">
                                         Ver todos os produtos →
                                     </a>
                                 </div>
@@ -663,88 +764,88 @@
 
                     <!-- Seção de Ações Rápidas (Gestão) -->
                     <div class="mt-8">
-                        <h2 class="text-lg font-semibold text-gray-900 mb-4">Ações Rápidas</h2>
+                        <h2 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Ações Rápidas</h2>
                         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                             @can('create service-orders')
-                            <a href="{{ route('material-requests.create') }}" class="flex items-center p-4 bg-indigo-50 hover:bg-indigo-100 rounded-lg transition-all">
-                                <div class="p-3 bg-indigo-100 rounded-full mr-4">
-                                    <svg class="w-6 h-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <a href="{{ route('material-requests.create') }}" class="flex items-center p-4 bg-indigo-50 dark:bg-indigo-900/30 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 rounded-lg transition-all">
+                                <div class="p-3 bg-indigo-100 dark:bg-indigo-800 rounded-full mr-4">
+                                    <svg class="w-6 h-6 text-indigo-600 dark:text-indigo-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 13h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                                     </svg>
                                 </div>
                                 <div>
-                                    <h3 class="text-sm font-medium text-gray-900">Nova Requisição</h3>
-                                    <p class="text-xs text-gray-500">Criar nova requisição de material</p>
+                                    <h3 class="text-sm font-medium text-gray-900 dark:text-gray-100">Nova Requisição</h3>
+                                    <p class="text-xs text-gray-500 dark:text-gray-400">Criar nova requisição de material</p>
                                 </div>
                             </a>
                             @endcan
 
                             @can('create products')
-                            <a href="{{ route('products.create') }}" class="flex items-center p-4 bg-green-50 hover:bg-green-100 rounded-lg transition-all">
-                                <div class="p-3 bg-green-100 rounded-full mr-4">
-                                    <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <a href="{{ route('products.create') }}" class="flex items-center p-4 bg-green-50 dark:bg-green-900/30 hover:bg-green-100 dark:hover:bg-green-900/50 rounded-lg transition-all">
+                                <div class="p-3 bg-green-100 dark:bg-green-800 rounded-full mr-4">
+                                    <svg class="w-6 h-6 text-green-600 dark:text-green-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                                     </svg>
                                 </div>
                                 <div>
-                                    <h3 class="text-sm font-medium text-gray-900">Novo Produto</h3>
-                                    <p class="text-xs text-gray-500">Adicionar produto ao estoque</p>
+                                    <h3 class="text-sm font-medium text-gray-900 dark:text-gray-100">Novo Produto</h3>
+                                    <p class="text-xs text-gray-500 dark:text-gray-400">Adicionar produto ao estoque</p>
                                 </div>
                             </a>
                             @endcan
 
                             @can('create products')
-                            <a href="{{ route('equipment.create') }}" class="flex items-center p-4 bg-purple-50 hover:bg-purple-100 rounded-lg transition-all">
-                                <div class="p-3 bg-purple-100 rounded-full mr-4">
-                                    <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <a href="{{ route('equipment.create') }}" class="flex items-center p-4 bg-purple-50 dark:bg-purple-900/30 hover:bg-purple-100 dark:hover:bg-purple-900/50 rounded-lg transition-all">
+                                <div class="p-3 bg-purple-100 dark:bg-purple-800 rounded-full mr-4">
+                                    <svg class="w-6 h-6 text-purple-600 dark:text-purple-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path>
                                     </svg>
                                 </div>
                                 <div>
-                                    <h3 class="text-sm font-medium text-gray-900">Novo Equipamento</h3>
-                                    <p class="text-xs text-gray-500">Cadastrar equipamento/ferramenta</p>
+                                    <h3 class="text-sm font-medium text-gray-900 dark:text-gray-100">Novo Equipamento</h3>
+                                    <p class="text-xs text-gray-500 dark:text-gray-400">Cadastrar equipamento/ferramenta</p>
                                 </div>
                             </a>
                             @endcan
 
                             @can('create service-orders')
-                            <a href="{{ route('equipment-requests.create') }}" class="flex items-center p-4 bg-amber-100 hover:bg-orange-100 rounded-lg transition-all">
-                                <div class="p-3 bg-orange-100 rounded-full mr-4">
-                                    <svg class="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <a href="{{ route('equipment-requests.create') }}" class="flex items-center p-4 bg-amber-100 dark:bg-amber-900/30 hover:bg-orange-100 dark:hover:bg-orange-900/50 rounded-lg transition-all">
+                                <div class="p-3 bg-orange-100 dark:bg-orange-800 rounded-full mr-4">
+                                    <svg class="w-6 h-6 text-orange-600 dark:text-orange-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 13h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                                     </svg>
                                 </div>
                                 <div>
-                                    <h3 class="text-sm font-medium text-gray-900">Requisição de Equipamento</h3>
-                                    <p class="text-xs text-gray-500">Solicitar empréstimo/devolução</p>
+                                    <h3 class="text-sm font-medium text-gray-900 dark:text-gray-100">Requisição de Equipamento</h3>
+                                    <p class="text-xs text-gray-500 dark:text-gray-400">Solicitar empréstimo/devolução</p>
                                 </div>
                             </a>
                             @endcan
 
                             @can('manage stock')
-                            <a href="{{ route('stock-movements.create') }}" class="flex items-center p-4 bg-blue-50 hover:bg-blue-100 rounded-lg transition-all">
-                                <div class="p-3 bg-blue-100 rounded-full mr-4">
-                                    <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <a href="{{ route('stock-movements.create') }}" class="flex items-center p-4 bg-blue-50 dark:bg-blue-900/30 hover:bg-blue-100 dark:hover:bg-blue-900/50 rounded-lg transition-all">
+                                <div class="p-3 bg-blue-100 dark:bg-blue-800 rounded-full mr-4">
+                                    <svg class="w-6 h-6 text-blue-600 dark:text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4"></path>
                                     </svg>
                                 </div>
                                 <div>
-                                    <h3 class="text-sm font-medium text-gray-900">Movimentação</h3>
-                                    <p class="text-xs text-gray-500">Registrar entrada/saída manual</p>
+                                    <h3 class="text-sm font-medium text-gray-900 dark:text-gray-100">Movimentação</h3>
+                                    <p class="text-xs text-gray-500 dark:text-gray-400">Registrar entrada/saída manual</p>
                                 </div>
                             </a>
                             @endcan
 
                             @can('view reports')
-                            <a href="{{ route('reports.index') }}" class="flex items-center p-4 bg-purple-50 hover:bg-purple-100 rounded-lg transition-all">
-                                <div class="p-3 bg-purple-100 rounded-full mr-4">
-                                    <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <a href="{{ route('reports.index') }}" class="flex items-center p-4 bg-purple-50 dark:bg-purple-900/30 hover:bg-purple-100 dark:hover:bg-purple-900/50 rounded-lg transition-all">
+                                <div class="p-3 bg-purple-100 dark:bg-purple-800 rounded-full mr-4">
+                                    <svg class="w-6 h-6 text-purple-600 dark:text-purple-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                                     </svg>
                                 </div>
                                 <div>
-                                    <h3 class="text-sm font-medium text-gray-900">Relatórios</h3>
-                                    <p class="text-xs text-gray-500">Gerar relatórios de estoque</p>
+                                    <h3 class="text-sm font-medium text-gray-900 dark:text-gray-100">Relatórios</h3>
+                                    <p class="text-xs text-gray-500 dark:text-gray-400">Gerar relatórios de estoque</p>
                                 </div>
                             </a>
                             @endcan
@@ -869,12 +970,12 @@
                     <!-- Seção Principal -->
                     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
                         <!-- Bater Ponto -->
-                        <div class="lg:col-span-2 bg-white rounded-xl shadow-lg p-6">
+                        <div class="lg:col-span-2 bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
                             <div class="flex items-center justify-between mb-6">
-                                <h3 class="text-xl font-bold text-gray-900">Registro de Ponto</h3>
+                                <h3 class="text-xl font-bold text-gray-900 dark:text-gray-100">Registro de Ponto</h3>
                                 <div class="flex items-center space-x-2">
                                     <div class="w-3 h-3 rounded-full {{ $completedToday ? 'bg-green-400' : 'bg-yellow-400' }}"></div>
-                                    <span class="text-sm font-medium text-gray-600">
+                                    <span class="text-sm font-medium text-gray-600 dark:text-gray-400">
                                         {{ $completedToday ? 'Completo' : 'Pendente' }}
                                     </span>
                                 </div>
@@ -887,8 +988,8 @@
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                                         </svg>
                                     </div>
-                                    <p class="text-gray-600 mb-2">{{ now()->format('d/m/Y - H:i') }}</p>
-                                    <p class="text-sm text-gray-500">
+                                    <p class="text-gray-600 dark:text-gray-400 mb-2">{{ now()->format('d/m/Y - H:i') }}</p>
+                                    <p class="text-sm text-gray-500 dark:text-gray-400">
                                         @if($completedToday)
                                             Você já registrou entrada e saída hoje
                                         @else
@@ -908,18 +1009,18 @@
 
                             <!-- Registros de Hoje -->
                             @if($entries->count() > 0)
-                                <div class="border-t pt-6">
-                                    <h4 class="font-semibold text-gray-900 mb-4">Registros de Hoje</h4>
+                                <div class="border-t dark:border-gray-700 pt-6">
+                                    <h4 class="font-semibold text-gray-900 dark:text-gray-100 mb-4">Registros de Hoje</h4>
                                     <div class="space-y-3">
                                         @foreach($entries as $entry)
-                                            <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                                            <div class="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
                                                 <div class="flex items-center space-x-3">
                                                     <div class="w-2 h-2 rounded-full {{ $entry->type === 'entry' ? 'bg-green-500' : 'bg-red-500' }}"></div>
-                                                    <span class="font-medium text-gray-900">
+                                                    <span class="font-medium text-gray-900 dark:text-gray-100">
                                                         {{ $entry->type === 'entry' ? 'Entrada' : 'Saída' }}
                                                     </span>
                                                 </div>
-                                                <span class="text-lg font-bold text-gray-700">{{ $entry->punched_at->format('H:i') }}</span>
+                                                <span class="text-lg font-bold text-gray-700 dark:text-gray-300">{{ $entry->punched_at->format('H:i') }}</span>
                                             </div>
                                         @endforeach
                                     </div>
@@ -930,48 +1031,48 @@
                         <!-- Atalhos e Informações -->
                         <div class="space-y-6">
                             <!-- Atalhos Rápidos -->
-                            <div class="bg-white rounded-xl shadow-lg p-6">
-                                <h3 class="text-lg font-bold text-gray-900 mb-4">Atalhos Rápidos</h3>
+                            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
+                                <h3 class="text-lg font-bold text-gray-900 dark:text-gray-100 mb-4">Atalhos Rápidos</h3>
                                 <div class="space-y-3">
                                     <a href="{{ route('attendance.index') }}" 
-                                       class="flex items-center p-3 rounded-lg bg-indigo-50 hover:bg-indigo-100 transition-colors duration-200">
+                                       class="flex items-center p-3 rounded-lg bg-indigo-50 dark:bg-indigo-900/30 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 transition-colors duration-200">
                                         <div class="w-8 h-8 bg-indigo-200 rounded-lg flex items-center justify-center mr-3">
                                             <svg class="w-4 h-4 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                                             </svg>
                                         </div>
-                                        <span class="font-medium text-gray-900">Bater Ponto</span>
+                                        <span class="font-medium text-gray-900 dark:text-gray-100">Bater Ponto</span>
                                     </a>
 
                                     @can('view products')
                                     <a href="{{ route('products.index') }}" 
-                                       class="flex items-center p-3 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors duration-200">
-                                        <div class="w-8 h-8 bg-gray-200 rounded-lg flex items-center justify-center mr-3">
-                                            <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                       class="flex items-center p-3 rounded-lg bg-gray-50 dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors duration-200">
+                                        <div class="w-8 h-8 bg-gray-200 dark:bg-gray-600 rounded-lg flex items-center justify-center mr-3">
+                                            <svg class="w-4 h-4 text-gray-600 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
                                             </svg>
                                         </div>
-                                        <span class="font-medium text-gray-900">Produtos</span>
+                                        <span class="font-medium text-gray-900 dark:text-gray-100">Produtos</span>
                                     </a>
                                     @endcan
                                 </div>
                             </div>
 
                             <!-- Status do Funcionário -->
-                            <div class="bg-white rounded-xl shadow-lg p-6">
-                                <h3 class="text-lg font-bold text-gray-900 mb-4">Meu Status</h3>
+                            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
+                                <h3 class="text-lg font-bold text-gray-900 dark:text-gray-100 mb-4">Meu Status</h3>
                                 <div class="space-y-4">
                                     <div class="flex items-center justify-between">
-                                        <span class="text-sm text-gray-600">Cargo</span>
-                                        <span class="font-medium text-gray-900">{{ $employee->position ?? 'Não definido' }}</span>
+                                        <span class="text-sm text-gray-600 dark:text-gray-400">Cargo</span>
+                                        <span class="font-medium text-gray-900 dark:text-gray-100">{{ $employee->position ?? 'Não definido' }}</span>
                                     </div>
                                     <div class="flex items-center justify-between">
-                                        <span class="text-sm text-gray-600">Departamento</span>
-                                        <span class="font-medium text-gray-900">{{ $employee->department ?? 'Não definido' }}</span>
+                                        <span class="text-sm text-gray-600 dark:text-gray-400">Departamento</span>
+                                        <span class="font-medium text-gray-900 dark:text-gray-100">{{ $employee->department ?? 'Não definido' }}</span>
                                     </div>
                                     <div class="flex items-center justify-between">
-                                        <span class="text-sm text-gray-600">Data de Admissão</span>
-                                        <span class="font-medium text-gray-900">
+                                        <span class="text-sm text-gray-600 dark:text-gray-400">Data de Admissão</span>
+                                        <span class="font-medium text-gray-900 dark:text-gray-100">
                                             {{ $employee->hire_date ? \Carbon\Carbon::parse($employee->hire_date)->format('d/m/Y') : 'Não definido' }}
                                         </span>
                                     </div>

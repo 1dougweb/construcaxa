@@ -1,6 +1,6 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+        <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
             {{ __('Detalhes da Obra') }}
         </h2>
     </x-slot>
@@ -8,42 +8,42 @@
 <div class="p-4">
     <div class="flex items-start justify-between">
         <div>
-            <h1 class="text-2xl font-semibold text-gray-900">{{ $project->name }} <span class="text-gray-400">({{ $project->code }})</span></h1>
-            <p class="text-sm text-gray-600 mt-1">Status: {{ $project->status }} · Progresso: {{ $project->progress_percentage }}%</p>
+            <h1 class="text-2xl font-semibold text-gray-900 dark:text-gray-100">{{ $project->name }} <span class="text-gray-400 dark:text-gray-500">({{ $project->code }})</span></h1>
+            <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">Status: {{ $project->status }} · Progresso: {{ $project->progress_percentage }}%</p>
         </div>
         <div class="flex space-x-2">
             @can('manage finances')
-            <a href="{{ route('projects.financial-balance', $project) }}" class="px-3 py-2 bg-green-600 text-white rounded-md hover:bg-green-700">
+            <a href="{{ route('projects.financial-balance', $project) }}" class="px-3 py-2 bg-green-600 dark:bg-green-700 text-white rounded-md hover:bg-green-700 dark:hover:bg-green-600">
                 <i class="bi bi-cash-coin mr-1"></i> Balanço Financeiro
             </a>
             @endcan
             @can('edit projects')
-            <a href="{{ route('projects.edit', $project) }}" class="px-3 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700">Editar</a>
+            <a href="{{ route('projects.edit', $project) }}" class="px-3 py-2 bg-indigo-600 dark:bg-indigo-700 text-white rounded-md hover:bg-indigo-700 dark:hover:bg-indigo-600">Editar</a>
             @endcan
         </div>
     </div>
 
     <div class="mt-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div class="lg:col-span-2 space-y-6">
-            <div class="bg-white rounded-md shadow p-4">
-                <h2 class="font-medium text-gray-900 mb-3">Resumo</h2>
-                <div class="grid grid-cols-2 gap-4 text-sm text-gray-700">
-                    <div><span class="text-gray-500">Endereço:</span> {{ $project->address ?: '-' }}</div>
-                    <div><span class="text-gray-500">Início:</span> {{ optional($project->start_date)->format('d/m/Y') ?: '-' }}</div>
-                    <div><span class="text-gray-500">Previsão:</span> {{ optional($project->end_date_estimated)->format('d/m/Y') ?: '-' }}</div>
-                    <div><span class="text-gray-500">Equipe:</span> {{ $project->employees->count() }} membros</div>
+            <div class="bg-white dark:bg-gray-800 rounded-md shadow p-4 border border-gray-200 dark:border-gray-700">
+                <h2 class="font-medium text-gray-900 dark:text-gray-100 mb-3">Resumo</h2>
+                <div class="grid grid-cols-2 gap-4 text-sm text-gray-700 dark:text-gray-300">
+                    <div><span class="text-gray-500 dark:text-gray-400">Endereço:</span> {{ $project->address ?: '-' }}</div>
+                    <div><span class="text-gray-500 dark:text-gray-400">Início:</span> {{ optional($project->start_date)->format('d/m/Y') ?: '-' }}</div>
+                    <div><span class="text-gray-500 dark:text-gray-400">Previsão:</span> {{ optional($project->end_date_estimated)->format('d/m/Y') ?: '-' }}</div>
+                    <div><span class="text-gray-500 dark:text-gray-400">Equipe:</span> {{ $project->employees->count() }} membros</div>
                 </div>
             </div>
 
-            <div class="bg-white rounded-md shadow p-4">
+            <div class="bg-white dark:bg-gray-800 rounded-md shadow p-4 border border-gray-200 dark:border-gray-700">
                 <div class="flex items-center justify-between mb-3">
-                    <h2 class="font-medium text-gray-900">Timeline</h2>
+                    <h2 class="font-medium text-gray-900 dark:text-gray-100">Timeline</h2>
                     @can('post project-updates')
                     <form action="{{ route('projects.updates.store', $project) }}" method="POST" class="flex items-end gap-2">
                         @csrf
                         <div>
-                            <label class="block text-xs text-gray-600">Tipo</label>
-                            <select name="type" class="border-gray-300 rounded-md text-sm">
+                            <label class="block text-xs text-gray-600 dark:text-gray-400">Tipo</label>
+                            <select name="type" class="border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 rounded-md text-sm">
                                 <option value="note">Nota</option>
                                 <option value="issue">Problema</option>
                                 <option value="material_missing">Material faltante</option>
@@ -51,42 +51,42 @@
                             </select>
                         </div>
                         <div>
-                            <label class="block text-xs text-gray-600">Mensagem</label>
-                            <input name="message" class="border-gray-300 rounded-md text-sm w-64" placeholder="Descreva a atualização" required>
+                            <label class="block text-xs text-gray-600 dark:text-gray-400">Mensagem</label>
+                            <input name="message" class="border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 rounded-md text-sm w-64" placeholder="Descreva a atualização" required>
                         </div>
                         <div>
-                            <label class="block text-xs text-gray-600">Δ Progresso</label>
-                            <input name="progress_delta" type="number" class="border-gray-300 rounded-md text-sm w-24" placeholder="ex: 5">
+                            <label class="block text-xs text-gray-600 dark:text-gray-400">Δ Progresso</label>
+                            <input name="progress_delta" type="number" class="border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 rounded-md text-sm w-24" placeholder="ex: 5">
                         </div>
-                        <button class="px-3 py-2 bg-indigo-600 text-white rounded-md text-sm">Postar</button>
+                        <button class="px-3 py-2 bg-indigo-600 dark:bg-indigo-700 text-white rounded-md text-sm hover:bg-indigo-700 dark:hover:bg-indigo-600">Postar</button>
                     </form>
                     @endcan
                 </div>
                 <ul class="space-y-4">
                     @forelse($project->updates()->latest()->take(20)->get() as $update)
-                    <li class="border-l-2 pl-3 {{ $update->type === 'issue' ? 'border-red-400' : 'border-gray-300' }}">
-                        <div class="text-sm text-gray-700">
+                    <li class="border-l-2 pl-3 {{ $update->type === 'issue' ? 'border-red-400 dark:border-red-500' : 'border-gray-300 dark:border-gray-600' }}">
+                        <div class="text-sm text-gray-700 dark:text-gray-300">
                             <span class="font-medium">{{ $update->user->name }}</span>
-                            <span class="text-gray-500">· {{ $update->created_at->format('d/m/Y H:i') }}</span>
-                            <span class="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs bg-gray-100">{{ $update->type }}</span>
+                            <span class="text-gray-500 dark:text-gray-400">· {{ $update->created_at->format('d/m/Y H:i') }}</span>
+                            <span class="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200">{{ $update->type }}</span>
                         </div>
-                        <div class="text-sm text-gray-800">{{ $update->message }}</div>
+                        <div class="text-sm text-gray-800 dark:text-gray-200">{{ $update->message }}</div>
                     </li>
                     @empty
-                    <li class="text-sm text-gray-500">Nenhuma atualização ainda.</li>
+                    <li class="text-sm text-gray-500 dark:text-gray-400">Nenhuma atualização ainda.</li>
                     @endforelse
                 </ul>
             </div>
 
-            <div class="bg-white rounded-md shadow p-4">
-                <h2 class="font-medium text-gray-900 mb-4">Tarefas</h2>
+            <div class="bg-white dark:bg-gray-800 rounded-md shadow p-4 border border-gray-200 dark:border-gray-700">
+                <h2 class="font-medium text-gray-900 dark:text-gray-100 mb-4">Tarefas</h2>
 
                 <form action="{{ route('projects.tasks.store', $project) }}" method="POST" class="mb-4">
                     @csrf
                     <div class="flex gap-2">
-                        <input name="title" class="border-gray-300 rounded-md text-sm w-full" placeholder="Adicionar nova tarefa e pressionar Adicionar" required>
-                        <input type="date" name="due_date" class="border-gray-300 rounded-md text-sm">
-                        <button class="px-3 py-2 bg-indigo-600 text-white rounded-md text-sm">Adicionar</button>
+                        <input name="title" class="border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 rounded-md text-sm w-full" placeholder="Adicionar nova tarefa e pressionar Adicionar" required>
+                        <input type="date" name="due_date" class="border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 rounded-md text-sm">
+                        <button class="px-3 py-2 bg-indigo-600 dark:bg-indigo-700 text-white rounded-md text-sm hover:bg-indigo-700 dark:hover:bg-indigo-600">Adicionar</button>
                     </div>
                 </form>
 
@@ -98,7 +98,7 @@
                         ->get();
                 @endphp
 
-                <ul class="divide-y">
+                <ul class="divide-y divide-gray-200 dark:divide-gray-700">
                     @forelse($tasks as $task)
                         <li class="py-3 text-sm flex items-center justify-between" x-data="{ open:false }">
                             <div class="flex items-start gap-3">
@@ -106,20 +106,20 @@
                                     @csrf
                                     @method('PATCH')
                                     <input type="hidden" name="status" value="{{ $task->status === 'done' ? 'todo' : 'done' }}">
-                                    <input type="checkbox" {{ $task->status === 'done' ? 'checked' : '' }} onchange="this.form.submit()" class="h-4 w-4 text-indigo-600 rounded border-gray-300">
+                                    <input type="checkbox" {{ $task->status === 'done' ? 'checked' : '' }} onchange="this.form.submit()" class="h-4 w-4 text-indigo-600 rounded border-gray-300 dark:border-gray-600 dark:bg-gray-700">
                                 </form>
                                 <div>
-                                    <div class="font-medium {{ $task->status === 'done' ? 'line-through text-gray-400' : 'text-gray-900' }}">{{ $task->title }}</div>
-                                    <div class="text-xs text-gray-500 flex items-center gap-2">
+                                    <div class="font-medium {{ $task->status === 'done' ? 'line-through text-gray-400 dark:text-gray-500' : 'text-gray-900 dark:text-gray-100' }}">{{ $task->title }}</div>
+                                    <div class="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-2">
                                         <span>{{ $task->status === 'in_progress' ? 'Em progresso' : ($task->status === 'done' ? 'Concluída' : 'A fazer') }}</span>
                                         @if($task->due_date)
                                             @php
                                                 $days = now()->startOfDay()->diffInDays($task->due_date, false);
                                                 $badgeClass = $days < 0
-                                                    ? 'bg-red-100 text-red-700'
+                                                    ? 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300'
                                                     : ($days <= 2
-                                                        ? 'bg-yellow-100 text-yellow-700'
-                                                        : 'bg-green-100 text-green-700');
+                                                        ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300'
+                                                        : 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300');
                                             @endphp
                                             <span class="inline-flex items-center px-2 py-0.5 rounded {{ $badgeClass }}">Vence: {{ $task->due_date->format('d/m/Y') }}</span>
                                         @endif
@@ -127,55 +127,55 @@
                                 </div>
                             </div>
                             <div class="flex items-center gap-3">
-                                <button type="button" class="text-indigo-600 text-xs" @click="open=true">Detalhes</button>
+                                <button type="button" class="text-indigo-600 dark:text-indigo-400 text-xs" @click="open=true">Detalhes</button>
                                 <form action="{{ route('projects.tasks.delete', [$project, $task]) }}" method="POST" onsubmit="return confirm('Remover esta tarefa?')">
                                     @csrf
                                     @method('DELETE')
-                                    <button class="text-red-600 text-xs">Remover</button>
+                                    <button class="text-red-600 dark:text-red-400 text-xs">Remover</button>
                                 </form>
                             </div>
 
                             <!-- Modal de edição -->
                             <div x-show="open" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50" x-cloak>
-                                <div class="bg-white rounded-md shadow p-4 w-full max-w-lg">
+                                <div class="bg-white dark:bg-gray-800 rounded-md shadow p-4 w-full max-w-lg border border-gray-200 dark:border-gray-700">
                                     <div class="flex items-center justify-between mb-3">
-                                        <h3 class="font-medium text-gray-900">Editar Tarefa</h3>
-                                        <button class="text-gray-500" @click="open=false">✕</button>
+                                        <h3 class="font-medium text-gray-900 dark:text-gray-100">Editar Tarefa</h3>
+                                        <button class="text-gray-500 dark:text-gray-400" @click="open=false">✕</button>
                                     </div>
                                     <form action="{{ route('projects.tasks.update', [$project, $task]) }}" method="POST" class="space-y-3">
                                         @csrf
                                         @method('PATCH')
                                         <div>
-                                            <label class="block text-xs text-gray-600 mb-1">Título</label>
-                                            <input name="title" class="border-gray-300 rounded-md text-sm w-full" value="{{ $task->title }}" required>
+                                            <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">Título</label>
+                                            <input name="title" class="border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 rounded-md text-sm w-full" value="{{ $task->title }}" required>
                                         </div>
                                         <div>
-                                            <label class="block text-xs text-gray-600 mb-1">Descrição</label>
-                                            <textarea name="description" class="border-gray-300 rounded-md text-sm w-full" rows="4">{{ $task->description }}</textarea>
+                                            <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">Descrição</label>
+                                            <textarea name="description" class="border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 rounded-md text-sm w-full" rows="4">{{ $task->description }}</textarea>
                                         </div>
                                         <div>
-                                            <label class="block text-xs text-gray-600 mb-1">Vencimento</label>
-                                            <input type="date" name="due_date" class="border-gray-300 rounded-md text-sm" value="{{ optional($task->due_date)->format('Y-m-d') }}">
+                                            <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">Vencimento</label>
+                                            <input type="date" name="due_date" class="border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 rounded-md text-sm" value="{{ optional($task->due_date)->format('Y-m-d') }}">
                                         </div>
                                         <div class="flex items-center justify-end gap-2 pt-2">
-                                            <button type="button" class="px-3 py-2 text-sm text-gray-600" @click="open=false">Cancelar</button>
-                                            <button class="px-3 py-2 bg-indigo-600 text-white rounded-md text-sm">Salvar</button>
+                                            <button type="button" class="px-3 py-2 text-sm text-gray-600 dark:text-gray-400" @click="open=false">Cancelar</button>
+                                            <button class="px-3 py-2 bg-indigo-600 dark:bg-indigo-700 text-white rounded-md text-sm hover:bg-indigo-700 dark:hover:bg-indigo-600">Salvar</button>
                                         </div>
                                     </form>
                                 </div>
                             </div>
                         </li>
                     @empty
-                        <li class="py-3 text-sm text-gray-500">Nenhuma tarefa adicionada ainda.</li>
+                        <li class="py-3 text-sm text-gray-500 dark:text-gray-400">Nenhuma tarefa adicionada ainda.</li>
                     @endforelse
                 </ul>
             </div>
 
-            <div class="bg-white rounded-md shadow p-4">
+            <div class="bg-white dark:bg-gray-800 rounded-md shadow p-4 border border-gray-200 dark:border-gray-700">
                 <div class="flex items-center justify-between mb-4">
-                    <h2 class="font-medium text-gray-900">Fotos do Projeto</h2>
+                    <h2 class="font-medium text-gray-900 dark:text-gray-100">Fotos do Projeto</h2>
                     @can('post project-updates')
-                    <button onclick="openPhotoUploadModal('{{ route('projects.photos.upload', $project) }}')" class="px-3 py-2 bg-indigo-600 text-white rounded-md text-sm hover:bg-indigo-700">
+                    <button onclick="openPhotoUploadModal('{{ route('projects.photos.upload', $project) }}')" class="px-3 py-2 bg-indigo-600 dark:bg-indigo-700 text-white rounded-md text-sm hover:bg-indigo-700 dark:hover:bg-indigo-600">
                         Adicionar Foto
                     </button>
                     @endcan
@@ -194,7 +194,7 @@
                                  data-photo-date="{{ $photo->created_at->format('d/m/Y H:i') }}"
                                  data-photo-user="{{ $photo->user->name ?? 'Desconhecido' }}"
                                  data-photo-index="{{ $loop->index }}">
-                                <div class="relative overflow-hidden rounded-lg aspect-square bg-gray-100">
+                                <div class="relative overflow-hidden rounded-lg aspect-square bg-gray-100 dark:bg-gray-700">
                                     <img src="{{ asset('storage/' . $photo->path) }}" 
                                          alt="{{ $photo->caption ?? 'Foto do projeto' }}" 
                                          class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
@@ -210,8 +210,8 @@
                         @endforeach
                     </div>
                 @else
-                    <div class="text-center py-12 text-sm text-gray-500">
-                        <svg class="mx-auto h-12 w-12 text-gray-400 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <div class="text-center py-12 text-sm text-gray-500 dark:text-gray-400">
+                        <svg class="mx-auto h-12 w-12 text-gray-400 dark:text-gray-500 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
                         </svg>
                         <p>Nenhuma foto enviada ainda.</p>
@@ -222,11 +222,11 @@
                 @endif
             </div>
 
-            <div class="bg-white rounded-md shadow p-4">
+            <div class="bg-white dark:bg-gray-800 rounded-md shadow p-4 border border-gray-200 dark:border-gray-700">
                 <div class="flex items-center justify-between mb-4">
-                    <h2 class="font-medium text-gray-900">Arquivos</h2>
+                    <h2 class="font-medium text-gray-900 dark:text-gray-100">Arquivos</h2>
                     @can('post project-updates')
-                    <button onclick="openFileUploadModal('{{ route('projects.files.upload', $project) }}')" class="px-3 py-2 bg-indigo-600 text-white rounded-md text-sm hover:bg-indigo-700">
+                    <button onclick="openFileUploadModal('{{ route('projects.files.upload', $project) }}')" class="px-3 py-2 bg-indigo-600 dark:bg-indigo-700 text-white rounded-md text-sm hover:bg-indigo-700 dark:hover:bg-indigo-600">
                         Adicionar Arquivo
                     </button>
                     @endcan
@@ -235,14 +235,14 @@
                 <!-- Lista de Arquivos -->
                 <div class="space-y-2">
                     @forelse($project->files as $file)
-                        <div class="flex items-center justify-between p-3 border border-gray-200 rounded-md hover:bg-gray-50">
+                        <div class="flex items-center justify-between p-3 border border-gray-200 dark:border-gray-700 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700/50">
                             <div class="flex items-center gap-3 flex-1 min-w-0">
                                 <span class="text-2xl flex-shrink-0">{{ $file->file_icon }}</span>
                                 <div class="flex-1 min-w-0">
-                                    <div class="text-sm font-medium text-gray-900 truncate" title="{{ $file->original_name }}">
+                                    <div class="text-sm font-medium text-gray-900 dark:text-gray-100 truncate" title="{{ $file->original_name }}">
                                         {{ $file->original_name }}
                                     </div>
-                                    <div class="text-xs text-gray-500 flex items-center gap-3 mt-1">
+                                    <div class="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-3 mt-1">
                                         <span>{{ $file->formatted_size }}</span>
                                         <span>•</span>
                                         <span>{{ $file->created_at->format('d/m/Y H:i') }}</span>
@@ -257,7 +257,7 @@
                             </div>
                             <div class="flex items-center gap-2 flex-shrink-0 ml-4">
                                 <a href="{{ route('projects.files.download', [$project, $file]) }}" 
-                                   class="px-3 py-1 text-xs font-medium text-indigo-600 hover:text-indigo-800 hover:bg-indigo-50 rounded">
+                                   class="px-3 py-1 text-xs font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 rounded">
                                     Download
                                 </a>
                                 @if($file->user_id === auth()->id() || auth()->user()->can('edit projects') || auth()->user()->hasAnyRole(['manager', 'admin']))
@@ -268,7 +268,7 @@
                                         @csrf
                                         @method('DELETE')
                                         <button type="submit" 
-                                                class="px-3 py-1 text-xs font-medium text-red-600 hover:text-red-800 hover:bg-red-50 rounded">
+                                                class="px-3 py-1 text-xs font-medium text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/30 rounded">
                                             Remover
                                         </button>
                                     </form>
@@ -276,7 +276,7 @@
                             </div>
                         </div>
                     @empty
-                        <div class="text-center py-8 text-sm text-gray-500">
+                        <div class="text-center py-8 text-sm text-gray-500 dark:text-gray-400">
                             <p>Nenhum arquivo enviado ainda.</p>
                             @can('post project-updates')
                             <p class="mt-2">Clique em "Adicionar Arquivo" para começar.</p>
@@ -290,22 +290,22 @@
         <div class="space-y-6">
             <!-- Budget Information -->
             @if($project->budgets->count() > 0)
-            <div class="bg-white rounded-md shadow p-4">
+            <div class="bg-white dark:bg-gray-800 rounded-md shadow p-4 border border-gray-200 dark:border-gray-700">
                 <div class="flex items-center justify-between mb-3">
-                    <h2 class="font-medium text-gray-900">Orçamentos</h2>
-                    <a href="{{ route('budgets.index', ['project_id' => $project->id]) }}" class="text-xs text-indigo-600 hover:text-indigo-800">
+                    <h2 class="font-medium text-gray-900 dark:text-gray-100">Orçamentos</h2>
+                    <a href="{{ route('budgets.index', ['project_id' => $project->id]) }}" class="text-xs text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300">
                         Ver todos
                     </a>
                 </div>
                 <div class="space-y-3">
                     @foreach($project->budgets->take(3) as $budget)
-                        <div class="border rounded-md p-3 hover:bg-gray-50 transition-colors">
+                        <div class="border border-gray-200 dark:border-gray-700 rounded-md p-3 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
                             <div class="flex items-start justify-between mb-2">
                                 <div class="flex-1">
-                                    <div class="font-medium text-sm text-gray-900">
+                                    <div class="font-medium text-sm text-gray-900 dark:text-gray-100">
                                         Orçamento #{{ $budget->id }} - v{{ $budget->version }}
                                     </div>
-                                    <div class="text-xs text-gray-500 mt-1">
+                                    <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">
                                         Criado em {{ $budget->created_at->format('d/m/Y') }}
                                     </div>
                                 </div>
@@ -313,31 +313,31 @@
                                     {{ $budget->status_label }}
                                 </span>
                             </div>
-                            <div class="text-sm text-gray-700 mb-2">
+                            <div class="text-sm text-gray-700 dark:text-gray-300 mb-2">
                                 <span class="font-medium">Total:</span> R$ {{ number_format($budget->total, 2, ',', '.') }}
                             </div>
                             @if($budget->approved_at)
-                                <div class="text-xs text-gray-600 mb-1">
+                                <div class="text-xs text-gray-600 dark:text-gray-400 mb-1">
                                     <span class="font-medium">Aprovado em:</span> {{ $budget->approved_at->format('d/m/Y H:i') }}
                                 </div>
                                 @if($budget->approver)
-                                    <div class="text-xs text-gray-600">
+                                    <div class="text-xs text-gray-600 dark:text-gray-400">
                                         <span class="font-medium">Por:</span> {{ $budget->approver->name }}
                                     </div>
                                 @endif
                             @endif
                             @if($project->os_number && $budget->status === 'approved')
-                                <div class="mt-2 pt-2 border-t">
-                                    <div class="text-xs font-medium text-indigo-600">
+                                <div class="mt-2 pt-2 border-t border-gray-200 dark:border-gray-700">
+                                    <div class="text-xs font-medium text-indigo-600 dark:text-indigo-400">
                                         OS: {{ $project->os_number }}
                                     </div>
                                 </div>
                             @endif
                             <div class="mt-2 flex space-x-2">
-                                <a href="{{ route('budgets.edit', $budget) }}" class="text-xs text-indigo-600 hover:text-indigo-800">
+                                <a href="{{ route('budgets.edit', $budget) }}" class="text-xs text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300">
                                     Editar
                                 </a>
-                                <a href="{{ route('budgets.pdf', $budget) }}" class="text-xs text-gray-600 hover:text-gray-800">
+                                <a href="{{ route('budgets.pdf', $budget) }}" class="text-xs text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-300">
                                     PDF
                                 </a>
                             </div>
@@ -347,16 +347,16 @@
             </div>
             @endif
 
-            <div class="bg-white rounded-md shadow p-4">
-                <h2 class="font-medium text-gray-900 mb-3">Equipe</h2>
-                <ul class="divide-y">
+            <div class="bg-white dark:bg-gray-800 rounded-md shadow p-4 border border-gray-200 dark:border-gray-700">
+                <h2 class="font-medium text-gray-900 dark:text-gray-100 mb-3">Equipe</h2>
+                <ul class="divide-y divide-gray-200 dark:divide-gray-700">
                     @forelse($project->employees as $member)
                         <li class="py-2 text-sm">
-                            <div class="font-medium">{{ $member->user->name }}</div>
-                            <div class="text-gray-500">{{ $member->position ?: '-' }}</div>
+                            <div class="font-medium text-gray-900 dark:text-gray-100">{{ $member->user->name }}</div>
+                            <div class="text-gray-500 dark:text-gray-400">{{ $member->position ?: '-' }}</div>
                         </li>
                     @empty
-                        <li class="py-2 text-sm text-gray-500">Nenhum membro da equipe atribuído.</li>
+                        <li class="py-2 text-sm text-gray-500 dark:text-gray-400">Nenhum membro da equipe atribuído.</li>
                     @endforelse
                 </ul>
             </div>
@@ -410,30 +410,30 @@ function openFileUploadModal(uploadUrl) {
             <input type="hidden" name="_token" value="${csrfToken}">
             <div class="space-y-4">
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Selecionar Arquivos</label>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Selecionar Arquivos</label>
                     <input type="file" 
                            name="files[]" 
                            multiple 
                            accept=".jpg,.jpeg,.png,.gif,.webp,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.csv,.zip,.rar"
-                           class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 border border-gray-300 rounded-md p-2"
+                           class="block w-full text-sm text-gray-500 dark:text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 dark:file:bg-indigo-900/30 file:text-indigo-700 dark:file:text-indigo-300 hover:file:bg-indigo-100 dark:hover:file:bg-indigo-900/50 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 rounded-md p-2"
                            required>
-                    <p class="mt-1 text-xs text-gray-500">Tipos permitidos: Imagens, PDF, Documentos, Planilhas, Arquivos de texto, ZIP, RAR (Máx: 10MB por arquivo)</p>
+                    <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Tipos permitidos: Imagens, PDF, Documentos, Planilhas, Arquivos de texto, ZIP, RAR (Máx: 10MB por arquivo)</p>
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Descrição (opcional)</label>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Descrição (opcional)</label>
                     <textarea name="description" 
                               rows="3" 
-                              class="block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm"
+                              class="block w-full border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 rounded-md shadow-sm focus:border-indigo-500 dark:focus:border-indigo-400 focus:ring-indigo-500 dark:focus:ring-indigo-400 text-sm"
                               placeholder="Descrição dos arquivos..."></textarea>
                 </div>
                 <div class="flex items-center justify-end gap-3 pt-4">
                     <button type="button" 
                             onclick="closeFileUploadModal()"
-                            class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50">
+                            class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700">
                         Cancelar
                     </button>
                     <button type="submit" 
-                            class="px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-md hover:bg-indigo-700">
+                            class="px-4 py-2 text-sm font-medium text-white bg-indigo-600 dark:bg-indigo-700 rounded-md hover:bg-indigo-700 dark:hover:bg-indigo-600">
                         Enviar Arquivos
                     </button>
                 </div>
@@ -455,29 +455,29 @@ function openPhotoUploadModal(uploadUrl) {
             <input type="hidden" name="_token" value="${csrfToken}">
             <div class="space-y-4">
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Selecionar Foto</label>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Selecionar Foto</label>
                     <input type="file" 
                            name="photo" 
                            accept="image/*"
-                           class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 border border-gray-300 rounded-md p-2"
+                           class="block w-full text-sm text-gray-500 dark:text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 dark:file:bg-indigo-900/30 file:text-indigo-700 dark:file:text-indigo-300 hover:file:bg-indigo-100 dark:hover:file:bg-indigo-900/50 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 rounded-md p-2"
                            required>
-                    <p class="mt-1 text-xs text-gray-500">Formatos: JPG, PNG, GIF, WebP (Máx: 5MB)</p>
+                    <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Formatos: JPG, PNG, GIF, WebP (Máx: 5MB)</p>
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Legenda (opcional)</label>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Legenda (opcional)</label>
                     <textarea name="caption" 
                               rows="3" 
-                              class="block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm"
+                              class="block w-full border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 rounded-md shadow-sm focus:border-indigo-500 dark:focus:border-indigo-400 focus:ring-indigo-500 dark:focus:ring-indigo-400 text-sm"
                               placeholder="Descreva a foto..."></textarea>
                 </div>
                 <div class="flex items-center justify-end gap-3 pt-4">
                     <button type="button" 
                             onclick="closeFileUploadModal()"
-                            class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50">
+                            class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700">
                         Cancelar
                     </button>
                     <button type="submit" 
-                            class="px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-md hover:bg-indigo-700">
+                            class="px-4 py-2 text-sm font-medium text-white bg-indigo-600 dark:bg-indigo-700 rounded-md hover:bg-indigo-700 dark:hover:bg-indigo-600">
                         Enviar Foto
                     </button>
                 </div>

@@ -3,7 +3,7 @@
     <div class="mb-6">
         <div class="flex flex-wrap items-center justify-between gap-4">
             <div class="flex items-center space-x-4">
-                <select wire:model.live="period" class="border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm">
+                <select wire:model.live="period" class="border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-400 focus:ring-indigo-500 dark:focus:ring-indigo-400 rounded-md shadow-sm">
                     <option value="today">Hoje</option>
                     <option value="week">Esta Semana</option>
                     <option value="month">Este Mês</option>
@@ -11,9 +11,9 @@
                     <option value="year">Este Ano</option>
                 </select>
                 <div class="flex items-center space-x-2">
-                    <input type="date" wire:model.live="startDate" class="border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm">
-                    <span class="text-gray-500">até</span>
-                    <input type="date" wire:model.live="endDate" class="border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm">
+                    <input type="date" wire:model.live="startDate" class="border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-400 focus:ring-indigo-500 dark:focus:ring-indigo-400 rounded-md shadow-sm">
+                    <span class="text-gray-500 dark:text-gray-400">até</span>
+                    <input type="date" wire:model.live="endDate" class="border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-400 focus:ring-indigo-500 dark:focus:ring-indigo-400 rounded-md shadow-sm">
                 </div>
             </div>
         </div>
@@ -93,16 +93,16 @@
     <!-- Gráficos -->
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
         <!-- Gráfico de Receitas vs Despesas -->
-        <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg p-6">
-            <h2 class="text-xl font-semibold text-gray-900 mb-4">Receitas vs Despesas</h2>
+        <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-xl sm:rounded-lg p-6 border border-gray-200 dark:border-gray-700">
+            <h2 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">Receitas vs Despesas</h2>
             <div class="chart-container" style="position: relative; height:300px;">
                 <canvas id="incomeExpenseChart"></canvas>
             </div>
         </div>
 
         <!-- Gráfico de Contas a Pagar por Status -->
-        <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg p-6">
-            <h2 class="text-xl font-semibold text-gray-900 mb-4">Contas a Pagar por Status</h2>
+        <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-xl sm:rounded-lg p-6 border border-gray-200 dark:border-gray-700">
+            <h2 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">Contas a Pagar por Status</h2>
             <div class="chart-container" style="position: relative; height:300px;">
                 <canvas id="payablesStatusChart"></canvas>
             </div>
@@ -111,16 +111,16 @@
 
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
         <!-- Gráfico de Contas a Receber por Status -->
-        <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg p-6">
-            <h2 class="text-xl font-semibold text-gray-900 mb-4">Contas a Receber por Status</h2>
+        <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-xl sm:rounded-lg p-6 border border-gray-200 dark:border-gray-700">
+            <h2 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">Contas a Receber por Status</h2>
             <div class="chart-container" style="position: relative; height:300px;">
                 <canvas id="receivablesStatusChart"></canvas>
             </div>
         </div>
 
         <!-- Previsão de Faturamento -->
-        <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg p-6">
-            <h2 class="text-xl font-semibold text-gray-900 mb-4">Previsão de Faturamento</h2>
+        <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-xl sm:rounded-lg p-6 border border-gray-200 dark:border-gray-700">
+            <h2 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">Previsão de Faturamento</h2>
             <div class="chart-container" style="position: relative; height:300px;">
                 <canvas id="forecastChart"></canvas>
             </div>
@@ -134,6 +134,23 @@
         let payablesStatusChart = null;
         let receivablesStatusChart = null;
         let forecastChart = null;
+
+        // Função para detectar dark mode
+        function isDarkMode() {
+            return document.documentElement.classList.contains('dark');
+        }
+
+        // Função para obter cores baseado no tema
+        function getChartColors() {
+            const dark = isDarkMode();
+            return {
+                text: dark ? '#E5E7EB' : '#374151',
+                textSecondary: dark ? '#9CA3AF' : '#6B7280',
+                grid: dark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)',
+                border: dark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)',
+                background: dark ? 'rgba(31, 41, 55, 0.95)' : 'rgba(255, 255, 255, 0.95)',
+            };
+        }
 
         document.addEventListener('DOMContentLoaded', function() {
             if (typeof Chart !== 'undefined') {
@@ -153,8 +170,23 @@
             setTimeout(initializeFinancialCharts, 200);
         });
 
+        // Observar mudanças no tema
+        const observer = new MutationObserver(function(mutations) {
+            mutations.forEach(function(mutation) {
+                if (mutation.attributeName === 'class') {
+                    setTimeout(initializeFinancialCharts, 100);
+                }
+            });
+        });
+
+        observer.observe(document.documentElement, {
+            attributes: true,
+            attributeFilter: ['class']
+        });
+
         function initializeFinancialCharts() {
             destroyFinancialCharts();
+            const colors = getChartColors();
 
             const monthsData = @json($financialData['months_data'] ?? []);
             const payablesByStatus = @json($financialData['payables_by_status'] ?? []);
@@ -174,14 +206,16 @@
                             label: 'Receitas',
                             data: monthsData.map(d => d.income),
                             borderColor: 'rgb(34, 197, 94)',
-                            backgroundColor: 'rgba(34, 197, 94, 0.1)',
-                            tension: 0.4
+                            backgroundColor: isDarkMode() ? 'rgba(34, 197, 94, 0.2)' : 'rgba(34, 197, 94, 0.1)',
+                            tension: 0.4,
+                            fill: true
                         }, {
                             label: 'Despesas',
                             data: monthsData.map(d => d.expense),
                             borderColor: 'rgb(239, 68, 68)',
-                            backgroundColor: 'rgba(239, 68, 68, 0.1)',
-                            tension: 0.4
+                            backgroundColor: isDarkMode() ? 'rgba(239, 68, 68, 0.2)' : 'rgba(239, 68, 68, 0.1)',
+                            tension: 0.4,
+                            fill: true
                         }]
                     },
                     options: {
@@ -190,8 +224,16 @@
                         plugins: {
                             legend: {
                                 position: 'top',
+                                labels: {
+                                    color: colors.text
+                                }
                             },
                             tooltip: {
+                                backgroundColor: colors.background,
+                                titleColor: colors.text,
+                                bodyColor: colors.text,
+                                borderColor: colors.border,
+                                borderWidth: 1,
                                 callbacks: {
                                     label: function(context) {
                                         return context.dataset.label + ': R$ ' + context.parsed.y.toFixed(2).replace('.', ',');
@@ -203,9 +245,21 @@
                             y: {
                                 beginAtZero: true,
                                 ticks: {
+                                    color: colors.textSecondary,
                                     callback: function(value) {
                                         return 'R$ ' + value.toFixed(2).replace('.', ',');
                                     }
+                                },
+                                grid: {
+                                    color: colors.grid
+                                }
+                            },
+                            x: {
+                                ticks: {
+                                    color: colors.textSecondary
+                                },
+                                grid: {
+                                    color: colors.grid
                                 }
                             }
                         }
@@ -230,7 +284,9 @@
                                 'rgb(250, 204, 21)',
                                 'rgb(34, 197, 94)',
                                 'rgb(239, 68, 68)'
-                            ]
+                            ],
+                            borderColor: isDarkMode() ? 'rgba(31, 41, 55, 0.8)' : 'rgba(255, 255, 255, 0.8)',
+                            borderWidth: 2
                         }]
                     },
                     options: {
@@ -239,8 +295,16 @@
                         plugins: {
                             legend: {
                                 position: 'bottom',
+                                labels: {
+                                    color: colors.text
+                                }
                             },
                             tooltip: {
+                                backgroundColor: colors.background,
+                                titleColor: colors.text,
+                                bodyColor: colors.text,
+                                borderColor: colors.border,
+                                borderWidth: 1,
                                 callbacks: {
                                     label: function(context) {
                                         return context.label + ': R$ ' + context.parsed.toFixed(2).replace('.', ',');
@@ -269,7 +333,9 @@
                                 'rgb(250, 204, 21)',
                                 'rgb(34, 197, 94)',
                                 'rgb(239, 68, 68)'
-                            ]
+                            ],
+                            borderColor: isDarkMode() ? 'rgba(31, 41, 55, 0.8)' : 'rgba(255, 255, 255, 0.8)',
+                            borderWidth: 2
                         }]
                     },
                     options: {
@@ -278,8 +344,16 @@
                         plugins: {
                             legend: {
                                 position: 'bottom',
+                                labels: {
+                                    color: colors.text
+                                }
                             },
                             tooltip: {
+                                backgroundColor: colors.background,
+                                titleColor: colors.text,
+                                bodyColor: colors.text,
+                                borderColor: colors.border,
+                                borderWidth: 1,
                                 callbacks: {
                                     label: function(context) {
                                         return context.label + ': R$ ' + context.parsed.toFixed(2).replace('.', ',');
@@ -301,7 +375,9 @@
                         datasets: [{
                             label: 'Previsão de Faturamento',
                             data: [forecast30, forecast60, forecast90],
-                            backgroundColor: 'rgb(147, 51, 234)'
+                            backgroundColor: isDarkMode() ? 'rgba(147, 51, 234, 0.8)' : 'rgb(147, 51, 234)',
+                            borderColor: 'rgb(147, 51, 234)',
+                            borderWidth: 1
                         }]
                     },
                     options: {
@@ -312,6 +388,11 @@
                                 display: false
                             },
                             tooltip: {
+                                backgroundColor: colors.background,
+                                titleColor: colors.text,
+                                bodyColor: colors.text,
+                                borderColor: colors.border,
+                                borderWidth: 1,
                                 callbacks: {
                                     label: function(context) {
                                         return 'R$ ' + context.parsed.y.toFixed(2).replace('.', ',');
@@ -323,9 +404,21 @@
                             y: {
                                 beginAtZero: true,
                                 ticks: {
+                                    color: colors.textSecondary,
                                     callback: function(value) {
                                         return 'R$ ' + value.toFixed(2).replace('.', ',');
                                     }
+                                },
+                                grid: {
+                                    color: colors.grid
+                                }
+                            },
+                            x: {
+                                ticks: {
+                                    color: colors.textSecondary
+                                },
+                                grid: {
+                                    color: colors.grid
                                 }
                             }
                         }

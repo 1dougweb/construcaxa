@@ -47,8 +47,8 @@
             @dragover.prevent="handleDragOver"
             @dragleave.prevent="handleDragLeave"
             @drop.prevent="handleDrop"
-            :class="{ 'border-indigo-500 bg-indigo-50': isDragging, 'border-gray-300 bg-gray-50': !isDragging }"
-            class="w-full h-full border-2 border-dashed rounded-lg overflow-hidden flex items-center justify-center cursor-pointer transition-all duration-200 hover:border-indigo-400 hover:bg-indigo-50/50 relative"
+            :class="{ 'border-indigo-500 dark:border-indigo-400 bg-indigo-50 dark:bg-indigo-900/30': isDragging, 'border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700': !isDragging }"
+            class="w-full h-full border-2 border-dashed rounded-lg overflow-hidden flex items-center justify-center cursor-pointer transition-all duration-200 hover:border-indigo-400 dark:hover:border-indigo-500 hover:bg-indigo-50/50 dark:hover:bg-indigo-900/30 relative"
         >
             @if($attributes->whereStartsWith('wire:model')->first())
                 @php
@@ -103,17 +103,17 @@
                 @else
                     <!-- Estado vazio com loading centralizado -->
                     <div class="absolute inset-0 w-full h-full">
-                        <div wire:loading.remove wire:target="{{ $modelName }}" class="absolute inset-0 flex flex-col items-center justify-center text-center text-gray-400 p-4">
+                        <div wire:loading.remove wire:target="{{ $modelName }}" class="absolute inset-0 flex flex-col items-center justify-center text-center text-gray-400 dark:text-gray-500 p-4">
                             <svg class="h-12 w-12 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
                             </svg>
-                            <p class="text-sm font-medium text-gray-600 mb-1">Arraste e solte</p>
-                            <p class="text-xs text-gray-500">ou clique para selecionar</p>
-                            <p class="text-xs text-gray-400 mt-2">JPEG, PNG, JPG, GIF, WEBP, AVIF até 2MB</p>
+                            <p class="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Arraste e solte</p>
+                            <p class="text-xs text-gray-500 dark:text-gray-400">ou clique para selecionar</p>
+                            <p class="text-xs text-gray-400 dark:text-gray-500 mt-2">JPEG, PNG, JPG, GIF, WEBP, AVIF até 2MB</p>
                         </div>
                         <!-- Loading centralizado quando não há foto -->
                         <div wire:loading wire:target="{{ $modelName }}" class="absolute inset-0 flex items-center justify-center">
-                            <svg class="animate-spin h-10 w-10 text-indigo-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <svg class="animate-spin h-10 w-10 text-indigo-600 dark:text-indigo-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                             </svg>

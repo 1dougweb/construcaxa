@@ -94,33 +94,110 @@
         <!-- Notification container for dynamic notifications -->
         <div id="notifications-container" class="fixed top-0 right-0 m-6 space-y-3" style="z-index: 9999; pointer-events: none;"></div>
 
-        <div class="min-h-screen bg-gray-100" x-data="{ sidebarOpen: false }">
+        <div class="min-h-screen bg-gray-100 dark:bg-gray-900 transition-colors duration-200" 
+             x-data="{ 
+                sidebarOpen: false, 
+                userMenuOpen: false,
+                darkMode: (() => {
+                    const stored = localStorage.getItem('darkMode');
+                    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                    const isDark = stored === 'true' || (!stored && prefersDark);
+                    if (isDark) {
+                        document.documentElement.classList.add('dark');
+                    } else {
+                        document.documentElement.classList.remove('dark');
+                    }
+                    return isDark;
+                })(),
+                toggleDarkMode() {
+                    this.darkMode = !this.darkMode;
+                    this.updateDarkMode();
+                },
+                updateDarkMode() {
+                    localStorage.setItem('darkMode', this.darkMode);
+                    document.documentElement.classList.toggle('dark', this.darkMode);
+                }
+             }">
             <!-- Mobile top bar -->
-            <div class="h-16 bg-white border-b border-gray-200 px-4 flex items-center justify-between lg:hidden">
-                <button @click="sidebarOpen = true" class="p-2 rounded-md text-gray-600 hover:bg-gray-100" aria-label="Open menu">
-                    <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+            <div class="fixed top-0 left-0 right-0 h-16 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-4 flex items-center justify-between z-50 lg:hidden">
+                <!-- Botão hamburger/X -->
+                <button @click="sidebarOpen = !sidebarOpen" class="p-2 rounded-md text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 relative w-10 h-10 flex items-center justify-center" aria-label="Toggle menu" type="button">
+                    <!-- Ícone Hamburger -->
+                    <svg x-show="!sidebarOpen" 
+                         x-transition:enter="transition ease-out duration-200"
+                         x-transition:enter-start="opacity-0 rotate-90"
+                         x-transition:enter-end="opacity-100 rotate-0"
+                         x-transition:leave="transition ease-in duration-150"
+                         x-transition:leave-start="opacity-100 rotate-0"
+                         x-transition:leave-end="opacity-0 -rotate-90"
+                         class="h-6 w-6 absolute" 
+                         fill="none" 
+                         viewBox="0 0 24 24" 
+                         stroke="currentColor" 
+                         stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/>
+                    </svg>
+                    <!-- Ícone X -->
+                    <svg x-show="sidebarOpen"
+                         x-transition:enter="transition ease-out duration-200"
+                         x-transition:enter-start="opacity-0 rotate-90"
+                         x-transition:enter-end="opacity-100 rotate-0"
+                         x-transition:leave="transition ease-in duration-150"
+                         x-transition:leave-start="opacity-100 rotate-0"
+                         x-transition:leave-end="opacity-0 -rotate-90"
+                         class="h-6 w-6 absolute" 
+                         fill="none" 
+                         viewBox="0 0 24 24" 
+                         stroke="currentColor" 
+                         stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
                 </button>
-                <a href="{{ route('dashboard') }}" class="flex items-center gap-2">
-                    <img src="{{ asset('assets/images/logo.svg') }}" alt="Logo" class="h-8 w-auto" />
-                </a>
-                <div class="w-6"></div>
+                <!-- Logo -->
+                <div class="flex items-center gap-2 flex-1 justify-center" x-cloak>
+                    <!-- Logo modo claro -->
+                    <div x-show="!darkMode">
+                        <a href="{{ route('dashboard') }}" class="flex items-center">
+                            <img src="{{ asset('assets/images/logo.svg') }}" alt="Logo" class="h-8 w-auto" />
+                        </a>
+                    </div>
+                    <!-- Logo modo escuro -->
+                    <div x-show="darkMode">
+                        <a href="{{ route('dashboard') }}" class="flex items-center">
+                            <img src="{{ asset('assets/images/logo-light.svg') }}" alt="Logo" class="h-8 w-auto" />
+                        </a>
+                    </div>
+                </div>
+                <!-- Espaçador para balancear o layout -->
+                <div class="w-10"></div>
             </div>
 
             <!-- Sidebar -->
-            <aside class="fixed inset-y-0 left-0 w-64 bg-white border-r border-gray-200 z-40 transform transition-transform duration-200 ease-in-out -translate-x-full lg:translate-x-0 flex flex-col" :class="{ '-translate-x-full': !sidebarOpen, 'translate-x-0': sidebarOpen }" @keydown.window.escape="sidebarOpen = false">
-                <div class="h-16 px-6 flex items-center border-b border-gray-200 justify-center flex-shrink-0">
-                    <a href="{{ route('dashboard') }}" class="flex items-center gap-3">
-                        <img src="{{ asset('assets/images/logo.svg') }}" alt="Logo" class="h-12 w-auto m-4" />
-                    </a>
+            <aside class="fixed inset-y-0 left-0 w-64 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 z-40 transform transition-transform duration-200 ease-in-out -translate-x-full lg:translate-x-0 flex flex-col" :class="{ '-translate-x-full': !sidebarOpen, 'translate-x-0': sidebarOpen }" @keydown.window.escape="sidebarOpen = false">
+                <div class="h-16 px-6 flex items-center border-b border-gray-200 dark:border-gray-700 flex-shrink-0" x-cloak>
+                    <div class="flex-1 flex items-center justify-center lg:justify-start">
+                        <!-- Logo modo claro -->
+                        <div x-show="!darkMode">
+                            <a href="{{ route('dashboard') }}" class="flex items-center gap-2">
+                                <img src="{{ asset('assets/images/logo.svg') }}" alt="Logo" class="h-12 w-auto" />
+                            </a>
+                        </div>
+                        <!-- Logo modo escuro -->
+                        <div x-show="darkMode">
+                            <a href="{{ route('dashboard') }}" class="flex items-center gap-2">
+                                <img src="{{ asset('assets/images/logo-light.svg') }}" alt="Logo" class="h-12 w-auto" />
+                            </a>
+                        </div>
+                    </div>
                 </div>
                 <nav class="flex-1 overflow-y-auto sidebar-scroll p-4 space-y-1" x-data="{ 
                     estoqueOpen: {{ request()->routeIs('products.*') || request()->routeIs('equipment.*') || request()->routeIs('material-requests.*') || request()->routeIs('equipment-requests.*') || request()->routeIs('suppliers.*') ? 'true' : 'false' }},
-                    gestaoOpen: {{ request()->routeIs('employees.*') || request()->routeIs('attendance.manage') || request()->routeIs('budgets.*') || (request()->routeIs('projects.*') && !request()->routeIs('client.projects.*')) || request()->routeIs('services.*') || request()->routeIs('labor-types.*') || request()->routeIs('service-categories.*') || request()->routeIs('map.*') || request()->routeIs('clients.*') || request()->routeIs('contracts.*') ? 'true' : 'false' }},
+                    gestaoOpen: {{ request()->routeIs('employees.*') || request()->routeIs('attendance.manage') || request()->routeIs('budgets.*') || (request()->routeIs('projects.*') && !request()->routeIs('client.projects.*')) || request()->routeIs('services.*') || request()->routeIs('labor-types.*') || request()->routeIs('service-categories.*') || request()->routeIs('map.*') || request()->routeIs('clients.*') || request()->routeIs('contracts.*') || request()->routeIs('inspections.*') ? 'true' : 'false' }},
                     financeiroOpen: {{ request()->routeIs('financial.*') ? 'true' : 'false' }},
                     adminOpen: {{ request()->routeIs('admin.permissions.*') ? 'true' : 'false' }}
                 }">
                     <!-- Dashboard sempre visível -->
-                    <a href="{{ route('dashboard') }}" class="flex items-center px-3 py-2 rounded-md text-sm font-medium {{ request()->routeIs('dashboard') ? 'bg-indigo-50 text-indigo-700' : 'text-gray-700 hover:bg-gray-50' }}">
+                    <a href="{{ route('dashboard') }}" class="flex items-center px-3 py-2 rounded-md text-sm font-medium {{ request()->routeIs('dashboard') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700' }}">
                         <i class="bi bi-speedometer2 mr-3 text-base"></i>
                         {{ __('Dashboard') }}
                     </a>
@@ -128,7 +205,7 @@
                     <!-- Dropdown Estoque -->
                     @if(auth()->user()->can('view products') || auth()->user()->can('view service-orders') || auth()->user()->can('view suppliers') || auth()->user()->hasAnyRole(['admin', 'manager']))
                     <div>
-                        <button @click="estoqueOpen = !estoqueOpen" class="w-full flex items-center justify-between px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors">
+                        <button @click="estoqueOpen = !estoqueOpen" class="w-full flex items-center justify-between px-3 py-2 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
                             <div class="flex items-center">
                                 <i class="bi bi-boxes mr-3 text-base"></i>
                                 <span>{{ __('Estoque') }}</span>
@@ -142,33 +219,33 @@
                              x-transition:leave="transition ease-in duration-150"
                              x-transition:leave-start="opacity-100 transform translate-y-0"
                              x-transition:leave-end="opacity-0 transform -translate-y-2"
-                             class="ml-3 mt-0.5 mb-1 space-y-0.5 border-l-2 border-gray-200 pl-3">
+                             class="ml-3 mt-0.5 mb-1 space-y-0.5 border-l-2 border-gray-200 dark:border-gray-700 pl-3">
                             @can('view products')
-                            <a href="{{ route('products.index') }}" class="flex items-center px-3 py-2 rounded-md text-sm font-medium {{ request()->routeIs('products.*') ? 'bg-indigo-50 text-indigo-700 -ml-3 pl-5' : 'text-gray-600 hover:bg-gray-50' }}">
+                            <a href="{{ route('products.index') }}" class="flex items-center px-3 py-2 rounded-md text-sm font-medium {{ request()->routeIs('products.*') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 -ml-3 pl-5' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700' }}">
                                 <i class="bi bi-box-seam mr-3 text-base"></i>
                                 {{ __('Produtos') }}
                             </a>
                             @endcan
                             @can('view products')
-                            <a href="{{ route('equipment.index') }}" class="flex items-center px-3 py-2 rounded-md text-sm font-medium {{ request()->routeIs('equipment.*') ? 'bg-indigo-50 text-indigo-700 -ml-3 pl-5' : 'text-gray-600 hover:bg-gray-50' }}">
+                            <a href="{{ route('equipment.index') }}" class="flex items-center px-3 py-2 rounded-md text-sm font-medium {{ request()->routeIs('equipment.*') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 -ml-3 pl-5' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700' }}">
                                 <i class="bi bi-tools mr-3 text-base"></i>
                                 {{ __('Equipamentos') }}
                             </a>
                             @endcan
                             @can('view service-orders')
-                            <a href="{{ route('material-requests.index') }}" class="flex items-center px-3 py-2 rounded-md text-sm font-medium {{ request()->routeIs('material-requests.*') ? 'bg-indigo-50 text-indigo-700 -ml-3 pl-5' : 'text-gray-600 hover:bg-gray-50' }}">
+                            <a href="{{ route('material-requests.index') }}" class="flex items-center px-3 py-2 rounded-md text-sm font-medium {{ request()->routeIs('material-requests.*') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 -ml-3 pl-5' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700' }}">
                                 <i class="bi bi-clipboard-check mr-3 text-base"></i>
                                 {{ __('Requisições de Material') }}
                             </a>
                             @endcan
                             @can('view service-orders')
-                            <a href="{{ route('equipment-requests.index') }}" class="flex items-center px-3 py-2 rounded-md text-sm font-medium {{ request()->routeIs('equipment-requests.*') ? 'bg-indigo-50 text-indigo-700 -ml-3 pl-5' : 'text-gray-600 hover:bg-gray-50' }}">
+                            <a href="{{ route('equipment-requests.index') }}" class="flex items-center px-3 py-2 rounded-md text-sm font-medium {{ request()->routeIs('equipment-requests.*') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 -ml-3 pl-5' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700' }}">
                                 <i class="bi bi-wrench-adjustable mr-3 text-base"></i>
                                 {{ __('Requisições de Equipamento') }}
                             </a>
                             @endcan
                             @can('view suppliers')
-                            <a href="{{ route('suppliers.index') }}" class="flex items-center px-3 py-2 rounded-md text-sm font-medium {{ request()->routeIs('suppliers.*') ? 'bg-indigo-50 text-indigo-700 -ml-3 pl-5' : 'text-gray-600 hover:bg-gray-50' }}">
+                            <a href="{{ route('suppliers.index') }}" class="flex items-center px-3 py-2 rounded-md text-sm font-medium {{ request()->routeIs('suppliers.*') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 -ml-3 pl-5' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700' }}">
                                 <i class="bi bi-truck mr-3 text-base"></i>
                                 {{ __('Fornecedores') }}
                             </a>
@@ -178,9 +255,9 @@
                     @endif
 
                     <!-- Dropdown Gestão -->
-                    @if(auth()->user()->can('view employees') || auth()->user()->can('manage attendance') || auth()->user()->can('view budgets') || auth()->user()->can('view projects') || auth()->user()->can('manage services') || auth()->user()->can('view clients') || auth()->user()->hasAnyRole(['admin', 'manager']))
+                    @if(auth()->user()->can('view employees') || auth()->user()->can('manage attendance') || auth()->user()->can('view budgets') || auth()->user()->can('view projects') || auth()->user()->can('manage services') || auth()->user()->can('view clients') || auth()->user()->can('view inspections') || auth()->user()->hasAnyRole(['admin', 'manager']))
                     <div>
-                        <button @click="gestaoOpen = !gestaoOpen" class="w-full flex items-center justify-between px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors">
+                        <button @click="gestaoOpen = !gestaoOpen" class="w-full flex items-center justify-between px-3 py-2 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
                             <div class="flex items-center">
                                 <i class="bi bi-gear mr-3 text-base"></i>
                                 <span>{{ __('Gestão') }}</span>
@@ -194,7 +271,7 @@
                              x-transition:leave="transition ease-in duration-150"
                              x-transition:leave-start="opacity-100 transform translate-y-0"
                              x-transition:leave-end="opacity-0 transform -translate-y-2"
-                             class="ml-3 mt-0.5 mb-1 space-y-0.5 border-l-2 border-gray-200 pl-3">
+                             class="ml-3 mt-0.5 mb-1 space-y-0.5 border-l-2 border-gray-200 dark:border-gray-700 pl-3">
                             @php
                                 $user = auth()->user();
                                 // Mesma lógica das rotas: role_or_permission:manager|admin|view clients
@@ -204,62 +281,68 @@
                             @endphp
                             @if($showClients)
                             <a href="{{ route('clients.index') }}" 
-                               class="flex items-center px-3 py-2 rounded-md text-sm font-medium {{ request()->routeIs('clients.*') ? 'bg-indigo-50 text-indigo-700 -ml-3 pl-5' : 'text-gray-600 hover:bg-gray-50' }}">
+                               class="flex items-center px-3 py-2 rounded-md text-sm font-medium {{ request()->routeIs('clients.*') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 -ml-3 pl-5' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700' }}">
                                 <i class="bi bi-person-badge mr-3 text-base"></i>
                                 {{ __('Clientes') }}
                             </a>
                             @endif
                             @if($showContracts)
                             <a href="{{ route('contracts.index') }}" 
-                               class="flex items-center px-3 py-2 rounded-md text-sm font-medium {{ request()->routeIs('contracts.*') ? 'bg-indigo-50 text-indigo-700 -ml-3 pl-5' : 'text-gray-600 hover:bg-gray-50' }}">
+                               class="flex items-center px-3 py-2 rounded-md text-sm font-medium {{ request()->routeIs('contracts.*') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 -ml-3 pl-5' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700' }}">
                                 <i class="bi bi-file-earmark-text mr-3 text-base"></i>
                                 {{ __('Contratos') }}
                             </a>
                             @endif
                             @can('view employees')
-                            <a href="{{ route('employees.index') }}" class="flex items-center px-3 py-2 rounded-md text-sm font-medium {{ request()->routeIs('employees.*') ? 'bg-indigo-50 text-indigo-700 -ml-3 pl-5' : 'text-gray-600 hover:bg-gray-50' }}">
+                            <a href="{{ route('employees.index') }}" class="flex items-center px-3 py-2 rounded-md text-sm font-medium {{ request()->routeIs('employees.*') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 -ml-3 pl-5' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700' }}">
                                 <i class="bi bi-people mr-3 text-base"></i>
                                 {{ __('Funcionários') }}
                             </a>
                             @endcan
                             @can('manage attendance')
-                            <a href="{{ route('attendance.manage') }}" class="flex items-center px-3 py-2 rounded-md text-sm font-medium {{ request()->routeIs('attendance.manage') ? 'bg-indigo-50 text-indigo-700 -ml-3 pl-5' : 'text-gray-600 hover:bg-gray-50' }}">
+                            <a href="{{ route('attendance.manage') }}" class="flex items-center px-3 py-2 rounded-md text-sm font-medium {{ request()->routeIs('attendance.manage') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 -ml-3 pl-5' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700' }}">
                                 <i class="bi bi-calendar-check mr-3 text-base"></i>
                                 {{ __('Gestão de Pontos') }}
                             </a>
                             @endcan
                             @can('view budgets')
-                            <a href="{{ route('budgets.index') }}" class="flex items-center px-3 py-2 rounded-md text-sm font-medium {{ request()->routeIs('budgets.*') ? 'bg-indigo-50 text-indigo-700 -ml-3 pl-5' : 'text-gray-600 hover:bg-gray-50' }}">
+                            <a href="{{ route('budgets.index') }}" class="flex items-center px-3 py-2 rounded-md text-sm font-medium {{ request()->routeIs('budgets.*') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 -ml-3 pl-5' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700' }}">
                                 <i class="bi bi-receipt mr-3 text-base"></i>
                                 {{ __('Orçamentos') }}
                             </a>
                             @endcan
                             @can('view projects')
-                            <a href="{{ route('projects.index') }}" class="flex items-center px-3 py-2 rounded-md text-sm font-medium {{ request()->routeIs('projects.*') && !request()->routeIs('client.projects.*') ? 'bg-indigo-50 text-indigo-700 -ml-3 pl-5' : 'text-gray-600 hover:bg-gray-50' }}">
+                            <a href="{{ route('projects.index') }}" class="flex items-center px-3 py-2 rounded-md text-sm font-medium {{ request()->routeIs('projects.*') && !request()->routeIs('client.projects.*') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 -ml-3 pl-5' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700' }}">
                                 <i class="bi bi-building mr-3 text-base"></i>
                                 {{ __('Obras') }}
                             </a>
                             @endcan
                             @can('view projects')
-                            <a href="{{ route('map.index') }}" class="flex items-center px-3 py-2 rounded-md text-sm font-medium {{ request()->routeIs('map.*') ? 'bg-indigo-50 text-indigo-700 -ml-3 pl-5' : 'text-gray-600 hover:bg-gray-50' }}">
+                            <a href="{{ route('map.index') }}" class="flex items-center px-3 py-2 rounded-md text-sm font-medium {{ request()->routeIs('map.*') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 -ml-3 pl-5' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700' }}">
                                 <i class="bi bi-geo-alt mr-3 text-base"></i>
                                 {{ __('Mapa') }}
                             </a>
                             @endcan
+                            @can('view inspections')
+                            <a href="{{ route('inspections.index') }}" class="flex items-center px-3 py-2 rounded-md text-sm font-medium {{ request()->routeIs('inspections.*') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 -ml-3 pl-5' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700' }}">
+                                <i class="bi bi-clipboard-check mr-3 text-base"></i>
+                                {{ __('Vistorias') }}
+                            </a>
+                            @endcan
                             @can('manage services')
-                            <a href="{{ route('services.index') }}" class="flex items-center px-3 py-2 rounded-md text-sm font-medium {{ request()->routeIs('services.*') ? 'bg-indigo-50 text-indigo-700 -ml-3 pl-5' : 'text-gray-600 hover:bg-gray-50' }}">
+                            <a href="{{ route('services.index') }}" class="flex items-center px-3 py-2 rounded-md text-sm font-medium {{ request()->routeIs('services.*') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 -ml-3 pl-5' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700' }}">
                                 <i class="bi bi-tools mr-3 text-base"></i>
                                 {{ __('Serviços') }}
                             </a>
                             @endcan
                             @can('manage services')
-                            <a href="{{ route('labor-types.index') }}" class="flex items-center px-3 py-2 rounded-md text-sm font-medium {{ request()->routeIs('labor-types.*') ? 'bg-indigo-50 text-indigo-700 -ml-3 pl-5' : 'text-gray-600 hover:bg-gray-50' }}">
+                            <a href="{{ route('labor-types.index') }}" class="flex items-center px-3 py-2 rounded-md text-sm font-medium {{ request()->routeIs('labor-types.*') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 -ml-3 pl-5' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700' }}">
                                 <i class="bi bi-people mr-3 text-base"></i>
                                 {{ __('Tipos de Mão de Obra') }}
                             </a>
                             @endcan
                             @can('manage services')
-                            <a href="{{ route('service-categories.index') }}" class="flex items-center px-3 py-2 rounded-md text-sm font-medium {{ request()->routeIs('service-categories.*') ? 'bg-indigo-50 text-indigo-700 -ml-3 pl-5' : 'text-gray-600 hover:bg-gray-50' }}">
+                            <a href="{{ route('service-categories.index') }}" class="flex items-center px-3 py-2 rounded-md text-sm font-medium {{ request()->routeIs('service-categories.*') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 -ml-3 pl-5' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700' }}">
                                 <i class="bi bi-folder mr-3 text-base"></i>
                                 {{ __('Categorias de Serviços') }}
                             </a>
@@ -269,17 +352,17 @@
                     @endif
 
                     @can('view client-projects')
-                    <a href="{{ route('client.dashboard') }}" class="flex items-center px-3 py-2 rounded-md text-sm font-medium {{ request()->routeIs('client.dashboard') ? 'bg-indigo-50 text-indigo-700' : 'text-gray-700 hover:bg-gray-50' }}">
+                    <a href="{{ route('client.dashboard') }}" class="flex items-center px-3 py-2 rounded-md text-sm font-medium {{ request()->routeIs('client.dashboard') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700' }}">
                         <i class="bi bi-speedometer2 mr-3 text-base"></i>
                         {{ __('Dashboard') }}
                     </a>
-                    <a href="{{ route('client.projects.index') }}" class="flex items-center px-3 py-2 rounded-md text-sm font-medium {{ request()->routeIs('client.projects.*') && !request()->routeIs('client.dashboard') ? 'bg-indigo-50 text-indigo-700' : 'text-gray-700 hover:bg-gray-50' }}">
+                    <a href="{{ route('client.projects.index') }}" class="flex items-center px-3 py-2 rounded-md text-sm font-medium {{ request()->routeIs('client.projects.*') && !request()->routeIs('client.dashboard') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700' }}">
                         <i class="bi bi-house-door mr-3 text-base"></i>
                         {{ __('Minhas Obras') }}
                     </a>
                     @endcan
                     @can('view reports')
-                    <a href="{{ route('reports.index') }}" class="flex items-center px-3 py-2 rounded-md text-sm font-medium {{ request()->routeIs('reports.*') ? 'bg-indigo-50 text-indigo-700' : 'text-gray-700 hover:bg-gray-50' }}">
+                    <a href="{{ route('reports.index') }}" class="flex items-center px-3 py-2 rounded-md text-sm font-medium {{ request()->routeIs('reports.*') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700' }}">
                         <i class="bi bi-graph-up mr-3 text-base"></i>
                         {{ __('Relatórios') }}
                     </a>
@@ -288,7 +371,7 @@
                     <!-- Dropdown Financeiro -->
                     @can('manage finances')
                     <div>
-                        <button @click="financeiroOpen = !financeiroOpen" class="w-full flex items-center justify-between px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors">
+                        <button @click="financeiroOpen = !financeiroOpen" class="w-full flex items-center justify-between px-3 py-2 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
                             <div class="flex items-center">
                                 <i class="bi bi-cash-coin mr-3 text-base"></i>
                                 <span>{{ __('Financeiro') }}</span>
@@ -302,24 +385,24 @@
                              x-transition:leave="transition ease-in duration-150"
                              x-transition:leave-start="opacity-100 transform translate-y-0"
                              x-transition:leave-end="opacity-0 transform -translate-y-2"
-                             class="ml-3 mt-0.5 mb-1 space-y-0.5 border-l-2 border-gray-200 pl-3">
-                            <a href="{{ route('financial.dashboard') }}" class="flex items-center px-3 py-2 rounded-md text-sm font-medium {{ request()->routeIs('financial.dashboard') ? 'bg-indigo-50 text-indigo-700 border-l-2 border-indigo-500 -ml-3 pl-5' : 'text-gray-600 hover:bg-gray-50' }}">
+                             class="ml-3 mt-0.5 mb-1 space-y-0.5 border-l-2 border-gray-200 dark:border-gray-700 pl-3">
+                            <a href="{{ route('financial.dashboard') }}" class="flex items-center px-3 py-2 rounded-md text-sm font-medium {{ request()->routeIs('financial.dashboard') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 border-l-2 border-indigo-500 dark:border-indigo-400 -ml-3 pl-5' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700' }}">
                                 <i class="bi bi-speedometer2 mr-3 text-base"></i>
                                 {{ __('Dashboard Financeiro') }}
                             </a>
-                            <a href="{{ route('financial.accounts-payable.index') }}" class="flex items-center px-3 py-2 rounded-md text-sm font-medium {{ request()->routeIs('financial.accounts-payable.*') ? 'bg-indigo-50 text-indigo-700 border-l-2 border-indigo-500 -ml-3 pl-5' : 'text-gray-600 hover:bg-gray-50' }}">
+                            <a href="{{ route('financial.accounts-payable.index') }}" class="flex items-center px-3 py-2 rounded-md text-sm font-medium {{ request()->routeIs('financial.accounts-payable.*') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 border-l-2 border-indigo-500 dark:border-indigo-400 -ml-3 pl-5' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700' }}">
                                 <i class="bi bi-arrow-down-circle mr-3 text-base"></i>
                                 {{ __('Contas a Pagar') }}
                             </a>
-                            <a href="{{ route('financial.accounts-receivable.index') }}" class="flex items-center px-3 py-2 rounded-md text-sm font-medium {{ request()->routeIs('financial.accounts-receivable.*') ? 'bg-indigo-50 text-indigo-700 border-l-2 border-indigo-500 -ml-3 pl-5' : 'text-gray-600 hover:bg-gray-50' }}">
+                            <a href="{{ route('financial.accounts-receivable.index') }}" class="flex items-center px-3 py-2 rounded-md text-sm font-medium {{ request()->routeIs('financial.accounts-receivable.*') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 border-l-2 border-indigo-500 dark:border-indigo-400 -ml-3 pl-5' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700' }}">
                                 <i class="bi bi-arrow-up-circle mr-3 text-base"></i>
                                 {{ __('Contas a Receber') }}
                             </a>
-                            <a href="{{ route('financial.invoices.index') }}" class="flex items-center px-3 py-2 rounded-md text-sm font-medium {{ request()->routeIs('financial.invoices.*') ? 'bg-indigo-50 text-indigo-700 border-l-2 border-indigo-500 -ml-3 pl-5' : 'text-gray-600 hover:bg-gray-50' }}">
+                            <a href="{{ route('financial.invoices.index') }}" class="flex items-center px-3 py-2 rounded-md text-sm font-medium {{ request()->routeIs('financial.invoices.*') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 border-l-2 border-indigo-500 dark:border-indigo-400 -ml-3 pl-5' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700' }}">
                                 <i class="bi bi-receipt-cutoff mr-3 text-base"></i>
                                 {{ __('Notas Fiscais') }}
                             </a>
-                            <a href="{{ route('financial.receipts.index') }}" class="flex items-center px-3 py-2 rounded-md text-sm font-medium {{ request()->routeIs('financial.receipts.*') ? 'bg-indigo-50 text-indigo-700 border-l-2 border-indigo-500 -ml-3 pl-5' : 'text-gray-600 hover:bg-gray-50' }}">
+                            <a href="{{ route('financial.receipts.index') }}" class="flex items-center px-3 py-2 rounded-md text-sm font-medium {{ request()->routeIs('financial.receipts.*') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 border-l-2 border-indigo-500 dark:border-indigo-400 -ml-3 pl-5' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700' }}">
                                 <i class="bi bi-receipt mr-3 text-base"></i>
                                 {{ __('Recibos') }}
                             </a>
@@ -328,7 +411,7 @@
                     @endcan
 
                     @can('view attendance')
-                    <a href="{{ route('attendance.index') }}" class="flex items-center px-3 py-2 rounded-md text-sm font-medium {{ request()->routeIs('attendance.index') ? 'bg-indigo-50 text-indigo-700' : 'text-gray-700 hover:bg-gray-50' }}">
+                    <a href="{{ route('attendance.index') }}" class="flex items-center px-3 py-2 rounded-md text-sm font-medium {{ request()->routeIs('attendance.index') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700' }}">
                         <i class="bi bi-geo-alt mr-3 text-base"></i>
                         {{ __('Bater Ponto') }}
                     </a>
@@ -337,7 +420,7 @@
                     <!-- Dropdown Administração -->
                     @can('manage permissions')
                     <div>
-                        <button @click="adminOpen = !adminOpen" class="w-full flex items-center justify-between px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors">
+                        <button @click="adminOpen = !adminOpen" class="w-full flex items-center justify-between px-3 py-2 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
                             <div class="flex items-center">
                                 <i class="bi bi-shield-check mr-3 text-base"></i>
                                 <span>{{ __('Administração') }}</span>
@@ -351,12 +434,12 @@
                              x-transition:leave="transition ease-in duration-150"
                              x-transition:leave-start="opacity-100 transform translate-y-0"
                              x-transition:leave-end="opacity-0 transform -translate-y-2"
-                             class="ml-3 mt-0.5 mb-1 space-y-0.5 border-l-2 border-gray-200 pl-3">
-                            <a href="{{ route('admin.permissions.users') }}" class="flex items-center px-3 py-2 rounded-md text-sm font-medium {{ request()->routeIs('admin.permissions.users') ? 'bg-indigo-50 text-indigo-700 -ml-3 pl-5' : 'text-gray-600 hover:bg-gray-50' }}">
+                             class="ml-3 mt-0.5 mb-1 space-y-0.5 border-l-2 border-gray-200 dark:border-gray-700 pl-3">
+                            <a href="{{ route('admin.permissions.users') }}" class="flex items-center px-3 py-2 rounded-md text-sm font-medium {{ request()->routeIs('admin.permissions.users') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 -ml-3 pl-5' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700' }}">
                                 <i class="bi bi-person-check mr-3 text-base"></i>
                                 {{ __('Permissões: Usuários') }}
                             </a>
-                            <a href="{{ route('admin.permissions.roles') }}" class="flex items-center px-3 py-2 rounded-md text-sm font-medium {{ request()->routeIs('admin.permissions.roles') ? 'bg-indigo-50 text-indigo-700 -ml-3 pl-5' : 'text-gray-600 hover:bg-gray-50' }}">
+                            <a href="{{ route('admin.permissions.roles') }}" class="flex items-center px-3 py-2 rounded-md text-sm font-medium {{ request()->routeIs('admin.permissions.roles') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 -ml-3 pl-5' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700' }}">
                                 <i class="bi bi-shield-lock mr-3 text-base"></i>
                                 {{ __('Permissões: Papéis') }}
                             </a>
@@ -364,42 +447,10 @@
                     </div>
                     @endcan
                 </nav>
-                <div class="flex-shrink-0 w-full border-t border-gray-200 bg-white">
-                    <div class="p-4">
-                        <div class="flex items-center gap-3 mb-3">
-                            <div class="flex-shrink-0">
-                                @if(Auth::user()->profile_photo)
-                                    <img src="{{ asset('storage/' . Auth::user()->profile_photo) }}" alt="{{ Auth::user()->name }}" class="h-10 w-10 rounded-full object-cover border-2 border-gray-200">
-                                @else
-                                    <div class="h-10 w-10 rounded-full bg-indigo-500 flex items-center justify-center text-white font-semibold text-sm border-2 border-gray-200">
-                                        {{ strtoupper(substr(Auth::user()->name, 0, 1)) }}
-                                    </div>
-                                @endif
-                            </div>
-                            <div class="flex-1 min-w-0">
-                                <p class="text-sm font-medium text-gray-900 truncate">{{ Auth::user()->name }}</p>
-                                <p class="text-xs text-gray-500 truncate">{{ Auth::user()->email }}</p>
-                            </div>
-                        </div>
-                        <div class="flex items-center gap-2">
-                            <a href="{{ route('profile.edit') }}" class="flex-1 text-center px-3 py-2 rounded-md text-xs font-medium text-gray-700 hover:bg-gray-50 border border-gray-200 transition-colors">
-                                <i class="bi bi-person-gear mr-1"></i>
-                                Perfil
-                            </a>
-                            <form method="POST" action="{{ route('logout') }}" class="flex-1">
-                                @csrf
-                                <button type="submit" class="w-full px-3 py-2 rounded-md text-xs font-medium text-red-600 hover:bg-red-50 border border-red-200 transition-colors">
-                                    <i class="bi bi-box-arrow-right mr-1"></i>
-                                    {{ __('Sair') }}
-                                </button>
-                            </form>
-                        </div>
-                    </div>
-                </div>
             </aside>
 
             <!-- Overlay for mobile -->
-            <div class="fixed inset-0 bg-black/40 z-30 lg:hidden" 
+            <div class="fixed inset-0 bg-black/40 dark:bg-black/60 z-30 lg:hidden" 
                  x-show="sidebarOpen"
                  x-cloak
                  x-transition:enter="transition-opacity ease-linear duration-200"
@@ -412,16 +463,84 @@
                  @touchstart="sidebarOpen = false"
                  aria-hidden="true"></div>
 
-            <!-- Content -->
-            <div class="lg:ml-64">
-                @if (isset($header))
-                    <header class="bg-white border-b border-gray-200">
-                        <div class="px-4 sm:px-6 lg:px-6 py-4">
+            <!-- Top Header Bar -->
+            <header class="fixed top-0 right-0 left-0 lg:left-64 h-16 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 z-30 transition-all duration-200 lg:block hidden">
+                <div class="h-full px-4 sm:px-6 lg:px-6 flex items-center justify-between">
+                    @if (isset($header))
+                        <div class="flex-1">
                             {{ $header }}
                         </div>
-                    </header>
-                @endif
+                    @else
+                        <div></div>
+                    @endif
+                    
+                    <!-- User Menu and Theme Toggle -->
+                    <div class="flex items-center gap-3">
+                        <!-- Theme Toggle -->
+                        <button 
+                            @click="toggleDarkMode()"
+                            class="p-2 rounded-md text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                            aria-label="Toggle dark mode">
+                            <i class="bi bi-sun-fill text-lg dark:hidden"></i>
+                            <i class="bi bi-moon-fill text-lg hidden dark:inline"></i>
+                        </button>
+                        
+                        <!-- User Menu Dropdown -->
+                        <div class="relative" x-data="{ open: false }" @click.away="open = false">
+                            <button 
+                                @click="open = !open"
+                                class="flex items-center gap-2 p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+                                <div class="flex-shrink-0">
+                                    @if(Auth::user()->profile_photo)
+                                        <img src="{{ asset('storage/' . Auth::user()->profile_photo) }}" alt="{{ Auth::user()->name }}" class="h-8 w-8 rounded-full object-cover border-2 border-gray-200 dark:border-gray-600">
+                                    @else
+                                        <div class="h-8 w-8 rounded-full bg-indigo-500 flex items-center justify-center text-white font-semibold text-sm border-2 border-gray-200 dark:border-gray-600">
+                                            {{ strtoupper(substr(Auth::user()->name, 0, 1)) }}
+                                        </div>
+                                    @endif
+                                </div>
+                                <span class="hidden sm:block text-sm font-medium text-gray-700 dark:text-gray-300">{{ Auth::user()->name }}</span>
+                                <i class="bi bi-chevron-down text-xs text-gray-600 dark:text-gray-400"></i>
+                            </button>
+                            
+                            <!-- Dropdown Menu -->
+                            <div 
+                                x-show="open"
+                                x-transition:enter="transition ease-out duration-100"
+                                x-transition:enter-start="transform opacity-0 scale-95"
+                                x-transition:enter-end="transform opacity-100 scale-100"
+                                x-transition:leave="transition ease-in duration-75"
+                                x-transition:leave-start="transform opacity-100 scale-100"
+                                x-transition:leave-end="transform opacity-0 scale-95"
+                                x-cloak
+                                class="absolute right-0 mt-2 w-56 bg-white dark:bg-gray-800 rounded-md shadow-lg border border-gray-200 dark:border-gray-700 py-1 z-50">
+                                <div class="px-4 py-3 border-b border-gray-200 dark:border-gray-700">
+                                    <p class="text-sm font-medium text-gray-900 dark:text-gray-100">{{ Auth::user()->name }}</p>
+                                    <p class="text-xs text-gray-500 dark:text-gray-400 truncate">{{ Auth::user()->email }}</p>
+                                </div>
+                                <a 
+                                    href="{{ route('profile.edit') }}" 
+                                    class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+                                    <i class="bi bi-person-gear mr-2"></i>
+                                    Perfil
+                                </a>
+                                <form method="POST" action="{{ route('logout') }}">
+                                    @csrf
+                                    <button 
+                                        type="submit" 
+                                        class="w-full text-left px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors">
+                                        <i class="bi bi-box-arrow-right mr-2"></i>
+                                        {{ __('Sair') }}
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </header>
 
+            <!-- Content -->
+            <div class="lg:ml-64 pt-16 lg:pt-16">
                 <main class="p-4 sm:p-4">
                     {{ $slot }}
                 </main>
@@ -470,12 +589,12 @@
                  x-transition:leave="transition ease-in duration-200"
                  x-transition:leave-start="opacity-100 scale-100"
                  x-transition:leave-end="opacity-0 scale-95"
-                 class="relative bg-white rounded-lg shadow-2xl p-6 w-full max-w-2xl mx-4"
+                 class="relative bg-white dark:bg-gray-800 rounded-lg shadow-2xl p-6 w-full max-w-2xl mx-4 border border-gray-200 dark:border-gray-700"
                  style="max-height: calc(100vh - 3rem); overflow-y: auto;"
                  @click.stop>
                 <div class="flex items-center justify-between mb-4">
-                    <h3 class="font-medium text-gray-900 text-lg">Enviar Arquivos</h3>
-                    <button @click="openFileModal = false" class="text-gray-400 hover:text-gray-600 transition-colors p-1 rounded-full hover:bg-gray-100 focus:outline-none">
+                    <h3 class="font-medium text-gray-900 dark:text-gray-100 text-lg">Enviar Arquivos</h3>
+                    <button @click="openFileModal = false" class="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-colors p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                         </svg>

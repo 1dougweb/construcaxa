@@ -1,9 +1,5 @@
 <x-guest-layout>
     <x-authentication-card>
-        <x-slot name="logo">
-            <img src="{{ asset('assets/images/logo.svg') }}" alt="Logo" class="h-16 w-auto" />
-        </x-slot>
-
         <x-validation-errors class="mb-4" />
 
         <form method="POST" action="{{ route('password.update') }}">
