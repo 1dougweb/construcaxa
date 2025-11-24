@@ -215,6 +215,11 @@ Route::middleware(['auth'])->group(function () {
         // System Settings
         Route::get('settings', [\App\Http\Controllers\AdminController::class, 'settings'])->name('settings');
         Route::post('settings', [\App\Http\Controllers\AdminController::class, 'updateSettings'])->name('settings.update');
+        
+        // Email Settings
+        Route::get('email', [\App\Http\Controllers\AdminController::class, 'emailSettings'])->name('email.index');
+        Route::post('email', [\App\Http\Controllers\AdminController::class, 'updateEmailSettings'])->name('email.update');
+        Route::post('email/test', [\App\Http\Controllers\AdminController::class, 'sendTestEmail'])->name('email.test');
     });
 
     // Movimentações de Estoque (apenas admin/manager)

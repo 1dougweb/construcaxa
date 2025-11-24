@@ -17,6 +17,12 @@
         @if(session('info'))
             <meta name="notification-info" content="{{ session('info') }}">
         @endif
+        @if(session('test_success'))
+            <meta name="notification-info" content="{{ session('test_success') }}">
+        @endif
+        @if(session('test_error'))
+            <meta name="notification-error" content="{{ session('test_error') }}">
+        @endif
 
         <!-- PWA Meta Tags -->
         <meta name="theme-color" content="#1E2780">
@@ -215,7 +221,7 @@
                     estoqueOpen: {{ request()->routeIs('products.*') || request()->routeIs('equipment.*') || request()->routeIs('material-requests.*') || request()->routeIs('equipment-requests.*') || request()->routeIs('suppliers.*') ? 'true' : 'false' }},
                     gestaoOpen: {{ request()->routeIs('employees.*') || request()->routeIs('attendance.manage') || request()->routeIs('budgets.*') || (request()->routeIs('projects.*') && !request()->routeIs('client.projects.*')) || request()->routeIs('services.*') || request()->routeIs('labor-types.*') || request()->routeIs('service-categories.*') || request()->routeIs('map.*') || request()->routeIs('clients.*') || request()->routeIs('contracts.*') || request()->routeIs('inspections.*') ? 'true' : 'false' }},
                     financeiroOpen: {{ request()->routeIs('financial.*') ? 'true' : 'false' }},
-                    adminOpen: {{ request()->routeIs('admin.permissions.*') ? 'true' : 'false' }}
+                    adminOpen: {{ request()->routeIs('admin.permissions.*') || request()->routeIs('admin.email.*') ? 'true' : 'false' }}
                 }">
                     <!-- Dashboard sempre visível -->
                     <a href="{{ route('dashboard') }}" class="flex items-center px-3 py-2 rounded-md text-sm font-medium {{ request()->routeIs('dashboard') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700' }}">
@@ -463,6 +469,10 @@
                             <a href="{{ route('admin.permissions.roles') }}" class="flex items-center px-3 py-2 rounded-md text-sm font-medium {{ request()->routeIs('admin.permissions.roles') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 -ml-3 pl-5' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700' }}">
                                 <i class="bi bi-shield-lock mr-3 text-base"></i>
                                 {{ __('Permissões: Papéis') }}
+                            </a>
+                            <a href="{{ route('admin.email.index') }}" class="flex items-center px-3 py-2 rounded-md text-sm font-medium {{ request()->routeIs('admin.email.*') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 -ml-3 pl-5' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700' }}">
+                                <i class="bi bi-envelope-at mr-3 text-base"></i>
+                                {{ __('Envio de Emails') }}
                             </a>
                         </div>
                     </div>

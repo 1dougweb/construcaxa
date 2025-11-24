@@ -120,22 +120,6 @@
 
     <!-- Notifications -->
     <div id="notifications"></div>
-
-    @if (session()->has('success'))
-        <div class="fixed bottom-0 right-0 m-6">
-            <div class="bg-green-500 text-white px-6 py-4 rounded-lg shadow-lg">
-                {{ session('success') }}
-            </div>
-        </div>
-    @endif
-
-    @if (session()->has('error'))
-        <div class="fixed bottom-0 right-0 m-6">
-            <div class="bg-red-500 text-white px-6 py-4 rounded-lg shadow-lg">
-                {{ session('error') }}
-            </div>
-        </div>
-    @endif
     
     @push('scripts')
     <script>

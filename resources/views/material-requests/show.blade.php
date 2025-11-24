@@ -132,16 +132,4 @@
         </div>
     </div>
 
-    <!-- Notificações -->
-    @if(session('success'))
-        <x-notification type="success" message="{{ session('success') }}"/>
-    @endif
-
-    @if(session('error'))
-        <x-notification type="error" message="{{ session('error') }}"/>
-    @endif
-
-    @if(session('info'))
-        <x-notification type="info" message="{{ session('info') }}"/>
-    @endif
 </x-app-layout>

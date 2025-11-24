@@ -17,6 +17,12 @@
         <?php if(session('info')): ?>
             <meta name="notification-info" content="<?php echo e(session('info')); ?>">
         <?php endif; ?>
+        <?php if(session('test_success')): ?>
+            <meta name="notification-info" content="<?php echo e(session('test_success')); ?>">
+        <?php endif; ?>
+        <?php if(session('test_error')): ?>
+            <meta name="notification-error" content="<?php echo e(session('test_error')); ?>">
+        <?php endif; ?>
 
         <!-- PWA Meta Tags -->
         <meta name="theme-color" content="#1E2780">
@@ -89,7 +95,28 @@
             .dropdown-chevron {
                 transition: transform 0.2s ease-in-out;
             }
+            
+            /* Prevenir flash branco - aplicar background escuro imediatamente */
+            html.dark body {
+                background-color: #111827;
+            }
         </style>
+        
+        <!-- Script inline para prevenir flash branco no dark mode -->
+        <script>
+            (function() {
+                // Aplicar tema ANTES de qualquer renderização
+                const stored = localStorage.getItem('darkMode');
+                const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                const isDark = stored === 'true' || (!stored && prefersDark);
+                
+                if (isDark) {
+                    document.documentElement.classList.add('dark');
+                } else {
+                    document.documentElement.classList.remove('dark');
+                }
+            })();
+        </script>
     </head>
     <body class="font-sans antialiased">
         <!-- Notification container for dynamic notifications -->
@@ -195,7 +222,7 @@
                     estoqueOpen: <?php echo e(request()->routeIs('products.*') || request()->routeIs('equipment.*') || request()->routeIs('material-requests.*') || request()->routeIs('equipment-requests.*') || request()->routeIs('suppliers.*') ? 'true' : 'false'); ?>,
                     gestaoOpen: <?php echo e(request()->routeIs('employees.*') || request()->routeIs('attendance.manage') || request()->routeIs('budgets.*') || (request()->routeIs('projects.*') && !request()->routeIs('client.projects.*')) || request()->routeIs('services.*') || request()->routeIs('labor-types.*') || request()->routeIs('service-categories.*') || request()->routeIs('map.*') || request()->routeIs('clients.*') || request()->routeIs('contracts.*') || request()->routeIs('inspections.*') ? 'true' : 'false'); ?>,
                     financeiroOpen: <?php echo e(request()->routeIs('financial.*') ? 'true' : 'false'); ?>,
-                    adminOpen: <?php echo e(request()->routeIs('admin.permissions.*') ? 'true' : 'false'); ?>
+                    adminOpen: <?php echo e(request()->routeIs('admin.permissions.*') || request()->routeIs('admin.email.*') ? 'true' : 'false'); ?>
 
                 }">
                     <!-- Dashboard sempre visível -->
@@ -471,6 +498,11 @@
                             <a href="<?php echo e(route('admin.permissions.roles')); ?>" class="flex items-center px-3 py-2 rounded-md text-sm font-medium <?php echo e(request()->routeIs('admin.permissions.roles') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 -ml-3 pl-5' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'); ?>">
                                 <i class="bi bi-shield-lock mr-3 text-base"></i>
                                 <?php echo e(__('Permissões: Papéis')); ?>
+
+                            </a>
+                            <a href="<?php echo e(route('admin.email.index')); ?>" class="flex items-center px-3 py-2 rounded-md text-sm font-medium <?php echo e(request()->routeIs('admin.email.*') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 -ml-3 pl-5' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'); ?>">
+                                <i class="bi bi-envelope-at mr-3 text-base"></i>
+                                <?php echo e(__('Envio de Emails')); ?>
 
                             </a>
                         </div>
