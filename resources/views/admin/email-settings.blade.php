@@ -9,25 +9,6 @@
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-xl sm:rounded-lg">
                 <div class="p-6">
-                    <!-- Success/Error Messages -->
-                    @if(session('success'))
-                        <div class="mb-4 p-4 bg-green-100 dark:bg-green-800 border border-green-400 dark:border-green-600 text-green-700 dark:text-green-200 rounded">
-                            {{ session('success') }}
-                        </div>
-                    @endif
-
-                    @if(session('test_success'))
-                        <div class="mb-4 p-4 bg-green-100 dark:bg-green-800 border border-green-400 dark:border-green-600 text-green-700 dark:text-green-200 rounded">
-                            {{ session('test_success') }}
-                        </div>
-                    @endif
-
-                    @if(session('test_error'))
-                        <div class="mb-4 p-4 bg-red-100 dark:bg-red-800 border border-red-400 dark:border-red-600 text-red-700 dark:text-red-200 rounded">
-                            {{ session('test_error') }}
-                        </div>
-                    @endif
-
                     <form method="POST" action="{{ route('admin.email.update') }}">
                         @csrf
                         
