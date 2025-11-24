@@ -1,14 +1,14 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+        <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
             {{ __('Editar Funcionário') }}
         </h2>
     </x-slot>
 
     <div class="py-6">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg">
-                <div class="p-6 lg:p-8 bg-white border-b border-gray-200">
+            <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-xl sm:rounded-lg">
+                <div class="p-6 lg:p-8 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
                     <form action="{{ route('employees.update', $employee) }}" method="POST" enctype="multipart/form-data">
                         @csrf
                         @method('PUT')
@@ -95,9 +95,9 @@
                             <div>
                                 <x-label for="profile_photo" value="{{ __('Foto de Perfil') }}" />
                                 @if($employee->profile_photo_path)
-                                    <img src="{{ asset('storage/'.$employee->profile_photo_path) }}" alt="Foto atual" class="h-16 w-16 rounded-full object-cover mb-2">
+                                    <img src="{{ asset('storage/'.$employee->profile_photo_path) }}" alt="Foto atual" class="h-16 w-16 rounded-full object-cover mb-2 border-2 border-gray-200 dark:border-gray-600">
                                 @endif
-                                <input id="profile_photo" name="profile_photo" type="file" accept="image/*" class="mt-1 block w-full" />
+                                <input id="profile_photo" name="profile_photo" type="file" accept="image/*" class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 dark:file:bg-indigo-900/30 file:text-indigo-700 dark:file:text-indigo-300 hover:file:bg-indigo-100 dark:hover:file:bg-indigo-900/50" />
                                 <x-input-error for="profile_photo" class="mt-2" />
                             </div>
 
@@ -105,9 +105,9 @@
                             <div>
                                 <x-label for="document_file" value="{{ __('Documento (arquivo)') }}" />
                                 @if($employee->document_file)
-                                    <a href="{{ asset('storage/'.$employee->document_file) }}" target="_blank" class="text-indigo-600 text-sm underline mb-1 inline-block">{{ __('Ver documento atual') }}</a>
+                                    <a href="{{ asset('storage/'.$employee->document_file) }}" target="_blank" class="text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-300 text-sm underline mb-1 inline-block transition-colors">{{ __('Ver documento atual') }}</a>
                                 @endif
-                                <input id="document_file" name="document_file" type="file" accept=".pdf,image/*" class="mt-1 block w-full" />
+                                <input id="document_file" name="document_file" type="file" accept=".pdf,image/*" class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 dark:file:bg-indigo-900/30 file:text-indigo-700 dark:file:text-indigo-300 hover:file:bg-indigo-100 dark:hover:file:bg-indigo-900/50" />
                                 <x-input-error for="document_file" class="mt-2" />
                             </div>
 
@@ -138,18 +138,18 @@
                         <!-- Observações -->
                         <div class="mt-6">
                             <x-label for="notes" value="{{ __('Observações') }}" />
-                            <textarea id="notes" name="notes" class="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm" rows="3">{{ old('notes', $employee->notes) }}</textarea>
+                            <textarea id="notes" name="notes" class="mt-1 block w-full border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 focus:border-indigo-500 dark:focus:border-indigo-400 focus:ring-indigo-500 dark:focus:ring-indigo-400 rounded-md shadow-sm" rows="3">{{ old('notes', $employee->notes) }}</textarea>
                             <x-input-error for="notes" class="mt-2" />
                         </div>
 
                         <div class="mt-6 flex justify-end gap-4">
-                            <a href="{{ route('employees.index') }}" class="inline-flex items-center px-4 py-2 bg-gray-800 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700">
+                            <a href="{{ route('employees.index') }}" class="inline-flex items-center px-4 py-2 bg-gray-300 dark:bg-gray-600 border border-transparent rounded-md font-semibold text-xs text-gray-700 dark:text-gray-200 uppercase tracking-widest hover:bg-gray-400 dark:hover:bg-gray-500 transition-colors">
                                 {{ __('Cancelar') }}
                             </a>
 
-                            <x-button>
+                            <x-button-loading variant="primary" type="submit">
                                 {{ __('Salvar') }}
-                            </x-button>
+                            </x-button-loading>
                         </div>
                     </form>
                 </div>

@@ -1,11 +1,26 @@
 @props([
     'loading' => false,
-    'type' => 'submit'
+    'type' => 'submit',
+    'variant' => 'primary' // primary, success, danger, secondary
 ])
+
+@php
+    $baseClasses = 'inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md font-semibold text-sm text-white focus:outline-none focus:ring-2 focus:ring-offset-2 transition ease-in-out duration-150 disabled:opacity-50 disabled:cursor-not-allowed';
+    
+    $variantClasses = match($variant) {
+        'primary' => 'bg-indigo-600 dark:bg-indigo-700 hover:bg-indigo-700 dark:hover:bg-indigo-600 focus:ring-indigo-500 active:bg-indigo-800 dark:active:bg-indigo-800',
+        'success' => 'bg-green-600 dark:bg-green-700 hover:bg-green-700 dark:hover:bg-green-600 focus:ring-green-500 active:bg-green-800 dark:active:bg-green-800',
+        'danger' => 'bg-red-600 dark:bg-red-700 hover:bg-red-700 dark:hover:bg-red-600 focus:ring-red-500 active:bg-red-800 dark:active:bg-red-800',
+        'secondary' => 'bg-gray-600 dark:bg-gray-700 hover:bg-gray-700 dark:hover:bg-gray-600 focus:ring-gray-500 active:bg-gray-800 dark:active:bg-gray-800',
+        default => 'bg-indigo-600 dark:bg-indigo-700 hover:bg-indigo-700 dark:hover:bg-indigo-600 focus:ring-indigo-500 active:bg-indigo-800 dark:active:bg-indigo-800',
+    };
+    
+    $classes = $baseClasses . ' ' . $variantClasses;
+@endphp
 
 <button 
     type="{{ $type }}"
-    {{ $attributes->merge(['class' => 'inline-flex items-center px-4 py-2 bg-gray-800 dark:bg-gray-700 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700 dark:hover:bg-gray-600 focus:bg-gray-700 active:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition ease-in-out duration-150 disabled:opacity-50 disabled:cursor-not-allowed']) }}
+    {{ $attributes->merge(['class' => $classes]) }}
     @if($loading) disabled @endif
     data-loading-button
 >
@@ -15,7 +30,7 @@
             <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
         </svg>
     </span>
-    {{ $slot }}
+    <span class="button-text">{{ $slot }}</span>
 </button>
 
 @once
@@ -31,8 +46,12 @@
                     const submitButton = form.querySelector('[data-loading-button]');
                     if (submitButton) {
                         const spinner = submitButton.querySelector('.loading-spinner');
+                        const buttonText = submitButton.querySelector('.button-text');
                         if (spinner) {
                             spinner.style.display = 'inline-block';
+                        }
+                        if (buttonText) {
+                            buttonText.style.opacity = '0.7';
                         }
                         submitButton.disabled = true;
                     }

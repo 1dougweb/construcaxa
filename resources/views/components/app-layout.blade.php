@@ -506,7 +506,7 @@
                     @endif
                     
                     <!-- User Menu and Theme Toggle -->
-                    <div class="flex items-center gap-3">
+                    <div class="flex items-center gap-3 ml-6">
                         <!-- Theme Toggle -->
                         <button 
                             @click="toggleDarkMode()"

@@ -47,13 +47,13 @@ Route::middleware(['auth'])->group(function () {
     Route::get('products', [ProductController::class, 'index'])->name('products.index');
         Route::get('products/{product}/stock-history', [ProductController::class, 'stockHistory'])->name('products.stock-history');
     });
-    
+
     // Produtos - Edição/Exclusão (apenas admin/manager)
     Route::middleware(['permission:edit products'])->group(function () {
     Route::get('products/{product}/edit', [ProductController::class, 'edit'])->name('products.edit');
     Route::put('products/{product}', [ProductController::class, 'update'])->name('products.update');
     });
-    
+
     Route::middleware(['permission:delete products'])->group(function () {
     Route::delete('products/{product}', [ProductController::class, 'destroy'])->name('products.destroy');
     });
@@ -64,19 +64,19 @@ Route::middleware(['auth'])->group(function () {
         Route::get('create', [CategoryController::class, 'create'])->name('create');
         Route::post('', [CategoryController::class, 'store'])->name('store');
     });
-    
+
     // Categorias - Visualização
     Route::middleware(['permission:view categories'])->prefix('products/categories')->name('categories.')->group(function () {
         Route::get('', [CategoryController::class, 'index'])->name('index');
         Route::get('{category}', [CategoryController::class, 'show'])->name('show');
     });
-    
+
     // Categorias - Edição/Exclusão (apenas admin/manager)
     Route::middleware(['permission:edit categories'])->prefix('products/categories')->name('categories.')->group(function () {
         Route::get('{category}/edit', [CategoryController::class, 'edit'])->name('edit');
         Route::put('{category}', [CategoryController::class, 'update'])->name('update');
     });
-    
+
     Route::middleware(['permission:delete categories'])->prefix('products/categories')->name('categories.')->group(function () {
         Route::delete('{category}', [CategoryController::class, 'destroy'])->name('destroy');
     });
@@ -91,12 +91,12 @@ Route::middleware(['auth'])->group(function () {
             ->whereNumber('materialRequest')
             ->name('material-requests.pdf');
     });
-    
+
     Route::middleware(['permission:create service-orders'])->group(function () {
     Route::get('material-requests/create', [MaterialRequestController::class, 'create'])->name('material-requests.create');
     Route::post('material-requests', [MaterialRequestController::class, 'store'])->name('material-requests.store');
     });
-    
+
     // Requisições de Material - Edição/Exclusão (apenas admin/manager)
     Route::middleware(['permission:edit service-orders'])->group(function () {
     Route::get('material-requests/{materialRequest}/edit', [MaterialRequestController::class, 'edit'])
@@ -109,7 +109,7 @@ Route::middleware(['auth'])->group(function () {
             ->whereNumber('materialRequest')
             ->name('material-requests.complete');
     });
-    
+
     Route::middleware(['permission:delete service-orders'])->group(function () {
     Route::delete('material-requests/{materialRequest}', [MaterialRequestController::class, 'destroy'])
             ->whereNumber('materialRequest')
@@ -123,43 +123,48 @@ Route::middleware(['auth'])->group(function () {
         Route::post('suppliers', [SupplierController::class, 'store'])->name('suppliers.store');
         Route::post('suppliers/fetch-cnpj', [SupplierController::class, 'fetchCNPJ'])->name('suppliers.fetch-cnpj');
     });
-    
+
     // Categorias de Fornecedores - DEVE VIR ANTES das rotas suppliers/{supplier}
     // Categorias de Fornecedores - Criação
     Route::middleware(['permission:create suppliers'])->prefix('suppliers/categories')->name('supplier-categories.')->group(function () {
         Route::get('create', [SupplierCategoryController::class, 'create'])->name('create');
         Route::post('', [SupplierCategoryController::class, 'store'])->name('store');
     });
-    
+
     // Categorias de Fornecedores - Visualização
     Route::middleware(['permission:view suppliers'])->prefix('suppliers/categories')->name('supplier-categories.')->group(function () {
         Route::get('', [SupplierCategoryController::class, 'index'])->name('index');
     });
-    
+
     // Categorias de Fornecedores - Edição/Exclusão
     Route::middleware(['permission:edit suppliers'])->prefix('suppliers/categories')->name('supplier-categories.')->group(function () {
         Route::get('{supplierCategory}/edit', [SupplierCategoryController::class, 'edit'])->name('edit');
         Route::put('{supplierCategory}', [SupplierCategoryController::class, 'update'])->name('update');
     });
-    
+
     Route::middleware(['permission:delete suppliers'])->prefix('suppliers/categories')->name('supplier-categories.')->group(function () {
         Route::delete('{supplierCategory}', [SupplierCategoryController::class, 'destroy'])->name('destroy');
     });
-    
+
     // Fornecedores - Visualização
     Route::middleware(['permission:view suppliers'])->group(function () {
         Route::get('suppliers', [SupplierController::class, 'index'])->name('suppliers.index');
         Route::get('suppliers/{supplier}', [SupplierController::class, 'show'])->name('suppliers.show');
     });
-    
+
     // Fornecedores - Edição/Exclusão (apenas admin/manager)
     Route::middleware(['permission:edit suppliers'])->group(function () {
         Route::get('suppliers/{supplier}/edit', [SupplierController::class, 'edit'])->name('suppliers.edit');
         Route::put('suppliers/{supplier}', [SupplierController::class, 'update'])->name('suppliers.update');
     });
-    
+
     Route::middleware(['permission:delete suppliers'])->group(function () {
         Route::delete('suppliers/{supplier}', [SupplierController::class, 'destroy'])->name('suppliers.destroy');
+    });
+
+    Route::middleware(['permission:create employees'])->group(function () {
+        Route::get('employees/create', [EmployeeController::class, 'create'])->name('employees.create');
+        Route::post('employees', [EmployeeController::class, 'store'])->name('employees.store');
     });
 
     // Funcionários - Visualização
@@ -167,13 +172,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('employees', [EmployeeController::class, 'index'])->name('employees.index');
         Route::get('employees/{employee}', [EmployeeController::class, 'show'])->name('employees.show');
     });
-    
-    // Funcionários - Criação/Edição/Exclusão (apenas admin/manager)
-    Route::middleware(['permission:create employees'])->group(function () {
-        Route::get('employees/create', [EmployeeController::class, 'create'])->name('employees.create');
-        Route::post('employees', [EmployeeController::class, 'store'])->name('employees.store');
-    });
-    
+
     Route::middleware(['permission:edit employees'])->group(function () {
         Route::get('employees/{employee}/edit', [EmployeeController::class, 'edit'])->name('employees.edit');
         Route::put('employees/{employee}', [EmployeeController::class, 'update'])->name('employees.update');
@@ -182,7 +181,7 @@ Route::middleware(['auth'])->group(function () {
         Route::post('employees/{employee}/deductions', [EmployeeController::class, 'storeDeduction'])->name('employees.deductions.store');
         Route::delete('employees/{employee}/deductions/{deduction}', [EmployeeController::class, 'destroyDeduction'])->name('employees.deductions.destroy');
     });
-    
+
     Route::middleware(['permission:delete employees'])->group(function () {
         Route::delete('employees/{employee}', [EmployeeController::class, 'destroy'])->name('employees.destroy');
     });
@@ -211,11 +210,11 @@ Route::middleware(['auth'])->group(function () {
 
         Route::get('permissions/roles', [PermissionController::class, 'roles'])->name('permissions.roles');
         Route::post('permissions/roles/{role}/permissions', [PermissionController::class, 'syncRolePermissions'])->name('permissions.roles.permissions');
-        
+
         // System Settings
         Route::get('settings', [\App\Http\Controllers\AdminController::class, 'settings'])->name('settings');
         Route::post('settings', [\App\Http\Controllers\AdminController::class, 'updateSettings'])->name('settings.update');
-        
+
         // Email Settings
         Route::get('email', [\App\Http\Controllers\AdminController::class, 'emailSettings'])->name('email.index');
         Route::post('email', [\App\Http\Controllers\AdminController::class, 'updateEmailSettings'])->name('email.update');
@@ -232,16 +231,16 @@ Route::middleware(['auth'])->group(function () {
         Route::get('create', [EquipmentCategoryController::class, 'create'])->name('create');
         Route::post('', [EquipmentCategoryController::class, 'store'])->name('store');
     });
-    
+
     Route::middleware(['permission:view products'])->prefix('equipment/categories')->name('equipment-categories.')->group(function () {
         Route::get('', [EquipmentCategoryController::class, 'index'])->name('index');
     });
-    
+
     Route::middleware(['permission:edit products'])->prefix('equipment/categories')->name('equipment-categories.')->group(function () {
         Route::get('{equipmentCategory}/edit', [EquipmentCategoryController::class, 'edit'])->name('edit');
         Route::put('{equipmentCategory}', [EquipmentCategoryController::class, 'update'])->name('update');
     });
-    
+
     Route::middleware(['permission:delete products'])->prefix('equipment/categories')->name('equipment-categories.')->group(function () {
         Route::delete('{equipmentCategory}', [EquipmentCategoryController::class, 'destroy'])->name('destroy');
     });
@@ -251,20 +250,20 @@ Route::middleware(['auth'])->group(function () {
         Route::get('equipment/create', [EquipmentController::class, 'create'])->name('equipment.create');
         Route::post('equipment', [EquipmentController::class, 'store'])->name('equipment.store');
     });
-    
+
     // Equipamentos - Visualização (todos autenticados)
     Route::middleware(['permission:view products'])->group(function () {
         Route::get('equipment', [EquipmentController::class, 'index'])->name('equipment.index');
         Route::get('equipment/{equipment}', [EquipmentController::class, 'show'])->name('equipment.show');
         Route::get('equipment/{equipment}/history', [EquipmentController::class, 'history'])->name('equipment.history');
     });
-    
+
     Route::middleware(['permission:edit products'])->group(function () {
         Route::get('equipment/{equipment}/edit', [EquipmentController::class, 'edit'])->name('equipment.edit');
         Route::put('equipment/{equipment}', [EquipmentController::class, 'update'])->name('equipment.update');
         Route::delete('equipment/{equipment}/photos/{photoIndex}', [EquipmentController::class, 'deletePhoto'])->name('equipment.photos.delete');
     });
-    
+
     Route::middleware(['permission:delete products'])->group(function () {
         Route::delete('equipment/{equipment}', [EquipmentController::class, 'destroy'])->name('equipment.destroy');
     });
@@ -279,12 +278,12 @@ Route::middleware(['auth'])->group(function () {
             ->whereNumber('equipmentRequest')
             ->name('equipment-requests.pdf');
     });
-    
+
     Route::middleware(['permission:create service-orders'])->group(function () {
         Route::get('equipment-requests/create', [EquipmentRequestController::class, 'create'])->name('equipment-requests.create');
         Route::post('equipment-requests', [EquipmentRequestController::class, 'store'])->name('equipment-requests.store');
     });
-    
+
     // Requisições de Equipamento - Edição/Exclusão (apenas admin/manager)
     Route::middleware(['permission:edit service-orders'])->group(function () {
         Route::get('equipment-requests/{equipmentRequest}/edit', [EquipmentRequestController::class, 'edit'])
@@ -303,7 +302,7 @@ Route::middleware(['auth'])->group(function () {
             ->whereNumber('equipmentRequest')
             ->name('equipment-requests.complete');
     });
-    
+
     Route::middleware(['permission:delete service-orders'])->group(function () {
         Route::delete('equipment-requests/{equipmentRequest}', [EquipmentRequestController::class, 'destroy'])
             ->whereNumber('equipmentRequest')
@@ -328,7 +327,7 @@ Route::middleware(['auth'])->group(function () {
     Route::middleware(['role_or_permission:manager|admin|view projects'])->group(function () {
         Route::get('projects', [\App\Http\Controllers\ProjectController::class, 'index'])->name('projects.index');
         Route::get('projects/{project}', [\App\Http\Controllers\ProjectController::class, 'show'])->name('projects.show');
-        
+
         // Balanço Financeiro do Projeto
         Route::middleware(['permission:manage finances'])->group(function () {
             Route::get('projects/{project}/financial-balance', [ProjectFinancialBalanceController::class, 'show'])->name('projects.financial-balance');
@@ -358,7 +357,7 @@ Route::middleware(['auth'])->group(function () {
     Route::middleware(['role_or_permission:manager|admin|view projects'])->group(function () {
         Route::get('projects/{project}/files/{file}/download', [\App\Http\Controllers\ProjectController::class, 'downloadFile'])->whereNumber('file')->name('projects.files.download');
     });
-    
+
     Route::delete('projects/{project}/files/{file}', [\App\Http\Controllers\ProjectController::class, 'deleteFile'])->whereNumber('file')->name('projects.files.delete');
 
     // Project tasks (todos)
@@ -395,10 +394,10 @@ Route::middleware(['auth'])->group(function () {
     Route::middleware(['role_or_permission:manager|admin|manage services'])->group(function () {
         // Service Categories
         Route::resource('service-categories', \App\Http\Controllers\ServiceCategoryController::class);
-        
+
         // Services
         Route::resource('services', \App\Http\Controllers\ServiceController::class);
-        
+
         // Labor Types
         Route::resource('labor-types', \App\Http\Controllers\LaborTypeController::class);
     });
@@ -509,7 +508,7 @@ Route::middleware('guest')->group(function () {
             'password' => ['required'],
         ]);
 
-        if (auth()->attempt($credentials)) {
+        if (Auth::attempt($credentials)) {
             request()->session()->regenerate();
             return redirect()->intended('/');
         }
@@ -521,7 +520,7 @@ Route::middleware('guest')->group(function () {
 });
 
 Route::post('logout', function () {
-    auth()->logout();
+    Auth::logout();
     request()->session()->invalidate();
     request()->session()->regenerateToken();
     return redirect('/');
