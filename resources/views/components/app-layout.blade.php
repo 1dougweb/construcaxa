@@ -88,7 +88,28 @@
             .dropdown-chevron {
                 transition: transform 0.2s ease-in-out;
             }
+            
+            /* Prevenir flash branco - aplicar background escuro imediatamente */
+            html.dark body {
+                background-color: #111827;
+            }
         </style>
+        
+        <!-- Script inline para prevenir flash branco no dark mode -->
+        <script>
+            (function() {
+                // Aplicar tema ANTES de qualquer renderização
+                const stored = localStorage.getItem('darkMode');
+                const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                const isDark = stored === 'true' || (!stored && prefersDark);
+                
+                if (isDark) {
+                    document.documentElement.classList.add('dark');
+                } else {
+                    document.documentElement.classList.remove('dark');
+                }
+            })();
+        </script>
     </head>
     <body class="font-sans antialiased">
         <!-- Notification container for dynamic notifications -->
