@@ -18,10 +18,6 @@
 <?php $attributes = $attributes->except(\Illuminate\View\AnonymousComponent::ignoredParameterNames()); ?>
 <?php endif; ?>
 <?php $component->withAttributes([]); ?>
-         <?php $__env->slot('logo', null, []); ?> 
-            <img src="<?php echo e(asset('assets/images/logo.svg')); ?>" alt="Logo" class="h-16 w-auto" />
-         <?php $__env->endSlot(); ?>
-
         <?php if (isset($component)) { $__componentOriginalb24df6adf99a77ed35057e476f61e153 = $component; } ?>
 <?php if (isset($attributes)) { $__attributesOriginalb24df6adf99a77ed35057e476f61e153 = $attributes; } ?>
 <?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.validation-errors','data' => ['class' => 'mb-4']] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
@@ -44,7 +40,7 @@
 <?php endif; ?>
 
         <?php if(session('status')): ?>
-            <div class="mb-4 font-medium text-sm text-green-600">
+            <div class="mb-4 font-medium text-sm text-green-600 dark:text-green-400">
                 <?php echo e(session('status')); ?>
 
             </div>
@@ -161,13 +157,13 @@
 <?php $component = $__componentOriginal74b62b190a03153f11871f645315f4de; ?>
 <?php unset($__componentOriginal74b62b190a03153f11871f645315f4de); ?>
 <?php endif; ?>
-                    <span class="ml-2 text-sm text-gray-600"><?php echo e(__('Lembrar-me')); ?></span>
+                    <span class="ml-2 text-sm text-gray-600 dark:text-gray-400"><?php echo e(__('Lembrar-me')); ?></span>
                 </label>
             </div>
 
             <div class="flex items-center justify-end mt-4">
                 <?php if(Route::has('password.request')): ?>
-                    <a class="underline text-sm text-gray-600 hover:text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" href="<?php echo e(route('password.request')); ?>">
+                    <a class="underline text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" href="<?php echo e(route('password.request')); ?>">
                         <?php echo e(__('Esqueceu sua senha?')); ?>
 
                     </a>

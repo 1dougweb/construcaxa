@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\StockLowAlert;
+use App\Events\StockMovementCreated;
 use App\Models\StockMovement;
 use App\Models\Product;
 use Illuminate\Http\Request;
@@ -64,7 +66,7 @@ class StockMovementController extends Controller
             }
             
             // Create stock movement record
-            StockMovement::create([
+            $stockMovement = StockMovement::create([
                 'product_id' => $product->id,
                 'user_id' => auth()->id(),
                 'type' => $validated['type'],
@@ -74,7 +76,20 @@ class StockMovementController extends Controller
                 'notes' => $validated['notes'] ?? 'Movimento de estoque manual',
             ]);
             
+            // Reload product with relationships
+            $product->refresh();
+            $stockMovement->load('product', 'user');
+            
             DB::commit();
+            
+            // Disparar evento de movimentação de estoque
+            broadcast(new StockMovementCreated($stockMovement));
+            
+            // Verificar se o estoque está baixo após a movimentação
+            if ($product->stock <= $product->min_stock) {
+                broadcast(new StockLowAlert($product));
+            }
+            
             return redirect()->route('stock-movements.index')
                 ->with('success', 'Movimento de estoque registrado com sucesso!');
                 

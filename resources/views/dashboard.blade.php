@@ -306,15 +306,6 @@
 
                             const colors = getChartColors();
 
-                            console.log('Inicializando gráficos financeiros...', {
-                                monthsData,
-                                incomeData,
-                                expenseData,
-                                payablesByStatus,
-                                receivablesByStatus,
-                                darkMode: isDarkMode()
-                            });
-
                             // Gráfico Receitas vs Despesas
                             const incomeExpenseCtx = document.getElementById('incomeExpenseChart');
                             if (incomeExpenseCtx) {

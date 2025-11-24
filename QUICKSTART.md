@@ -70,3 +70,5 @@ docker-compose -f docker-compose.prod.yml logs -f
 Veja [DOCKER.md](./DOCKER.md) para documentação completa.
 
 
+
+

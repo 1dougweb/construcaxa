@@ -8,13 +8,15 @@ return new class extends Migration
 {
     public function up()
     {
-        Schema::create('supplier_categories', function (Blueprint $table) {
-            $table->id();
-            $table->string('name');
-            $table->text('description')->nullable();
-            $table->timestamps();
-            $table->softDeletes();
-        });
+        if (!Schema::hasTable('supplier_categories')) {
+            Schema::create('supplier_categories', function (Blueprint $table) {
+                $table->id();
+                $table->string('name');
+                $table->text('description')->nullable();
+                $table->timestamps();
+                $table->softDeletes();
+            });
+        }
     }
 
     public function down()

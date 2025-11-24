@@ -1,9 +1,9 @@
 import './bootstrap';
 import './notifications';
 import './theme';
-import Alpine from 'alpinejs';
-import persist from '@alpinejs/persist';
+import './echo';
+import './websocket-notifications';
 
-Alpine.plugin(persist);
-window.Alpine = Alpine;
-Alpine.start(); 
+// Livewire 3 já inicializa o Alpine.js automaticamente
+// O plugin @alpinejs/persist já é carregado pelo Livewire se necessário
+// Não precisamos adicionar manualmente para evitar conflitos 

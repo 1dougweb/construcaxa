@@ -143,11 +143,18 @@
                         @forelse ($products as $product)
                             <tr>
                                 <td class="px-6 py-4 whitespace-nowrap">
-                                    @if($product->photos && is_array($product->photos) && count($product->photos) > 0)
+                                    @php
+                                        $photos = $product->photos ?? [];
+                                        if (is_string($photos)) {
+                                            $photos = json_decode($photos, true) ?? [];
+                                        }
+                                        $photos = is_array($photos) ? $photos : [];
+                                    @endphp
+                                    @if(!empty($photos))
                                         <div x-data="{ 
                                             open: false, 
                                             currentIndex: 0,
-                                            images: @js(array_map(function($photo) { return asset('storage/' . $photo); }, $product->photos ?? [])),
+                                            images: @js(array_map(function($photo) { return asset('storage/' . $photo); }, $photos)),
                                             openLightbox(index) {
                                                 this.currentIndex = index;
                                                 this.open = true;
@@ -166,7 +173,7 @@
                                         }" @keydown.escape="closeLightbox()" @keydown.arrow-left="prevImage()" @keydown.arrow-right="nextImage()">
                                             <div class="w-16 h-16 rounded overflow-hidden cursor-pointer hover:opacity-80 transition-opacity">
                                                 <img 
-                                                    src="{{ asset('storage/' . $product->photos[0]) }}" 
+                                                    src="{{ asset('storage/' . $photos[0]) }}" 
                                                     alt="{{ $product->name }}"
                                                     class="w-full h-full object-cover border border-gray-200 dark:border-gray-700 rounded-md"
                                                     @click="openLightbox(0)"

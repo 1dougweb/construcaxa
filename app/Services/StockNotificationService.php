@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Events\StockLowAlert;
 use App\Models\Product;
 use App\Models\User;
 use App\Notifications\LowStockNotification;
@@ -26,6 +27,11 @@ class StockNotificationService
 
         foreach ($admins as $admin) {
             $admin->notify(new LowStockNotification($products));
+        }
+        
+        // Disparar eventos WebSocket para cada produto com estoque baixo
+        foreach ($products as $product) {
+            broadcast(new StockLowAlert($product));
         }
     }
 

@@ -20,7 +20,14 @@ class Dashboard extends Component
     public $monthlyStats = [];
     public $topProducts = [];
 
-    protected $listeners = ['refreshDashboard' => '$refresh'];
+    protected $listeners = [
+        'refreshDashboard' => '$refresh',
+        'stock-low-alert' => 'handleStockLowAlert',
+        'new-material-request' => 'handleNewMaterialRequest',
+        'new-equipment-request' => 'handleNewEquipmentRequest',
+        'stock-movement-created' => 'handleStockMovementCreated',
+        'request-status-changed' => 'handleRequestStatusChanged',
+    ];
 
     public function mount()
     {
@@ -207,6 +214,85 @@ class Dashboard extends Component
             'year' => now()->subYear(),
             default => now()->subMonth(),
         };
+    }
+
+    /**
+     * Handle WebSocket events
+     */
+    public function handleStockLowAlert($data)
+    {
+        // Recarregar produtos com estoque baixo
+        $this->loadLowStockProducts();
+        $this->loadStatistics();
+        $this->loadMonthlyStats();
+    }
+
+    public function handleNewMaterialRequest($data)
+    {
+        // Recarregar requisições recentes e estatísticas
+        $this->loadRecentOrders();
+        $this->loadStatistics();
+        $this->loadChartData();
+        $this->loadMonthlyStats();
+        
+        // Atualizar gráficos
+        $updateData = [
+            'orders' => $this->chartData['orders'],
+            'stockIn' => $this->chartData['stockIn'],
+            'stockOut' => $this->chartData['stockOut'],
+            'topProducts' => $this->topProducts->pluck('stock_movements_count', 'name')->toArray(),
+            'period' => $this->period
+        ];
+        $this->dispatch('updateCharts', $updateData);
+    }
+
+    public function handleNewEquipmentRequest($data)
+    {
+        // Recarregar estatísticas se necessário
+        $this->loadStatistics();
+    }
+
+    public function handleStockMovementCreated($data)
+    {
+        // Recarregar movimentações e estatísticas
+        $this->loadStockMovements();
+        $this->loadStatistics();
+        $this->loadChartData();
+        $this->loadTopProducts();
+        $this->loadMonthlyStats();
+        
+        // Verificar se há produtos com estoque baixo após a movimentação
+        $this->loadLowStockProducts();
+        
+        // Atualizar gráficos
+        $updateData = [
+            'orders' => $this->chartData['orders'],
+            'stockIn' => $this->chartData['stockIn'],
+            'stockOut' => $this->chartData['stockOut'],
+            'topProducts' => $this->topProducts->pluck('stock_movements_count', 'name')->toArray(),
+            'period' => $this->period
+        ];
+        $this->dispatch('updateCharts', $updateData);
+    }
+
+    public function handleRequestStatusChanged($data)
+    {
+        // Recarregar requisições e estatísticas quando o status mudar
+        if ($data['request_type'] === 'material') {
+            $this->loadRecentOrders();
+        }
+        $this->loadStatistics();
+        $this->loadChartData();
+        
+        // Atualizar gráficos
+        $updateData = [
+            'orders' => $this->chartData['orders'],
+            'stockIn' => $this->chartData['stockIn'],
+            'stockOut' => $this->chartData['stockOut'],
+            'topProducts' => $this->topProducts->pluck('stock_movements_count', 'name')->toArray(),
+            'period' => $this->period
+        ];
+        $this->dispatch('updateCharts', $updateData);
     }
 
     public function render()

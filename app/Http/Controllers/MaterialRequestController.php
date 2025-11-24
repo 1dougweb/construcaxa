@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\NewMaterialRequest;
+use App\Events\RequestStatusChanged;
 use App\Models\MaterialRequest;
 use App\Models\Product;
 use App\Models\StockMovement;
@@ -82,6 +84,10 @@ class MaterialRequestController extends Controller
             }
 
             DB::commit();
+            
+            // Disparar evento de nova requisição
+            broadcast(new NewMaterialRequest($materialRequest));
+            
             return redirect()->route('material-requests.index')
                 ->with('success', 'Requisição de material criada com sucesso!');
 
@@ -130,14 +136,30 @@ class MaterialRequestController extends Controller
                 'notes' => $validated['notes'],
             ]);
 
+            $oldStatus = $materialRequest->has_stock_out ? 'processed' : 'pending';
+            
             // Processar ações de estoque
             if ($validated['take_from_stock'] ?? false) {
                 $materialRequest->takeItemsFromStock();
             } else if ($validated['return_to_stock'] ?? false) {
                 $materialRequest->returnItemsToStock();
             }
+            
+            $newStatus = $materialRequest->has_stock_out ? 'processed' : 'pending';
 
             DB::commit();
+            
+            // Disparar evento de mudança de status se houver alteração
+            if ($oldStatus !== $newStatus) {
+                broadcast(new RequestStatusChanged(
+                    $materialRequest->id,
+                    'material',
+                    $oldStatus,
+                    $newStatus,
+                    $materialRequest->number
+                ));
+            }
+            
             return redirect()->route('material-requests.show', $materialRequest)
                 ->with('success', 'Requisição de material atualizada com sucesso!');
             
@@ -201,6 +223,16 @@ class MaterialRequestController extends Controller
             $materialRequest->takeItemsFromStock();
             
             DB::commit();
+            
+            // Disparar evento de mudança de status
+            broadcast(new RequestStatusChanged(
+                $materialRequest->id,
+                'material',
+                'pending',
+                'processed',
+                $materialRequest->number
+            ));
+            
             return back()->with('success', 'Itens retirados do estoque com sucesso!');
         } catch (\Exception $e) {
             DB::rollBack();

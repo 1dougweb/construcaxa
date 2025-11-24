@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\NewEquipmentRequest;
+use App\Events\RequestStatusChanged;
 use App\Models\EquipmentRequest;
 use App\Models\Equipment;
 use App\Models\Employee;
@@ -92,6 +94,10 @@ class EquipmentRequestController extends Controller
             }
 
             DB::commit();
+            
+            // Disparar evento de nova requisição
+            broadcast(new NewEquipmentRequest($equipmentRequest));
+            
             return redirect()->route('equipment-requests.index')
                 ->with('success', 'Requisição de equipamento criada com sucesso!');
 
@@ -155,6 +161,7 @@ class EquipmentRequestController extends Controller
 
         DB::beginTransaction();
         try {
+            $oldStatus = $equipmentRequest->status;
             $equipmentRequest->update(['status' => 'approved']);
             
             // Processar automaticamente se for empréstimo ou devolução
@@ -165,6 +172,16 @@ class EquipmentRequestController extends Controller
             }
 
             DB::commit();
+            
+            // Disparar evento de mudança de status
+            broadcast(new RequestStatusChanged(
+                $equipmentRequest->id,
+                'equipment',
+                $oldStatus,
+                'approved',
+                $equipmentRequest->number
+            ));
+            
             return back()->with('success', 'Requisição aprovada e processada com sucesso!');
 
         } catch (\Exception $e) {
@@ -179,7 +196,17 @@ class EquipmentRequestController extends Controller
             return back()->with('error', 'Apenas requisições pendentes podem ser rejeitadas.');
         }
 
+        $oldStatus = $equipmentRequest->status;
         $equipmentRequest->update(['status' => 'rejected']);
+        
+        // Disparar evento de mudança de status
+        broadcast(new RequestStatusChanged(
+            $equipmentRequest->id,
+            'equipment',
+            $oldStatus,
+            'rejected',
+            $equipmentRequest->number
+        ));
 
         return back()->with('success', 'Requisição rejeitada com sucesso!');
     }
@@ -201,13 +228,27 @@ class EquipmentRequestController extends Controller
 
         DB::beginTransaction();
         try {
+            $oldStatus = $equipmentRequest->status;
+            
             if ($equipmentRequest->type === 'loan') {
                 $equipmentRequest->processLoan();
             } elseif ($equipmentRequest->type === 'return') {
                 $equipmentRequest->processReturn();
             }
+            
+            $equipmentRequest->update(['status' => 'completed']);
 
             DB::commit();
+            
+            // Disparar evento de mudança de status
+            broadcast(new RequestStatusChanged(
+                $equipmentRequest->id,
+                'equipment',
+                $oldStatus,
+                'completed',
+                $equipmentRequest->number
+            ));
+            
             return back()->with('success', 'Requisição processada com sucesso!');
 
         } catch (\Exception $e) {

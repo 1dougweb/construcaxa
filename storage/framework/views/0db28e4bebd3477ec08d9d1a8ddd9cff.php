@@ -13,9 +13,34 @@
 
         <!-- Scripts -->
         <?php echo app('Illuminate\Foundation\Vite')(['resources/css/app.css', 'resources/js/app.js']); ?>
+        
+        <!-- Script inline para prevenir flash branco no dark mode -->
+        <script>
+            (function() {
+                // Aplicar tema ANTES de qualquer renderização
+                const stored = localStorage.getItem('darkMode');
+                const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                const isDark = stored === 'true' || (!stored && prefersDark);
+                
+                if (isDark) {
+                    document.documentElement.classList.add('dark');
+                } else {
+                    document.documentElement.classList.remove('dark');
+                }
+            })();
+        </script>
+        
+        <style>
+            [x-cloak] { display: none !important; }
+            
+            /* Prevenir flash branco - aplicar background escuro imediatamente */
+            html.dark body {
+                background-color: #111827;
+            }
+        </style>
     </head>
     <body>
-        <div class="font-sans text-gray-900 antialiased">
+        <div class="font-sans text-gray-900 dark:text-gray-100 antialiased">
             <?php echo e($slot); ?>
 
         </div>

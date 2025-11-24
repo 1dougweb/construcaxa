@@ -149,6 +149,17 @@
         <!-- Import IMask before using it -->
         <script src="https://unpkg.com/imask"></script>
         
+        <!-- WebSocket Configuration -->
+        <script>
+            window.Laravel = {
+                @auth
+                user: @json(auth()->user()),
+                @endauth
+                csrfToken: '{{ csrf_token() }}',
+                appUrl: '{{ config('app.url') }}'
+            };
+        </script>
+        
         <!-- Scripts Stack -->
         @stack('scripts')
     </body>
