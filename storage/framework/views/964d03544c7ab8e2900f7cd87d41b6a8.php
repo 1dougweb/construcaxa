@@ -116,13 +116,117 @@
                                 <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php $__currentLoopData = $equipment; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $item): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
                                     <tr>
                                         <td class="px-6 py-4 whitespace-nowrap">
-                                            <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($item->photos && count($item->photos) > 0): ?>
-                                                <img src="<?php echo e(asset('storage/' . $item->photos[0])); ?>" 
-                                                     alt="<?php echo e($item->name); ?>" 
-                                                     class="h-12 w-12 rounded object-cover border border-gray-200 dark:border-gray-700">
+                                            <?php
+                                                $photos = $item->photos ?? [];
+                                                if (is_string($photos)) {
+                                                    $photos = json_decode($photos, true) ?? [];
+                                                }
+                                                $photos = is_array($photos) ? $photos : [];
+                                            ?>
+                                            <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(!empty($photos)): ?>
+                                                <div x-data="{ 
+                                                    open: false, 
+                                                    currentIndex: 0,
+                                                    images: <?php echo \Illuminate\Support\Js::from(array_map(function($photo) { return asset('storage/' . $photo); }, $photos))->toHtml() ?>,
+                                                    openLightbox(index) {
+                                                        this.currentIndex = index;
+                                                        this.open = true;
+                                                        document.body.style.overflow = 'hidden';
+                                                    },
+                                                    closeLightbox() {
+                                                        this.open = false;
+                                                        document.body.style.overflow = '';
+                                                    },
+                                                    nextImage() {
+                                                        this.currentIndex = (this.currentIndex + 1) % this.images.length;
+                                                    },
+                                                    prevImage() {
+                                                        this.currentIndex = (this.currentIndex - 1 + this.images.length) % this.images.length;
+                                                    }
+                                                }" @keydown.escape="closeLightbox()" @keydown.arrow-left="prevImage()" @keydown.arrow-right="nextImage()">
+                                                    <div class="w-16 h-16 rounded overflow-hidden cursor-pointer hover:opacity-80 transition-opacity">
+                                                        <img 
+                                                            src="<?php echo e(asset('storage/' . $photos[0])); ?>" 
+                                                            alt="<?php echo e($item->name); ?>"
+                                                            class="w-full h-full object-cover border border-gray-200 dark:border-gray-700 rounded-md"
+                                                            @click="openLightbox(0)"
+                                                        >
+                                                    </div>
+                                                    
+                                                    <!-- Lightbox -->
+                                                    <div 
+                                                        x-show="open"
+                                                        x-cloak
+                                                        @click.self="closeLightbox()"
+                                                        class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-90"
+                                                        x-transition:enter="transition ease-out duration-300"
+                                                        x-transition:enter-start="opacity-0"
+                                                        x-transition:enter-end="opacity-100"
+                                                        x-transition:leave="transition ease-in duration-200"
+                                                        x-transition:leave-start="opacity-100"
+                                                        x-transition:leave-end="opacity-0"
+                                                    >
+                                                        <!-- Botão Fechar (redondo) -->
+                                                        <button 
+                                                            @click="closeLightbox()"
+                                                            class="absolute top-4 right-4 w-12 h-12 rounded-full bg-white bg-opacity-20 hover:bg-opacity-30 text-white flex items-center justify-center transition-all duration-200 z-10"
+                                                        >
+                                                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                                            </svg>
+                                                        </button>
+                                                        
+                                                        <!-- Botão Anterior (redondo) -->
+                                                        <button 
+                                                            @click="prevImage()"
+                                                            x-show="images.length > 1"
+                                                            class="absolute left-4 w-12 h-12 rounded-full bg-white bg-opacity-20 hover:bg-opacity-30 text-white flex items-center justify-center transition-all duration-200 z-10"
+                                                        >
+                                                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                                                            </svg>
+                                                        </button>
+                                                        
+                                                        <!-- Botão Próximo (redondo) -->
+                                                        <button 
+                                                            @click="nextImage()"
+                                                            x-show="images.length > 1"
+                                                            class="absolute right-4 w-12 h-12 rounded-full bg-white bg-opacity-20 hover:bg-opacity-30 text-white flex items-center justify-center transition-all duration-200 z-10"
+                                                        >
+                                                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                                                            </svg>
+                                                        </button>
+                                                        
+                                                        <!-- Imagem -->
+                                                        <div 
+                                                            class="max-w-7xl max-h-[90vh] mx-4"
+                                                            x-transition:enter="transition ease-out duration-300"
+                                                            x-transition:enter-start="opacity-0 scale-95"
+                                                            x-transition:enter-end="opacity-100 scale-100"
+                                                            x-transition:leave="transition ease-in duration-200"
+                                                            x-transition:leave-start="opacity-100 scale-100"
+                                                            x-transition:leave-end="opacity-0 scale-95"
+                                                        >
+                                                            <img 
+                                                                :src="images[currentIndex]" 
+                                                                :alt="'<?php echo e($item->name); ?> - ' + (currentIndex + 1)"
+                                                                class="max-w-full max-h-[90vh] object-contain rounded-lg shadow-2xl"
+                                                            >
+                                                        </div>
+                                                        
+                                                        <!-- Indicador de imagem -->
+                                                        <div 
+                                                            x-show="images.length > 1"
+                                                            class="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-black bg-opacity-50 text-white px-4 py-2 rounded-full text-sm"
+                                                        >
+                                                            <span x-text="currentIndex + 1"></span> / <span x-text="images.length"></span>
+                                                        </div>
+                                                    </div>
+                                                </div>
                                             <?php else: ?>
-                                                <div class="h-12 w-12 rounded bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
-                                                    <svg class="w-6 h-6 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <div class="w-16 h-16 bg-gray-200 dark:bg-gray-700 rounded flex items-center justify-center">
+                                                    <svg class="w-8 h-8 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
                                                     </svg>
                                                 </div>
@@ -130,7 +234,7 @@
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100">
                                             <a href="<?php echo e(route('equipment.show', $item)); ?>" class="hover:text-indigo-600 dark:hover:text-indigo-400">
-                                                <?php echo e($item->name); ?>
+                                                <?php echo e(Str::limit($item->name, 30)); ?>
 
                                             </a>
                                         </td>

@@ -12,21 +12,34 @@
                     <form action="{{ route('employees.store') }}" method="POST" enctype="multipart/form-data">
                         @csrf
 
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <!-- Nome -->
-                            <div>
-                                <x-label for="name" value="{{ __('Nome') }}" />
-                                <x-input id="name" type="text" class="mt-1 block w-full" name="name" :value="old('name')" required autofocus />
-                                <x-input-error for="name" class="mt-2" />
+                        <!-- Foto destacada e campos nome/email -->
+                        <div class="flex gap-6 items-start mb-6">
+                            <!-- Foto destacada à esquerda -->
+                            <div class="flex-shrink-0">
+                                <x-photo-upload-simple 
+                                    name="profile_photo"
+                                    label="{{ __('Foto de Perfil') }}"
+                                    :required="true"
+                                />
                             </div>
+                            
+                            <!-- Nome e Email à direita -->
+                            <div class="flex-1 space-y-4">
+                                <div>
+                                    <x-label for="name" value="{{ __('Nome') }}" />
+                                    <x-input id="name" type="text" class="mt-1 block w-full" name="name" :value="old('name')" required autofocus />
+                                    <x-input-error for="name" class="mt-2" />
+                                </div>
 
-                            <!-- Email -->
-                            <div>
-                                <x-label for="email" value="{{ __('Email') }}" />
-                                <x-input id="email" type="email" class="mt-1 block w-full" name="email" :value="old('email')" required />
-                                <x-input-error for="email" class="mt-2" />
+                                <div>
+                                    <x-label for="email" value="{{ __('Email') }}" />
+                                    <x-input id="email" type="email" class="mt-1 block w-full" name="email" :value="old('email')" required />
+                                    <x-input-error for="email" class="mt-2" />
+                                </div>
                             </div>
+                        </div>
 
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                             <!-- Senha -->
                             <div>
                                 <x-label for="password" value="{{ __('Senha') }}" />
@@ -55,11 +68,25 @@
                                 <x-input-error for="department" class="mt-2" />
                             </div>
 
+                            <!-- Data de Contratação -->
+                            <div>
+                                <x-label for="hire_date" value="{{ __('Data de Contratação') }}" />
+                                <x-input id="hire_date" type="date" class="mt-1 block w-full" name="hire_date" :value="old('hire_date')" required />
+                                <x-input-error for="hire_date" class="mt-2" />
+                            </div>
+
                             <!-- Telefone -->
                             <div>
                                 <x-label for="phone" value="{{ __('Telefone') }}" />
-                                <x-input id="phone" type="text" class="mt-1 block w-full" name="phone" :value="old('phone')" />
+                                <x-input id="phone" type="text" class="mt-1 block w-full mask-phone" name="phone" :value="old('phone')" />
                                 <x-input-error for="phone" class="mt-2" />
+                            </div>
+
+                            <!-- Celular -->
+                            <div>
+                                <x-label for="cellphone" value="{{ __('Celular') }}" />
+                                <x-input id="cellphone" type="text" class="mt-1 block w-full mask-cellphone" name="cellphone" :value="old('cellphone')" />
+                                <x-input-error for="cellphone" class="mt-2" />
                             </div>
 
                             <!-- Endereço -->
@@ -79,64 +106,29 @@
                             <!-- CPF -->
                             <div>
                                 <x-label for="cpf" value="{{ __('CPF') }}" />
-                                <x-input id="cpf" type="text" class="mt-1 block w-full" name="cpf" :value="old('cpf')" required />
+                                <x-input id="cpf" type="text" class="mt-1 block w-full mask-cpf" name="cpf" :value="old('cpf')" required />
                                 <x-input-error for="cpf" class="mt-2" />
                             </div>
 
                             <!-- RG -->
                             <div>
                                 <x-label for="rg" value="{{ __('RG') }}" />
-                                <x-input id="rg" type="text" class="mt-1 block w-full" name="rg" :value="old('rg')" />
+                                <x-input id="rg" type="text" class="mt-1 block w-full mask-rg" name="rg" :value="old('rg')" />
                                 <x-input-error for="rg" class="mt-2" />
                             </div>
 
-                            <!-- Documento (ID) -->
+                            <!-- CNPJ (MEI) -->
                             <div>
-                                <x-label for="document_id" value="{{ __('Documento (ID)') }}" />
-                                <x-input id="document_id" type="text" class="mt-1 block w-full" name="document_id" :value="old('document_id')" />
-                                <x-input-error for="document_id" class="mt-2" />
+                                <x-label for="cnpj" value="{{ __('CNPJ (MEI)') }}" />
+                                <x-input id="cnpj" type="text" class="mt-1 block w-full mask-cnpj" name="cnpj" :value="old('cnpj')" />
+                                <x-input-error for="cnpj" class="mt-2" />
                             </div>
 
                             <!-- Contato de Emergência -->
                             <div>
-                                <x-label for="emergency_contact" value="{{ __('Contato de Emergência') }}" />
-                                <x-input id="emergency_contact" type="text" class="mt-1 block w-full" name="emergency_contact" :value="old('emergency_contact')" />
+                                <x-label for="emergency_contact" value="{{ __('Contato de Emergência (Celular)') }}" />
+                                <x-input id="emergency_contact" type="text" class="mt-1 block w-full mask-cellphone" name="emergency_contact" :value="old('emergency_contact')" />
                                 <x-input-error for="emergency_contact" class="mt-2" />
-                            </div>
-
-                            <!-- Foto de Perfil -->
-                            <div>
-                                <x-label for="profile_photo" value="{{ __('Foto de Perfil') }}" />
-                                <input id="profile_photo" name="profile_photo" type="file" accept="image/*" class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 dark:file:bg-indigo-900/30 file:text-indigo-700 dark:file:text-indigo-300 hover:file:bg-indigo-100 dark:hover:file:bg-indigo-900/50" />
-                                <x-input-error for="profile_photo" class="mt-2" />
-                            </div>
-
-                            <!-- Documento (arquivo) -->
-                            <div>
-                                <x-label for="document_file" value="{{ __('Documento (arquivo)') }}" />
-                                <input id="document_file" name="document_file" type="file" accept=".pdf,image/*" class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 dark:file:bg-indigo-900/30 file:text-indigo-700 dark:file:text-indigo-300 hover:file:bg-indigo-100 dark:hover:file:bg-indigo-900/50" />
-                                <x-input-error for="document_file" class="mt-2" />
-                            </div>
-
-                            <!-- Salário por hora -->
-                            <div>
-                                <x-label for="hourly_rate" value="{{ __('Valor Hora (R$)') }}" />
-                                <x-input id="hourly_rate" type="number" step="0.01" class="mt-1 block w-full" name="hourly_rate" :value="old('hourly_rate')" />
-                                <x-input-error for="hourly_rate" class="mt-2" />
-                            </div>
-
-                            <!-- Salário mensal -->
-                            <div>
-                                <x-label for="monthly_salary" value="{{ __('Salário Mensal (R$)') }}" />
-                                <x-input id="monthly_salary" type="number" step="0.01" class="mt-1 block w-full" name="monthly_salary" :value="old('monthly_salary')" />
-                                <x-input-error for="monthly_salary" class="mt-2" />
-                            </div>
-
-                            <!-- Horas diárias esperadas -->
-                            <div>
-                                <x-label for="expected_daily_hours" value="{{ __('Horas diárias esperadas') }}" />
-                                <x-input id="expected_daily_hours" type="number" step="0.25" class="mt-1 block w-full" name="expected_daily_hours" :value="old('expected_daily_hours', 8)" />
-                                <x-input-error for="expected_daily_hours" class="mt-2" />
                             </div>
                         </div>
 
@@ -161,4 +153,5 @@
             </div>
         </div>
     </div>
+
 </x-app-layout>

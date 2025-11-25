@@ -9,7 +9,9 @@ export default defineConfig({
                 'resources/js/app.js',
                 'resources/js/notifications.js'
             ],
-            refresh: true,
+            // Desabilitar refresh automático - usar apenas HMR (Hot Module Replacement)
+            // Isso evita refresh completo da página, apenas atualiza o que mudou
+            refresh: false,
         }),
     ],
     server: {

@@ -36,7 +36,11 @@ $__split = function ($name, $params = []) {
 };
 [$__name, $__params] = $__split('equipment-request-form');
 
-$__html = app('livewire')->mount($__name, $__params, 'lw-3136450037-0', $__slots ?? [], get_defined_vars());
+$key = null;
+
+$key ??= \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::generateKey('lw-3136450037-0', null);
+
+$__html = app('livewire')->mount($__name, $__params, $key);
 
 echo $__html;
 

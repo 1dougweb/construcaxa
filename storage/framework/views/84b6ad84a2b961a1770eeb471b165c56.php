@@ -744,9 +744,9 @@
 <?php endif; ?>
                     <select id="supplier_category_id" wire:model.defer="supplier_category_id" class="border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm block mt-1 w-full">
                         <option value="">Selecione uma categoria</option>
-                        <!--[if BLOCK]><![endif]--><?php $__currentLoopData = $supplierCategories; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $category): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                        <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php $__currentLoopData = $supplierCategories; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $category): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
                             <option value="<?php echo e($category->id); ?>"><?php echo e($category->name); ?></option>
-                        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><!--[if ENDBLOCK]><![endif]-->
+                        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                     </select>
                     <?php if (isset($component)) { $__componentOriginalf94ed9c5393ef72725d159fe01139746 = $component; } ?>
 <?php if (isset($attributes)) { $__attributesOriginalf94ed9c5393ef72725d159fe01139746 = $attributes; } ?>
@@ -805,24 +805,6 @@
 
     <!-- Notifications -->
     <div id="notifications"></div>
-
-    <!--[if BLOCK]><![endif]--><?php if(session()->has('success')): ?>
-        <div class="fixed bottom-0 right-0 m-6">
-            <div class="bg-green-500 text-white px-6 py-4 rounded-lg shadow-lg">
-                <?php echo e(session('success')); ?>
-
-            </div>
-        </div>
-    <?php endif; ?><!--[if ENDBLOCK]><![endif]-->
-
-    <?php if(session()->has('error')): ?>
-        <div class="fixed bottom-0 right-0 m-6">
-            <div class="bg-red-500 text-white px-6 py-4 rounded-lg shadow-lg">
-                <?php echo e(session('error')); ?>
-
-            </div>
-        </div>
-    <?php endif; ?><!--[if ENDBLOCK]><![endif]-->
     
     <?php $__env->startPush('scripts'); ?>
     <script>

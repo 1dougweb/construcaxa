@@ -39,7 +39,7 @@
             }
         </style>
     </head>
-    <body>
+    <body data-auth-page="true">
         <div class="font-sans text-gray-900 dark:text-gray-100 antialiased">
             <?php echo e($slot); ?>
 

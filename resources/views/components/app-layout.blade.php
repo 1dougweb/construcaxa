@@ -52,11 +52,21 @@
         <link rel="preconnect" href="https://fonts.bunny.net">
         <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
 
+        <!-- WebSocket Configuration (antes dos scripts para garantir disponibilidade) -->
+        <script>
+            window.Laravel = {
+                @auth
+                user: @json(auth()->user()),
+                @endauth
+                csrfToken: '{{ csrf_token() }}',
+                appUrl: '{{ config('app.url') }}'
+            };
+        </script>
+
         <!-- Scripts -->
         @vite(['resources/css/app.css', 'resources/js/app.js', 'resources/js/notifications.js'])
 
-        <!-- Icons -->
-        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+        <!-- Flaticon UIcons será carregado via Vite -->
 
         <!-- Styles -->
         @livewireStyles
@@ -225,7 +235,7 @@
                 }">
                     <!-- Dashboard sempre visível -->
                     <a href="{{ route('dashboard') }}" class="flex items-center px-3 py-2 rounded-md text-sm font-medium {{ request()->routeIs('dashboard') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700' }}">
-                        <i class="bi bi-speedometer2 mr-3 text-base"></i>
+                        <i class="fi fi-rr-dashboard mr-3 text-base"></i>
                         {{ __('Dashboard') }}
                     </a>
 
@@ -234,10 +244,10 @@
                     <div>
                         <button @click="estoqueOpen = !estoqueOpen" class="w-full flex items-center justify-between px-3 py-2 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
                             <div class="flex items-center">
-                                <i class="bi bi-boxes mr-3 text-base"></i>
+                                <i class="fi fi-rr-box mr-3 text-base"></i>
                                 <span>{{ __('Estoque') }}</span>
                             </div>
-                            <i class="bi bi-chevron-down text-xs transition-transform duration-200" :class="{ 'rotate-180': estoqueOpen }"></i>
+                            <i class="fi fi-rr-angle-small-down text-xs transition-transform duration-200" :class="{ 'rotate-180': estoqueOpen }"></i>
                         </button>
                         <div x-show="estoqueOpen" 
                              x-transition:enter="transition ease-out duration-200"
@@ -249,31 +259,31 @@
                              class="ml-3 mt-0.5 mb-1 space-y-0.5 border-l-2 border-gray-200 dark:border-gray-700 pl-3">
                             @can('view products')
                             <a href="{{ route('products.index') }}" class="flex items-center px-3 py-2 rounded-md text-sm font-medium {{ request()->routeIs('products.*') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 -ml-3 pl-5' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700' }}">
-                                <i class="bi bi-box-seam mr-3 text-base"></i>
+                                <i class="fi fi-rr-box mr-3 text-base"></i>
                                 {{ __('Produtos') }}
                             </a>
                             @endcan
                             @can('view products')
                             <a href="{{ route('equipment.index') }}" class="flex items-center px-3 py-2 rounded-md text-sm font-medium {{ request()->routeIs('equipment.*') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 -ml-3 pl-5' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700' }}">
-                                <i class="bi bi-tools mr-3 text-base"></i>
+                                <i class="fi fi-rr-tools mr-3 text-base"></i>
                                 {{ __('Equipamentos') }}
                             </a>
                             @endcan
                             @can('view service-orders')
                             <a href="{{ route('material-requests.index') }}" class="flex items-center px-3 py-2 rounded-md text-sm font-medium {{ request()->routeIs('material-requests.*') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 -ml-3 pl-5' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700' }}">
-                                <i class="bi bi-clipboard-check mr-3 text-base"></i>
+                                <i class="fi fi-rr-clipboard mr-3 text-base"></i>
                                 {{ __('Requisições de Material') }}
                             </a>
                             @endcan
                             @can('view service-orders')
                             <a href="{{ route('equipment-requests.index') }}" class="flex items-center px-3 py-2 rounded-md text-sm font-medium {{ request()->routeIs('equipment-requests.*') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 -ml-3 pl-5' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700' }}">
-                                <i class="bi bi-wrench-adjustable mr-3 text-base"></i>
+                                <i class="fi fi-rr-clipboard mr-3 text-base"></i>
                                 {{ __('Requisições de Equipamento') }}
                             </a>
                             @endcan
                             @can('view suppliers')
                             <a href="{{ route('suppliers.index') }}" class="flex items-center px-3 py-2 rounded-md text-sm font-medium {{ request()->routeIs('suppliers.*') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 -ml-3 pl-5' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700' }}">
-                                <i class="bi bi-truck mr-3 text-base"></i>
+                                <i class="fi fi-rr-truck-side mr-3 text-base"></i>
                                 {{ __('Fornecedores') }}
                             </a>
                             @endcan
@@ -286,10 +296,10 @@
                     <div>
                         <button @click="gestaoOpen = !gestaoOpen" class="w-full flex items-center justify-between px-3 py-2 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
                             <div class="flex items-center">
-                                <i class="bi bi-gear mr-3 text-base"></i>
+                                <i class="fi fi-rr-settings mr-3 text-base"></i>
                                 <span>{{ __('Gestão') }}</span>
                             </div>
-                            <i class="bi bi-chevron-down text-xs transition-transform duration-200" :class="{ 'rotate-180': gestaoOpen }"></i>
+                            <i class="fi fi-rr-angle-small-down text-xs transition-transform duration-200" :class="{ 'rotate-180': gestaoOpen }"></i>
                         </button>
                         <div x-show="gestaoOpen" 
                              x-transition:enter="transition ease-out duration-200"
@@ -309,68 +319,74 @@
                             @if($showClients)
                             <a href="{{ route('clients.index') }}" 
                                class="flex items-center px-3 py-2 rounded-md text-sm font-medium {{ request()->routeIs('clients.*') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 -ml-3 pl-5' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700' }}">
-                                <i class="bi bi-person-badge mr-3 text-base"></i>
+                                <i class="fi fi-rr-user mr-3 text-base"></i>
                                 {{ __('Clientes') }}
                             </a>
                             @endif
                             @if($showContracts)
                             <a href="{{ route('contracts.index') }}" 
                                class="flex items-center px-3 py-2 rounded-md text-sm font-medium {{ request()->routeIs('contracts.*') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 -ml-3 pl-5' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700' }}">
-                                <i class="bi bi-file-earmark-text mr-3 text-base"></i>
+                                <i class="fi fi-rr-legal mr-3 text-base"></i>
                                 {{ __('Contratos') }}
                             </a>
                             @endif
                             @can('view employees')
-                            <a href="{{ route('employees.index') }}" class="flex items-center px-3 py-2 rounded-md text-sm font-medium {{ request()->routeIs('employees.*') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 -ml-3 pl-5' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700' }}">
-                                <i class="bi bi-people mr-3 text-base"></i>
+                            <a href="{{ route('employees.index') }}" class="flex items-center px-3 py-2 rounded-md text-sm font-medium {{ request()->routeIs('employees.*') && !request()->routeIs('employees.proposals.*') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 -ml-3 pl-5' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700' }}">
+                                <i class="fi fi-rr-users mr-3 text-base"></i>
                                 {{ __('Funcionários') }}
+                            </a>
+                            @endcan
+                            @can('view employees')
+                            <a href="{{ route('proposals.index') }}" class="flex items-center px-3 py-2 rounded-md text-sm font-medium {{ request()->routeIs('proposals.*') || request()->routeIs('employees.proposals.*') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 -ml-3 pl-5' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700' }}">
+                                <i class="fi fi-rr-receipt mr-3 text-base"></i>
+                                {{ __('Propostas') }}
                             </a>
                             @endcan
                             @can('manage attendance')
                             <a href="{{ route('attendance.manage') }}" class="flex items-center px-3 py-2 rounded-md text-sm font-medium {{ request()->routeIs('attendance.manage') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 -ml-3 pl-5' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700' }}">
-                                <i class="bi bi-calendar-check mr-3 text-base"></i>
+                                <i class="fi fi-rr-calendar-check mr-3 text-base"></i>
                                 {{ __('Gestão de Pontos') }}
                             </a>
                             @endcan
                             @can('view budgets')
                             <a href="{{ route('budgets.index') }}" class="flex items-center px-3 py-2 rounded-md text-sm font-medium {{ request()->routeIs('budgets.*') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 -ml-3 pl-5' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700' }}">
-                                <i class="bi bi-receipt mr-3 text-base"></i>
+                                <i class="fi fi-rr-receipt mr-3 text-base"></i>
                                 {{ __('Orçamentos') }}
                             </a>
                             @endcan
                             @can('view projects')
                             <a href="{{ route('projects.index') }}" class="flex items-center px-3 py-2 rounded-md text-sm font-medium {{ request()->routeIs('projects.*') && !request()->routeIs('client.projects.*') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 -ml-3 pl-5' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700' }}">
-                                <i class="bi bi-building mr-3 text-base"></i>
+                                <i class="fi fi-rr-building mr-3 text-base"></i>
                                 {{ __('Obras') }}
                             </a>
                             @endcan
                             @can('view projects')
                             <a href="{{ route('map.index') }}" class="flex items-center px-3 py-2 rounded-md text-sm font-medium {{ request()->routeIs('map.*') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 -ml-3 pl-5' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700' }}">
-                                <i class="bi bi-geo-alt mr-3 text-base"></i>
+                                <i class="fi fi-rr-map mr-3 text-base"></i>
                                 {{ __('Mapa') }}
                             </a>
                             @endcan
                             @can('view inspections')
                             <a href="{{ route('inspections.index') }}" class="flex items-center px-3 py-2 rounded-md text-sm font-medium {{ request()->routeIs('inspections.*') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 -ml-3 pl-5' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700' }}">
-                                <i class="bi bi-clipboard-check mr-3 text-base"></i>
+                                <i class="fi fi-rr-clipboard-check mr-3 text-base"></i>
                                 {{ __('Vistorias') }}
                             </a>
                             @endcan
                             @can('manage services')
                             <a href="{{ route('services.index') }}" class="flex items-center px-3 py-2 rounded-md text-sm font-medium {{ request()->routeIs('services.*') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 -ml-3 pl-5' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700' }}">
-                                <i class="bi bi-tools mr-3 text-base"></i>
+                                <i class="fi fi-rr-person-dolly-empty mr-3 text-base"></i>
                                 {{ __('Serviços') }}
                             </a>
                             @endcan
                             @can('manage services')
                             <a href="{{ route('labor-types.index') }}" class="flex items-center px-3 py-2 rounded-md text-sm font-medium {{ request()->routeIs('labor-types.*') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 -ml-3 pl-5' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700' }}">
-                                <i class="bi bi-people mr-3 text-base"></i>
+                                <i class="fi fi-rr-users-alt mr-3 text-base"></i>
                                 {{ __('Tipos de Mão de Obra') }}
                             </a>
                             @endcan
                             @can('manage services')
                             <a href="{{ route('service-categories.index') }}" class="flex items-center px-3 py-2 rounded-md text-sm font-medium {{ request()->routeIs('service-categories.*') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 -ml-3 pl-5' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700' }}">
-                                <i class="bi bi-folder mr-3 text-base"></i>
+                                <i class="fi fi-rr-folder mr-3 text-base"></i>
                                 {{ __('Categorias de Serviços') }}
                             </a>
                             @endcan
@@ -380,17 +396,17 @@
 
                     @can('view client-projects')
                     <a href="{{ route('client.dashboard') }}" class="flex items-center px-3 py-2 rounded-md text-sm font-medium {{ request()->routeIs('client.dashboard') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700' }}">
-                        <i class="bi bi-speedometer2 mr-3 text-base"></i>
+                        <i class="fi fi-rr-dashboard mr-3 text-base"></i>
                         {{ __('Dashboard') }}
                     </a>
                     <a href="{{ route('client.projects.index') }}" class="flex items-center px-3 py-2 rounded-md text-sm font-medium {{ request()->routeIs('client.projects.*') && !request()->routeIs('client.dashboard') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700' }}">
-                        <i class="bi bi-house-door mr-3 text-base"></i>
+                        <i class="fi fi-rr-home mr-3 text-base"></i>
                         {{ __('Minhas Obras') }}
                     </a>
                     @endcan
                     @can('view reports')
                     <a href="{{ route('reports.index') }}" class="flex items-center px-3 py-2 rounded-md text-sm font-medium {{ request()->routeIs('reports.*') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700' }}">
-                        <i class="bi bi-graph-up mr-3 text-base"></i>
+                        <i class="fi fi-rr-stats mr-3 text-base"></i>
                         {{ __('Relatórios') }}
                     </a>
                     @endcan
@@ -400,10 +416,10 @@
                     <div>
                         <button @click="financeiroOpen = !financeiroOpen" class="w-full flex items-center justify-between px-3 py-2 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
                             <div class="flex items-center">
-                                <i class="bi bi-cash-coin mr-3 text-base"></i>
+                                <i class="fi fi-rr-money mr-3 text-base"></i>
                                 <span>{{ __('Financeiro') }}</span>
                             </div>
-                            <i class="bi bi-chevron-down text-xs transition-transform duration-200" :class="{ 'rotate-180': financeiroOpen }"></i>
+                            <i class="fi fi-rr-angle-small-down text-xs transition-transform duration-200" :class="{ 'rotate-180': financeiroOpen }"></i>
                         </button>
                         <div x-show="financeiroOpen" 
                              x-transition:enter="transition ease-out duration-200"
@@ -414,23 +430,23 @@
                              x-transition:leave-end="opacity-0 transform -translate-y-2"
                              class="ml-3 mt-0.5 mb-1 space-y-0.5 border-l-2 border-gray-200 dark:border-gray-700 pl-3">
                             <a href="{{ route('financial.dashboard') }}" class="flex items-center px-3 py-2 rounded-md text-sm font-medium {{ request()->routeIs('financial.dashboard') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 border-l-2 border-indigo-500 dark:border-indigo-400 -ml-3 pl-5' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700' }}">
-                                <i class="bi bi-speedometer2 mr-3 text-base"></i>
+                                <i class="fi fi-rr-dashboard mr-3 text-base"></i>
                                 {{ __('Dashboard Financeiro') }}
                             </a>
                             <a href="{{ route('financial.accounts-payable.index') }}" class="flex items-center px-3 py-2 rounded-md text-sm font-medium {{ request()->routeIs('financial.accounts-payable.*') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 border-l-2 border-indigo-500 dark:border-indigo-400 -ml-3 pl-5' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700' }}">
-                                <i class="bi bi-arrow-down-circle mr-3 text-base"></i>
+                                <i class="fi fi-rr-arrow-trend-down mr-3 text-base"></i>
                                 {{ __('Contas a Pagar') }}
                             </a>
                             <a href="{{ route('financial.accounts-receivable.index') }}" class="flex items-center px-3 py-2 rounded-md text-sm font-medium {{ request()->routeIs('financial.accounts-receivable.*') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 border-l-2 border-indigo-500 dark:border-indigo-400 -ml-3 pl-5' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700' }}">
-                                <i class="bi bi-arrow-up-circle mr-3 text-base"></i>
+                                <i class="fi fi-rr-arrow-trend-up mr-3 text-base"></i>
                                 {{ __('Contas a Receber') }}
                             </a>
                             <a href="{{ route('financial.invoices.index') }}" class="flex items-center px-3 py-2 rounded-md text-sm font-medium {{ request()->routeIs('financial.invoices.*') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 border-l-2 border-indigo-500 dark:border-indigo-400 -ml-3 pl-5' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700' }}">
-                                <i class="bi bi-receipt-cutoff mr-3 text-base"></i>
+                                <i class="fi fi-rr-receipt mr-3 text-base"></i>
                                 {{ __('Notas Fiscais') }}
                             </a>
                             <a href="{{ route('financial.receipts.index') }}" class="flex items-center px-3 py-2 rounded-md text-sm font-medium {{ request()->routeIs('financial.receipts.*') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 border-l-2 border-indigo-500 dark:border-indigo-400 -ml-3 pl-5' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700' }}">
-                                <i class="bi bi-receipt mr-3 text-base"></i>
+                                <i class="fi fi-rr-receipt mr-3 text-base"></i>
                                 {{ __('Recibos') }}
                             </a>
                         </div>
@@ -439,7 +455,7 @@
 
                     @can('view attendance')
                     <a href="{{ route('attendance.index') }}" class="flex items-center px-3 py-2 rounded-md text-sm font-medium {{ request()->routeIs('attendance.index') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700' }}">
-                        <i class="bi bi-geo-alt mr-3 text-base"></i>
+                        <i class="fi fi-rr-map mr-3 text-base"></i>
                         {{ __('Bater Ponto') }}
                     </a>
                     @endcan
@@ -449,10 +465,10 @@
                     <div>
                         <button @click="adminOpen = !adminOpen" class="w-full flex items-center justify-between px-3 py-2 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
                             <div class="flex items-center">
-                                <i class="bi bi-shield-check mr-3 text-base"></i>
+                                <i class="fi fi-rr-shield-check mr-3 text-base"></i>
                                 <span>{{ __('Administração') }}</span>
                             </div>
-                            <i class="bi bi-chevron-down text-xs transition-transform duration-200" :class="{ 'rotate-180': adminOpen }"></i>
+                            <i class="fi fi-rr-angle-small-down text-xs transition-transform duration-200" :class="{ 'rotate-180': adminOpen }"></i>
                         </button>
                         <div x-show="adminOpen" 
                              x-transition:enter="transition ease-out duration-200"
@@ -463,16 +479,20 @@
                              x-transition:leave-end="opacity-0 transform -translate-y-2"
                              class="ml-3 mt-0.5 mb-1 space-y-0.5 border-l-2 border-gray-200 dark:border-gray-700 pl-3">
                             <a href="{{ route('admin.permissions.users') }}" class="flex items-center px-3 py-2 rounded-md text-sm font-medium {{ request()->routeIs('admin.permissions.users') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 -ml-3 pl-5' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700' }}">
-                                <i class="bi bi-person-check mr-3 text-base"></i>
+                                <i class="fi fi-rr-user-check mr-3 text-base"></i>
                                 {{ __('Permissões: Usuários') }}
                             </a>
                             <a href="{{ route('admin.permissions.roles') }}" class="flex items-center px-3 py-2 rounded-md text-sm font-medium {{ request()->routeIs('admin.permissions.roles') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 -ml-3 pl-5' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700' }}">
-                                <i class="bi bi-shield-lock mr-3 text-base"></i>
+                                <i class="fi fi-rr-shield mr-3 text-base"></i>
                                 {{ __('Permissões: Papéis') }}
                             </a>
                             <a href="{{ route('admin.email.index') }}" class="flex items-center px-3 py-2 rounded-md text-sm font-medium {{ request()->routeIs('admin.email.*') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 -ml-3 pl-5' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700' }}">
-                                <i class="bi bi-envelope-at mr-3 text-base"></i>
+                                <i class="fi fi-rr-envelope mr-3 text-base"></i>
                                 {{ __('Envio de Emails') }}
+                            </a>
+                            <a href="{{ route('admin.settings') }}" class="flex items-center px-3 py-2 rounded-md text-sm font-medium {{ request()->routeIs('admin.settings') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 -ml-3 pl-5' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700' }}">
+                                <i class="fi fi-rr-settings mr-3 text-base"></i>
+                                {{ __('Configurações') }}
                             </a>
                         </div>
                     </div>
@@ -512,9 +532,95 @@
                             @click="toggleDarkMode()"
                             class="p-2 rounded-md text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                             aria-label="Toggle dark mode">
-                            <i class="bi bi-sun-fill text-lg dark:hidden"></i>
-                            <i class="bi bi-moon-fill text-lg hidden dark:inline"></i>
+                            <i class="fi fi-rr-sun text-lg dark:hidden"></i>
+                            <i class="fi fi-rr-moon text-lg hidden dark:inline"></i>
                         </button>
+                        
+                        <!-- Notifications Dropdown -->
+                        <div class="relative" 
+                             x-data="notificationDropdown()"
+                             @click.away="open = false">
+                            <button 
+                                @click="open = !open; if (open && notifications.length === 0) loadNotifications()"
+                                class="relative p-2 rounded-md text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                                aria-label="Notificações">
+                                <i class="fi fi-rr-bell text-lg"></i>
+                                <span x-show="unreadCount > 0" 
+                                      x-text="unreadCount > 99 ? '99+' : unreadCount"
+                                      class="absolute -top-1 -right-1 h-5 w-5 bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center"
+                                      style="min-width: 1.25rem;"></span>
+                            </button>
+                            
+                            <!-- Dropdown de Notificações -->
+                            <div 
+                                x-show="open"
+                                x-transition:enter="transition ease-out duration-100"
+                                x-transition:enter-start="transform opacity-0 scale-95"
+                                x-transition:enter-end="transform opacity-100 scale-100"
+                                x-transition:leave="transition ease-in duration-75"
+                                x-transition:leave-start="transform opacity-100 scale-100"
+                                x-transition:leave-end="transform opacity-0 scale-95"
+                                x-cloak
+                                class="absolute right-0 mt-2 w-80 bg-white dark:bg-gray-800 rounded-md shadow-lg border border-gray-200 dark:border-gray-700 z-50 max-h-96 overflow-hidden flex flex-col">
+                                <!-- Header -->
+                                <div class="px-4 py-3 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
+                                    <h3 class="text-sm font-semibold text-gray-900 dark:text-gray-100">Notificações</h3>
+                                        <a href="{{ route('notifications.index') }}" 
+                                           class="text-xs text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300">
+                                            Ver todas
+                                        </a>
+                                </div>
+                                
+                                <!-- Lista de Notificações -->
+                                <div class="overflow-y-auto flex-1" style="max-height: 20rem;">
+                                    <div x-show="loading" x-cloak class="px-4 py-8 text-center text-gray-500 dark:text-gray-400">
+                                        <i class="fi fi-rr-spinner animate-spin text-2xl mb-2"></i>
+                                        <p class="text-sm">Carregando...</p>
+                                    </div>
+                                    <div x-show="!loading && notifications.length === 0" x-cloak class="px-4 py-8 text-center text-gray-500 dark:text-gray-400">
+                                        <i class="fi fi-rr-bell-slash text-3xl mb-2"></i>
+                                        <p class="text-sm">Nenhuma notificação</p>
+                                    </div>
+                                    <div x-show="!loading && notifications.length > 0" x-cloak>
+                                        <template x-for="notification in notifications" :key="notification.id">
+                                            <div 
+                                                @click="handleNotificationClick(notification)"
+                                                :class="notification.read_at ? 'bg-white dark:bg-gray-800' : 'bg-indigo-50 dark:bg-indigo-900/20'"
+                                                class="px-4 py-3 border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer transition-colors">
+                                                <div class="flex items-start gap-3">
+                                                    <div class="flex-shrink-0 mt-1">
+                                                        <i :class="getNotificationIcon(notification.type)" 
+                                                           class="text-lg text-indigo-600 dark:text-indigo-400"></i>
+                                                    </div>
+                                                    <div class="flex-1 min-w-0">
+                                                        <p class="text-sm font-medium text-gray-900 dark:text-gray-100" 
+                                                           x-text="notification.title"></p>
+                                                        <p class="text-xs text-gray-600 dark:text-gray-400 mt-1" 
+                                                           x-text="notification.message"></p>
+                                                        <p class="text-xs text-gray-500 dark:text-gray-500 mt-1" 
+                                                           x-text="notification.time_ago"></p>
+                                                    </div>
+                                                    <div x-show="!notification.read_at" 
+                                                         class="flex-shrink-0 mt-1">
+                                                        <span class="h-2 w-2 bg-indigo-500 rounded-full block"></span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </template>
+                                    </div>
+                                </div>
+                                
+                                <!-- Footer -->
+                                <div class="px-4 py-3 border-t border-gray-200 dark:border-gray-700 space-y-2">
+                                    <button 
+                                        @click="markAllAsRead()"
+                                        x-show="unreadCount > 0"
+                                        class="w-full text-center text-xs text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 py-2 rounded-md transition-colors">
+                                        <i class="fi fi-rr-check-circle mr-1"></i> Marcar todas como lidas
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
                         
                         <!-- User Menu Dropdown -->
                         <div class="relative" x-data="{ open: false }" @click.away="open = false">
@@ -531,7 +637,7 @@
                                     @endif
                                 </div>
                                 <span class="hidden sm:block text-sm font-medium text-gray-700 dark:text-gray-300">{{ Auth::user()->name }}</span>
-                                <i class="bi bi-chevron-down text-xs text-gray-600 dark:text-gray-400"></i>
+                                <i class="fi fi-rr-angle-small-down text-xs text-gray-600 dark:text-gray-400"></i>
                             </button>
                             
                             <!-- Dropdown Menu -->
@@ -552,7 +658,7 @@
                                 <a 
                                     href="{{ route('profile.edit') }}" 
                                     class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
-                                    <i class="bi bi-person-gear mr-2"></i>
+                                    <i class="fi fi-rr-user-pen mr-2"></i>
                                     Perfil
                                 </a>
                                 <form method="POST" action="{{ route('logout') }}">
@@ -560,7 +666,7 @@
                                     <button 
                                         type="submit" 
                                         class="w-full text-left px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors">
-                                        <i class="bi bi-box-arrow-right mr-2"></i>
+                                        <i class="fi fi-rr-sign-out-alt mr-2"></i>
                                         {{ __('Sair') }}
                                     </button>
                                 </form>
@@ -578,6 +684,314 @@
             </div>
         </div>
 
+        <script>
+            function notificationDropdown() {
+                return {
+                    open: false,
+                    unreadCount: 0,
+                    notifications: [],
+                    loading: false,
+                    sendingTest: false,
+                    soundEnabled: localStorage.getItem('notificationSoundEnabled') !== 'false',
+                    soundFile: localStorage.getItem('notificationSoundFile') || 'default',
+                    audioContext: null,
+                    audioElement: null,
+                    init() {
+                        // Carregar contador inicial apenas uma vez
+                        this.loadUnreadCount();
+                        
+                        // Carregar notificações iniciais
+                        this.loadNotifications();
+                        
+                        // Escutar eventos de notificação recebida via WebSocket
+                        window.addEventListener('notification-received', (event) => {
+                            this.handleNewNotification(event.detail);
+                        });
+                    },
+                    async playNotificationSound() {
+                        if (!this.soundEnabled || !this.soundFile || this.soundFile === 'default') return;
+                        await this.playSoundFile(this.soundFile);
+                    },
+                    async playDefaultSound() {
+                        try {
+                            const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                            
+                            if (ctx.state === 'suspended') {
+                                for (let i = 0; i < 3; i++) {
+                                    try {
+                                        await ctx.resume();
+                                        await new Promise(resolve => setTimeout(resolve, 50));
+                                        if (ctx.state === 'running') break;
+                                    } catch (e) {
+                                        // Silenciosamente tenta novamente
+                                    }
+                                }
+                            }
+                            
+                            const osc = ctx.createOscillator();
+                            const gain = ctx.createGain();
+                            
+                            osc.connect(gain);
+                            gain.connect(ctx.destination);
+                            
+                            const now = ctx.currentTime;
+                            osc.frequency.setValueAtTime(800, now);
+                            osc.frequency.setValueAtTime(600, now + 0.1);
+                            osc.type = 'sine';
+                            
+                            gain.gain.setValueAtTime(0, now);
+                            gain.gain.linearRampToValueAtTime(1.0, now + 0.01);
+                            gain.gain.exponentialRampToValueAtTime(0.01, now + 0.2);
+                            
+                            gain.gain.setValueAtTime(0, now + 0.25);
+                            gain.gain.linearRampToValueAtTime(1.0, now + 0.26);
+                            gain.gain.exponentialRampToValueAtTime(0.01, now + 0.45);
+                            
+                            gain.gain.setValueAtTime(0, now + 0.5);
+                            gain.gain.linearRampToValueAtTime(1.0, now + 0.51);
+                            gain.gain.exponentialRampToValueAtTime(0.01, now + 0.7);
+                            
+                            osc.start(now);
+                            osc.stop(now + 0.7);
+                        } catch (error) {
+                            console.error('Erro ao tocar som:', error);
+                        }
+                    },
+                    async playSoundFile(filename) {
+                        try {
+                            const audioUrl = `/sounds/${filename}`;
+                            const audio = new Audio(audioUrl);
+                            audio.volume = 1.0;
+                            audio.preload = 'auto';
+                            
+                            audio.addEventListener('error', (e) => {
+                                console.error('Erro no áudio:', e, audio.error);
+                            });
+                            
+                            return new Promise((resolve, reject) => {
+                                const playIt = () => {
+                                    audio.play()
+                                        .then(() => resolve())
+                                        .catch((err) => {
+                                            console.error('Erro ao tocar:', err);
+                                            reject(err);
+                                        });
+                                };
+                                
+                                if (audio.readyState >= 2) {
+                                    playIt();
+                                } else {
+                                    audio.addEventListener('canplay', playIt, { once: true });
+                                    audio.addEventListener('error', reject, { once: true });
+                                    setTimeout(() => {
+                                        if (audio.readyState < 2) {
+                                            playIt();
+                                        }
+                                    }, 2000);
+                                }
+                            });
+                        } catch (error) {
+                            console.error('Erro ao tocar arquivo:', error);
+                        }
+                    },
+                    async testSound() {
+                        await this.playNotificationSound();
+                    },
+                    toggleSound() {
+                        this.soundEnabled = !this.soundEnabled;
+                        localStorage.setItem('notificationSoundEnabled', this.soundEnabled);
+                        if (this.soundEnabled) {
+                            this.playNotificationSound(); // Testar o som
+                        }
+                    },
+                    setSoundFile(filename) {
+                        this.soundFile = filename;
+                        localStorage.setItem('notificationSoundFile', filename);
+                        // Sincronizar com notification-system.js
+                        if (window.notificationSystem) {
+                            window.notificationSystem.setSoundFile(filename);
+                        }
+                        if (this.soundEnabled) {
+                            this.playNotificationSound(); // Testar o novo som
+                        }
+                    },
+                    handleNewNotification(data) {
+                        // O som já foi tocado pelo notification-system.js via WebSocket
+                        // Não precisa tocar novamente aqui
+                        
+                        // Atualizar contador
+                        this.unreadCount = (this.unreadCount || 0) + 1;
+                        
+                        // Adicionar notificação à lista imediatamente (sempre, não só se dropdown estiver aberto)
+                        const timeAgo = this.getTimeAgo(data.created_at);
+                        const newNotification = {
+                            ...data,
+                            time_ago: timeAgo,
+                        };
+                        
+                        // Verificar se já existe (evitar duplicatas)
+                        const exists = this.notifications.find(n => n.id === data.id);
+                        if (!exists) {
+                            // Adicionar no início da lista
+                            this.notifications.unshift(newNotification);
+                            
+                            // Limitar a 10 notificações
+                            if (this.notifications.length > 10) {
+                                this.notifications = this.notifications.slice(0, 10);
+                            }
+                        }
+                    },
+                    getTimeAgo(dateString) {
+                        if (!dateString) return 'Agora';
+                        const date = new Date(dateString);
+                        const now = new Date();
+                        const diffInSeconds = Math.floor((now - date) / 1000);
+                        
+                        if (diffInSeconds < 60) return 'Agora';
+                        if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)} min atrás`;
+                        if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)} h atrás`;
+                        return `${Math.floor(diffInSeconds / 86400)} dia${Math.floor(diffInSeconds / 86400) > 1 ? 's' : ''} atrás`;
+                    },
+                    async loadNotifications() {
+                        this.loading = true;
+                        try {
+                            const response = await fetch('{{ route('notifications.recent') }}');
+                            const data = await response.json();
+                            this.notifications = data.notifications || [];
+                            this.unreadCount = data.unread_count || 0;
+                        } catch (error) {
+                            console.error('Erro ao carregar notificações:', error);
+                        } finally {
+                            this.loading = false;
+                        }
+                    },
+                    async loadUnreadCount() {
+                        try {
+                            const response = await fetch('{{ route('notifications.unread') }}');
+                            const data = await response.json();
+                            this.unreadCount = data.count || 0;
+                        } catch (error) {
+                            console.error('Erro ao carregar contador:', error);
+                        }
+                    },
+                    handleNotificationClick(notification) {
+                        // Tocar som quando clica na notificação (se não estiver lida)
+                        if (!notification.read_at && this.soundEnabled) {
+                            this.playNotificationSound();
+                        }
+                        
+                        // Marcar como lida
+                        this.markAsRead(notification.id);
+                        
+                        // Redirecionar se tiver URL
+                        if (notification.data && notification.data.url) {
+                            window.location.href = notification.data.url;
+                        }
+                    },
+                    async markAsRead(notificationId) {
+                        try {
+                            const response = await fetch(`/notifications/${notificationId}/read`, {
+                                method: 'POST',
+                                headers: {
+                                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || '',
+                                    'Content-Type': 'application/json',
+                                },
+                            });
+                            const data = await response.json();
+                            if (data.success) {
+                                this.unreadCount = data.unread_count || 0;
+                                const notification = this.notifications.find(n => n.id === notificationId);
+                                if (notification) {
+                                    notification.read_at = new Date().toISOString();
+                                }
+                            }
+                        } catch (error) {
+                            console.error('Erro ao marcar como lida:', error);
+                        }
+                    },
+                    async markAllAsRead() {
+                        try {
+                            const response = await fetch('{{ route('notifications.read-all') }}', {
+                                method: 'POST',
+                                headers: {
+                                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || '',
+                                    'Content-Type': 'application/json',
+                                },
+                            });
+                            const data = await response.json();
+                            if (data.success) {
+                                this.unreadCount = 0;
+                                this.notifications.forEach(n => n.read_at = new Date().toISOString());
+                            }
+                        } catch (error) {
+                            console.error('Erro ao marcar todas como lidas:', error);
+                        }
+                    },
+                    getNotificationIcon(type) {
+                        const icons = {
+                            'equipment_loan': 'bi-tools',
+                            'material_request': 'bi-clipboard-check',
+                            'budget_approval': 'bi-receipt',
+                            'proposal_approval': 'bi-file-earmark-text',
+                            'attendance': 'bi-calendar-check',
+                            'test': 'bi-bell-fill',
+                        };
+                        return icons[type] || 'bi-bell';
+                    },
+                    async sendTestNotification() {
+                        if (this.sendingTest) return;
+                        
+                        this.sendingTest = true;
+                        try {
+                            const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content;
+                            if (!csrfToken) {
+                                console.error('CSRF token não encontrado');
+                                alert('Erro: Token CSRF não encontrado');
+                                this.sendingTest = false;
+                                return;
+                            }
+
+                            const response = await fetch('{{ route('notifications.test') }}', {
+                                method: 'POST',
+                                headers: {
+                                    'X-CSRF-TOKEN': csrfToken,
+                                    'Content-Type': 'application/json',
+                                    'Accept': 'application/json',
+                                },
+                            });
+
+                            if (!response.ok) {
+                                const errorData = await response.json().catch(() => ({ message: 'Erro desconhecido' }));
+                                console.error('Erro na resposta:', response.status, errorData);
+                                alert('Erro ao enviar notificação: ' + (errorData.message || response.status));
+                                this.sendingTest = false;
+                                return;
+                            }
+
+                            const data = await response.json();
+                            console.log('Notificação de teste enviada:', data);
+                            
+                            if (data.success) {
+                                // Recarregar notificações imediatamente e depois novamente após delay
+                                this.loadNotifications();
+                                this.loadUnreadCount();
+                                
+                                // Recarregar novamente após delay para pegar via WebSocket
+                                setTimeout(() => {
+                                    this.loadNotifications();
+                                    this.loadUnreadCount();
+                                }, 1000);
+                            }
+                        } catch (error) {
+                            console.error('Erro ao enviar notificação de teste:', error);
+                            alert('Erro ao enviar notificação: ' + error.message);
+                        } finally {
+                            this.sendingTest = false;
+                        }
+                    }
+                };
+            }
+        </script>
         @livewireScripts
         <script src="https://unpkg.com/imask"></script>
         <script src="{{ asset('js/pwa.js') }}"></script>

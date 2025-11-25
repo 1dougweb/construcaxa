@@ -7,6 +7,7 @@ use App\Events\RequestStatusChanged;
 use App\Models\MaterialRequest;
 use App\Models\Product;
 use App\Models\StockMovement;
+use App\Services\NotificationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
@@ -84,6 +85,9 @@ class MaterialRequestController extends Controller
             }
 
             DB::commit();
+            
+            // Criar notificação para o usuário que criou a requisição
+            NotificationService::createMaterialRequestNotification($materialRequest);
             
             // Disparar evento de nova requisição
             broadcast(new NewMaterialRequest($materialRequest));
@@ -223,6 +227,9 @@ class MaterialRequestController extends Controller
             $materialRequest->takeItemsFromStock();
             
             DB::commit();
+            
+            // Criar notificação de requisição completada
+            NotificationService::createMaterialRequestCompletedNotification($materialRequest);
             
             // Disparar evento de mudança de status
             broadcast(new RequestStatusChanged(

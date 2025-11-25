@@ -1,7 +1,7 @@
 <x-app-layout>
     <x-slot name="header">
         <div class="flex items-center justify-between">
-            <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+            <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
                 {{ __('Bater Ponto') }}
             </h2>
         </div>
@@ -9,12 +9,12 @@
 
     <div class="py-6">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg">
-                <div class="p-6 lg:p-8 bg-white border-b border-gray-200">
+            <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-xl sm:rounded-lg border border-gray-200 dark:border-gray-700">
+                <div class="p-6 lg:p-8 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
 
                     @if ($errors->any())
-                        <div class="mb-4 rounded-md bg-red-50 p-4">
-                            <div class="text-sm text-red-700">
+                        <div class="mb-4 rounded-md bg-red-50 dark:bg-red-900/20 p-4 border border-red-200 dark:border-red-800">
+                            <div class="text-sm text-red-700 dark:text-red-300">
                                 @foreach ($errors->all() as $error)
                                     <div>{{ $error }}</div>
                                 @endforeach
@@ -24,7 +24,7 @@
 
                     <div class="space-y-4">
                         <div>
-                            <p class="text-sm text-gray-600">Próximo registro permitido: <span class="font-medium">{{ $nextType === 'entry' ? 'Entrada' : 'Saída' }}</span></p>
+                            <p class="text-sm text-gray-600 dark:text-gray-400">Próximo registro permitido: <span class="font-medium text-gray-900 dark:text-gray-100">{{ $nextType === 'entry' ? 'Entrada' : 'Saída' }}</span></p>
                         </div>
 
                         <form id="punch-form" action="{{ route('attendance.punch') }}" method="POST" class="space-y-2">
@@ -39,30 +39,30 @@
                                 <x-button id="punch-button" type="button" disabled>
                                     {{ $nextType === 'entry' ? 'Bater Entrada' : 'Bater Saída' }}
                                 </x-button>
-                                <button type="button" id="retry-location-btn" class="hidden px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                                <button type="button" id="retry-location-btn" class="hidden px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
                                     Tentar Novamente
                                 </button>
                             </div>
                         </form>
 
                         <div class="pt-4">
-                            <h3 class="text-sm font-semibold text-gray-700">Registros de hoje</h3>
-                            <div class="mt-2 border rounded-md divide-y">
+                            <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-300">Registros de hoje</h3>
+                            <div class="mt-2 border border-gray-200 dark:border-gray-700 rounded-md divide-y divide-gray-200 dark:divide-gray-700">
                                 @forelse ($todayEntries as $entry)
-                                    <div class="p-3 flex items-center justify-between text-sm">
+                                    <div class="p-3 flex items-center justify-between text-sm bg-white dark:bg-gray-800">
                                         <div>
-                                            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium {{ $entry->type === 'entry' ? 'bg-green-100 text-green-800' : 'bg-indigo-100 text-indigo-800' }}">
+                                            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium {{ $entry->type === 'entry' ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300' : 'bg-indigo-100 dark:bg-indigo-900/30 text-indigo-800 dark:text-indigo-300' }}">
                                                 {{ $entry->type === 'entry' ? 'Entrada' : 'Saída' }}
                                             </span>
-                                            <span class="ml-2 text-gray-700">{{ $entry->punched_at->format('H:i') }}</span>
+                                            <span class="ml-2 text-gray-700 dark:text-gray-300">{{ $entry->punched_at->format('H:i') }}</span>
                                         </div>
-                                        <div class="text-gray-500 flex items-center gap-3">
+                                        <div class="text-gray-500 dark:text-gray-400 flex items-center gap-3">
                                             <span>{{ number_format($entry->latitude, 5) }}, {{ number_format($entry->longitude, 5) }}</span>
-                                            <button type="button" class="text-indigo-600 hover:underline" onclick="openLocationModal({{ $entry->latitude }}, {{ $entry->longitude }})">Localização</button>
+                                            <button type="button" class="text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 hover:underline" onclick="openLocationModal({{ $entry->latitude }}, {{ $entry->longitude }})">Localização</button>
                                         </div>
                                     </div>
                                 @empty
-                                    <div class="p-3 text-sm text-gray-500">Nenhum registro hoje.</div>
+                                    <div class="p-3 text-sm text-gray-500 dark:text-gray-400">Nenhum registro hoje.</div>
                                 @endforelse
                             </div>
                         </div>
@@ -104,15 +104,15 @@
              x-transition:leave="transition ease-in duration-200"
              x-transition:leave-start="opacity-100 scale-100"
              x-transition:leave-end="opacity-0 scale-95"
-             class="relative bg-white rounded-lg shadow-2xl p-6 w-full max-w-4xl mx-4"
+             class="relative bg-white dark:bg-gray-800 rounded-lg shadow-2xl p-6 w-full max-w-4xl mx-4 border border-gray-200 dark:border-gray-700"
              style="max-height: calc(100vh - 3rem); overflow-y: auto;"
              @click.stop>
             <div class="flex items-center justify-between mb-4">
                 <div>
-                    <h3 class="font-semibold text-gray-900 text-lg">Confirmar Localização</h3>
-                    <p class="mt-1 text-sm text-gray-600">Verifique se a localização está correta antes de bater o ponto</p>
+                    <h3 class="font-semibold text-gray-900 dark:text-gray-100 text-lg">Confirmar Localização</h3>
+                    <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">Verifique se a localização está correta antes de bater o ponto</p>
                 </div>
-                <button @click="open = false; closeConfirmModal()" class="text-gray-400 hover:text-gray-600 transition-colors p-1 rounded-full hover:bg-gray-100 focus:outline-none">
+                <button @click="open = false; closeConfirmModal()" class="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-400 transition-colors p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                     </svg>
@@ -121,7 +121,7 @@
             
             <!-- Busca de endereço para melhorar precisão -->
             <div class="mb-4">
-                <label class="block text-sm font-medium text-gray-700 mb-2">
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Buscar endereço para melhorar a precisão
                 </label>
                 <div class="flex gap-2">
@@ -129,53 +129,53 @@
                         type="text" 
                         id="address-search-input"
                         placeholder="Digite um endereço ou local..."
-                        class="flex-1 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-sm">
+                        class="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-sm">
                     <button 
                         type="button"
                         id="search-address-btn"
-                        class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 text-sm font-medium">
+                        class="px-4 py-2 bg-indigo-600 dark:bg-indigo-700 text-white rounded-md hover:bg-indigo-700 dark:hover:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 text-sm font-medium">
                         Buscar
                     </button>
                     <button 
                         type="button"
                         id="use-map-center-btn"
-                        class="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 text-sm font-medium">
+                        class="px-4 py-2 bg-gray-600 dark:bg-gray-700 text-white rounded-md hover:bg-gray-700 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 text-sm font-medium">
                         Usar Centro do Mapa
                     </button>
                 </div>
-                <p class="mt-1 text-xs text-gray-500">Busque por endereço ou arraste o marcador para ajustar a localização</p>
+                <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Busque por endereço ou arraste o marcador para ajustar a localização</p>
             </div>
 
-            <div x-show="loadingAddress" class="mb-4 p-3 bg-blue-50 rounded-md">
-                <p class="text-sm text-blue-700">Carregando endereço...</p>
+            <div x-show="loadingAddress" class="mb-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-md border border-blue-200 dark:border-blue-800">
+                <p class="text-sm text-blue-700 dark:text-blue-300">Carregando endereço...</p>
             </div>
-            <div x-show="address && !loadingAddress" class="mb-4 p-3 bg-gray-50 rounded-md">
-                <p class="text-sm text-gray-700"><strong>Endereço:</strong> <span x-text="address"></span></p>
+            <div x-show="address && !loadingAddress" class="mb-4 p-3 bg-gray-50 dark:bg-gray-700/50 rounded-md border border-gray-200 dark:border-gray-700">
+                <p class="text-sm text-gray-700 dark:text-gray-300"><strong class="text-gray-900 dark:text-gray-100">Endereço:</strong> <span x-text="address"></span></p>
             </div>
-            <div x-show="!address && !loadingAddress" class="mb-4 p-3 bg-yellow-50 rounded-md">
-                <p class="text-sm text-yellow-700">Endereço não disponível</p>
+            <div x-show="!address && !loadingAddress" class="mb-4 p-3 bg-yellow-50 dark:bg-yellow-900/20 rounded-md border border-yellow-200 dark:border-yellow-800">
+                <p class="text-sm text-yellow-700 dark:text-yellow-300">Endereço não disponível</p>
             </div>
 
-            <div id="confirm-map-container" class="w-full h-96 rounded-md border border-gray-300 mb-4" style="min-height: 384px;"></div>
+            <div id="confirm-map-container" class="w-full h-96 rounded-md border border-gray-300 dark:border-gray-600 mb-4" style="min-height: 384px;"></div>
 
-            <div class="flex items-center justify-between pt-4 border-t">
-                <div class="text-sm text-gray-600">
+            <div class="flex items-center justify-between pt-4 border-t border-gray-200 dark:border-gray-700">
+                <div class="text-sm text-gray-600 dark:text-gray-400">
                     <div x-show="accuracy">
-                        <span>Precisão GPS: <span x-text="accuracy" class="font-medium"></span> metros</span>
+                        <span>Precisão GPS: <span x-text="accuracy" class="font-medium text-gray-900 dark:text-gray-100"></span> metros</span>
                     </div>
-                    <div class="mt-1 text-xs text-blue-600">
+                    <div class="mt-1 text-xs text-blue-600 dark:text-blue-400">
                         <i class="bi bi-info-circle"></i> Arraste o marcador no mapa para ajustar a localização
                     </div>
                 </div>
                 <div class="flex gap-3">
                     <button 
                         @click="open = false; closeConfirmModal()" 
-                        class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                        class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
                         Cancelar
                     </button>
                     <button 
                         @click="confirmLocation()" 
-                        class="px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                        class="px-4 py-2 text-sm font-medium text-white bg-indigo-600 dark:bg-indigo-700 rounded-md hover:bg-indigo-700 dark:hover:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
                         Confirmar e Bater Ponto
                     </button>
                 </div>
@@ -185,20 +185,20 @@
 
     <!-- Modal de Localização (para histórico) -->
     <div id="location-modal" class="fixed inset-0 z-50 hidden">
-        <div class="absolute inset-0 bg-black/40" onclick="closeLocationModal()"></div>
+        <div class="absolute inset-0 bg-black/40 dark:bg-black/60" onclick="closeLocationModal()"></div>
         <div class="absolute inset-0 flex items-center justify-center p-4">
-            <div class="bg-white w-full max-w-lg rounded-lg shadow-lg overflow-hidden">
-                <div class="px-4 py-3 border-b flex items-center justify-between">
-                    <h3 class="text-sm font-medium text-gray-900">Localização</h3>
-                    <button class="text-gray-500 hover:text-gray-700" onclick="closeLocationModal()">✕</button>
+            <div class="bg-white dark:bg-gray-800 w-full max-w-lg rounded-lg shadow-lg overflow-hidden border border-gray-200 dark:border-gray-700">
+                <div class="px-4 py-3 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
+                    <h3 class="text-sm font-medium text-gray-900 dark:text-gray-100">Localização</h3>
+                    <button class="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300" onclick="closeLocationModal()">✕</button>
                 </div>
-                <div class="p-4 space-y-3" id="location-modal-body">
-                    <div class="text-sm" id="loc-address"></div>
+                <div class="p-4 space-y-3 bg-white dark:bg-gray-800" id="location-modal-body">
+                    <div class="text-sm text-gray-700 dark:text-gray-300" id="loc-address"></div>
                     <div>
-                        <a id="loc-map-link" href="#" target="_blank" class="text-indigo-600 text-sm underline">Abrir no Google Maps</a>
+                        <a id="loc-map-link" href="#" target="_blank" class="text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 text-sm underline">Abrir no Google Maps</a>
                     </div>
                     <div class="mt-2">
-                        <div class="w-full overflow-hidden rounded-md border">
+                        <div class="w-full overflow-hidden rounded-md border border-gray-200 dark:border-gray-700">
                             <div class="relative" style="padding-bottom: 56.25%; height: 0;">
                                 <iframe id="loc-map-iframe" title="Mapa"
                                     class="absolute top-0 left-0 w-full h-full border-0"
@@ -283,7 +283,7 @@
         const setStatus = (msg, ok = false) => {
             if (statusEl) {
                 statusEl.textContent = msg;
-                statusEl.className = `text-sm ${ok ? 'text-green-700' : 'text-gray-600'}`;
+                statusEl.className = `text-sm ${ok ? 'text-green-700 dark:text-green-400' : 'text-gray-600 dark:text-gray-400'}`;
             }
         };
 
@@ -435,6 +435,7 @@
         let confirmMapInstance = null;
         let confirmMarkerInstance = null;
         let confirmCircleInstance = null;
+        let mapThemeObserver = null;
 
         // Função para abrir modal de confirmação
         function openConfirmModal(lat, lng, accuracy) {
@@ -495,6 +496,13 @@
                 }
                 confirmMapInstance = null;
             }
+            
+            // Limpar observer do tema
+            if (mapThemeObserver) {
+                mapThemeObserver.disconnect();
+                mapThemeObserver = null;
+            }
+            
             modal.style.display = 'none';
         };
 
@@ -610,10 +618,96 @@
 
             const position = { lat: parseFloat(lat), lng: parseFloat(lng) };
 
+            // Verificar se está em dark mode
+            const isDarkMode = document.documentElement.classList.contains('dark');
+            
+            // Estilos do mapa para dark mode
+            const darkMapStyles = [
+                {elementType: 'geometry', stylers: [{color: '#242f3e'}]},
+                {elementType: 'labels.text.stroke', stylers: [{color: '#242f3e'}]},
+                {elementType: 'labels.text.fill', stylers: [{color: '#746855'}]},
+                {
+                    featureType: 'administrative.locality',
+                    elementType: 'labels.text.fill',
+                    stylers: [{color: '#d59563'}]
+                },
+                {
+                    featureType: 'poi',
+                    elementType: 'labels.text.fill',
+                    stylers: [{color: '#d59563'}]
+                },
+                {
+                    featureType: 'poi.park',
+                    elementType: 'geometry',
+                    stylers: [{color: '#263c3f'}]
+                },
+                {
+                    featureType: 'poi.park',
+                    elementType: 'labels.text.fill',
+                    stylers: [{color: '#6b9a76'}]
+                },
+                {
+                    featureType: 'road',
+                    elementType: 'geometry',
+                    stylers: [{color: '#38414e'}]
+                },
+                {
+                    featureType: 'road',
+                    elementType: 'geometry.stroke',
+                    stylers: [{color: '#212a37'}]
+                },
+                {
+                    featureType: 'road',
+                    elementType: 'labels.text.fill',
+                    stylers: [{color: '#9ca5b3'}]
+                },
+                {
+                    featureType: 'road.highway',
+                    elementType: 'geometry',
+                    stylers: [{color: '#746855'}]
+                },
+                {
+                    featureType: 'road.highway',
+                    elementType: 'geometry.stroke',
+                    stylers: [{color: '#1f2835'}]
+                },
+                {
+                    featureType: 'road.highway',
+                    elementType: 'labels.text.fill',
+                    stylers: [{color: '#f3d19c'}]
+                },
+                {
+                    featureType: 'transit',
+                    elementType: 'geometry',
+                    stylers: [{color: '#2f3948'}]
+                },
+                {
+                    featureType: 'transit.station',
+                    elementType: 'labels.text.fill',
+                    stylers: [{color: '#d59563'}]
+                },
+                {
+                    featureType: 'water',
+                    elementType: 'geometry',
+                    stylers: [{color: '#17263c'}]
+                },
+                {
+                    featureType: 'water',
+                    elementType: 'labels.text.fill',
+                    stylers: [{color: '#515c6d'}]
+                },
+                {
+                    featureType: 'water',
+                    elementType: 'labels.text.stroke',
+                    stylers: [{color: '#17263c'}]
+                }
+            ];
+
             confirmMapInstance = new google.maps.Map(container, {
                 zoom: accuracy && accuracy > 0 ? Math.max(15, 17 - Math.log10(accuracy)) : 17,
                 center: position,
                 mapTypeId: 'roadmap',
+                styles: isDarkMode ? darkMapStyles : [],
             });
 
             // Adicionar marcador (arrastável para ajuste manual)
@@ -683,13 +777,14 @@
             // Info window
             const updateInfoWindow = () => {
                 const currentPos = confirmMarkerInstance.getPosition();
+                const currentDarkMode = document.documentElement.classList.contains('dark');
                 const infoWindow = new google.maps.InfoWindow({
                     content: `
-                        <div class="p-2">
-                            <p class="font-semibold text-gray-900">Sua Localização</p>
-                            <p class="text-sm text-gray-600 mt-1">Lat: ${currentPos.lat().toFixed(5)}, Lng: ${currentPos.lng().toFixed(5)}</p>
-                            ${accuracy ? `<p class="text-sm text-gray-600">Precisão GPS: ${accuracy.toFixed(1)} m</p>` : ''}
-                            <p class="text-xs text-blue-600 mt-2"><i>Arraste o marcador para ajustar</i></p>
+                        <div class="p-2 ${currentDarkMode ? 'dark' : ''}">
+                            <p class="font-semibold text-gray-900 dark:text-gray-100">Sua Localização</p>
+                            <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">Lat: ${currentPos.lat().toFixed(5)}, Lng: ${currentPos.lng().toFixed(5)}</p>
+                            ${accuracy ? `<p class="text-sm text-gray-600 dark:text-gray-400">Precisão GPS: ${accuracy.toFixed(1)} m</p>` : ''}
+                            <p class="text-xs text-blue-600 dark:text-blue-400 mt-2"><i>Arraste o marcador para ajustar</i></p>
                         </div>
                     `
                 });
@@ -717,6 +812,25 @@
                 google.maps.event.trigger(confirmMapInstance, 'resize');
                 confirmMapInstance.setCenter(position);
             }, 100);
+            
+            // Observar mudanças no tema para atualizar o mapa
+            if (mapThemeObserver) {
+                mapThemeObserver.disconnect();
+            }
+            
+            mapThemeObserver = new MutationObserver(() => {
+                const currentDarkMode = document.documentElement.classList.contains('dark');
+                if (confirmMapInstance) {
+                    confirmMapInstance.setOptions({
+                        styles: currentDarkMode ? darkMapStyles : []
+                    });
+                }
+            });
+            
+            mapThemeObserver.observe(document.documentElement, {
+                attributes: true,
+                attributeFilter: ['class']
+            });
         }
         
         // Inicializar busca de endereço com Places Autocomplete

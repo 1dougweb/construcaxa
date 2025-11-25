@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Employee;
 use App\Models\EmployeeDeduction;
+use App\Models\EmployeeDocument;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -39,16 +40,14 @@ class EmployeeController extends Controller
             'birth_date' => 'nullable|date',
             'cpf' => 'required|string|max:14|unique:employees,cpf',
             'rg' => 'nullable|string|max:20|unique:employees,rg',
-            'document_id' => 'nullable|string|max:50',
+            'cnpj' => 'nullable|string|max:18|unique:employees,cnpj',
             'phone' => 'nullable|string|max:20',
+            'cellphone' => 'nullable|string|max:20',
             'address' => 'nullable|string',
-            'profile_photo' => 'nullable|image|max:2048',
+            'profile_photo' => 'required|image|max:2048',
             'document_file' => 'nullable|mimes:pdf,jpg,jpeg,png|max:4096',
             'emergency_contact' => 'nullable|string|max:255',
             'notes' => 'nullable|string',
-            'hourly_rate' => 'nullable|numeric|min:0',
-            'monthly_salary' => 'nullable|numeric|min:0',
-            'expected_daily_hours' => 'nullable|numeric|min:0.25|max:24',
         ]);
 
         DB::beginTransaction();
@@ -73,11 +72,6 @@ class EmployeeController extends Controller
                 $profilePhotoPath = $request->file('profile_photo')->store('employees/photos', 'public');
             }
 
-            $documentFilePath = null;
-            if ($request->hasFile('document_file')) {
-                $documentFilePath = $request->file('document_file')->store('employees/documents', 'public');
-            }
-
             // Criar funcionário
             Employee::create([
                 'user_id' => $user->id,
@@ -86,17 +80,14 @@ class EmployeeController extends Controller
                 'hire_date' => $validated['hire_date'],
                 'birth_date' => $validated['birth_date'],
                 'cpf' => $validated['cpf'],
-                'rg' => $validated['rg'],
-                'document_id' => $validated['document_id'],
-                'phone' => $validated['phone'],
+                'rg' => $validated['rg'] ?? null,
+                'cnpj' => $validated['cnpj'] ?? null,
+                'phone' => $validated['phone'] ?? null,
+                'cellphone' => $validated['cellphone'] ?? null,
                 'address' => $validated['address'],
                 'profile_photo_path' => $profilePhotoPath,
-                'document_file' => $documentFilePath,
                 'emergency_contact' => $validated['emergency_contact'],
                 'notes' => $validated['notes'],
-                'hourly_rate' => $validated['hourly_rate'],
-                'monthly_salary' => $validated['monthly_salary'],
-                'expected_daily_hours' => $validated['expected_daily_hours'] ?? 8,
             ]);
 
             DB::commit();
@@ -109,8 +100,48 @@ class EmployeeController extends Controller
 
     public function show(Employee $employee)
     {
-        $employee->load(['user', 'attendances', 'deductions']);
+        $employee->load(['user', 'attendances', 'deductions', 'documents']);
         return view('employees.show', compact('employee'));
+    }
+
+    public function storeDocument(Request $request, Employee $employee)
+    {
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'document' => 'required|file|mimes:pdf,jpg,jpeg,png,doc,docx|max:10240',
+            'description' => 'nullable|string',
+        ]);
+
+        $file = $request->file('document');
+        $path = $file->store('employees/documents', 'public');
+
+        EmployeeDocument::create([
+            'employee_id' => $employee->id,
+            'name' => $validated['name'],
+            'file_path' => $path,
+            'file_type' => $file->getMimeType(),
+            'file_size' => $file->getSize(),
+            'description' => $validated['description'] ?? null,
+        ]);
+
+        return redirect()->route('employees.show', $employee)
+            ->with('success', 'Documento adicionado com sucesso!');
+    }
+
+    public function destroyDocument(Employee $employee, EmployeeDocument $document)
+    {
+        if ($document->employee_id !== $employee->id) {
+            return redirect()->back()->with('error', 'Documento não pertence a este funcionário.');
+        }
+
+        if (Storage::disk('public')->exists($document->file_path)) {
+            Storage::disk('public')->delete($document->file_path);
+        }
+
+        $document->delete();
+
+        return redirect()->route('employees.show', $employee)
+            ->with('success', 'Documento excluído com sucesso!');
     }
 
     public function edit(Employee $employee)
@@ -120,31 +151,26 @@ class EmployeeController extends Controller
 
     public function update(Request $request, Employee $employee)
     {
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users,email,' . $employee->user_id,
-            'position' => 'required|string|max:255',
-            'department' => 'required|string|max:255',
-            'hire_date' => 'required|date',
-            'birth_date' => 'nullable|date',
-            'cpf' => 'required|string|max:14|unique:employees,cpf,' . $employee->id . ',id',
-            'rg' => 'nullable|string|max:20|unique:employees,rg,' . $employee->id . ',id',
-            'document_id' => 'nullable|string|max:50',
-            'phone' => 'nullable|string|max:20',
-            'address' => 'nullable|string',
-            'profile_photo' => 'nullable|image|max:2048',
-            'document_file' => 'nullable|mimes:pdf,jpg,jpeg,png|max:4096',
-            'emergency_contact' => 'nullable|string|max:255',
-            'notes' => 'nullable|string',
-            'hourly_rate' => 'nullable|numeric|min:0',
-            'monthly_salary' => 'nullable|numeric|min:0',
-            'expected_daily_hours' => 'nullable|numeric|min:0.25|max:24',
-        ]);
-
-        DB::beginTransaction();
         try {
-            // Debug: Log the validated data
-            \Log::info('Employee Update - Validated Data:', $validated);
+            $validated = $request->validate([
+                'name' => 'required|string|max:255',
+                'email' => 'required|string|email|max:255|unique:users,email,' . $employee->user_id,
+                'position' => 'required|string|max:255',
+                'department' => 'required|string|max:255',
+                'hire_date' => 'required|date',
+                'birth_date' => 'nullable|date',
+                'cpf' => 'required|string|max:14|unique:employees,cpf,' . $employee->id . ',id',
+                'rg' => 'nullable|string|max:20|unique:employees,rg,' . $employee->id . ',id',
+                'cnpj' => 'nullable|string|max:18|unique:employees,cnpj,' . $employee->id . ',id',
+                'phone' => 'nullable|string|max:20',
+                'cellphone' => 'nullable|string|max:20',
+                'address' => 'nullable|string',
+                'profile_photo' => 'nullable|image|max:2048',
+                'emergency_contact' => 'nullable|string|max:255',
+                'notes' => 'nullable|string',
+            ]);
+
+            DB::beginTransaction();
             
             // Atualizar usuário
             $employee->user->update([
@@ -157,40 +183,46 @@ class EmployeeController extends Controller
                 'position' => $validated['position'],
                 'department' => $validated['department'],
                 'hire_date' => $validated['hire_date'],
-                'birth_date' => $validated['birth_date'],
+                'birth_date' => $validated['birth_date'] ?? null,
                 'cpf' => $validated['cpf'],
-                'rg' => $validated['rg'],
-                'document_id' => $validated['document_id'],
-                'phone' => $validated['phone'],
-                'address' => $validated['address'],
-                'emergency_contact' => $validated['emergency_contact'],
-                'notes' => $validated['notes'],
-                'hourly_rate' => $validated['hourly_rate'],
-                'monthly_salary' => $validated['monthly_salary'],
-                'expected_daily_hours' => $validated['expected_daily_hours'] ?? 8,
+                'rg' => $validated['rg'] ?? null,
+                'cnpj' => $validated['cnpj'] ?? null,
+                'phone' => $validated['phone'] ?? null,
+                'cellphone' => $validated['cellphone'] ?? null,
+                'address' => $validated['address'] ?? null,
+                'emergency_contact' => $validated['emergency_contact'] ?? null,
+                'notes' => $validated['notes'] ?? null,
             ];
 
             if ($request->hasFile('profile_photo')) {
+                // Deletar foto antiga se existir
+                if ($employee->profile_photo_path && Storage::disk('public')->exists($employee->profile_photo_path)) {
+                    Storage::disk('public')->delete($employee->profile_photo_path);
+                }
                 $data['profile_photo_path'] = $request->file('profile_photo')->store('employees/photos', 'public');
+            } elseif ($request->input('remove_profile_photo')) {
+                // Remover foto se o campo remove_profile_photo estiver presente
+                if ($employee->profile_photo_path && Storage::disk('public')->exists($employee->profile_photo_path)) {
+                    Storage::disk('public')->delete($employee->profile_photo_path);
+                }
+                $data['profile_photo_path'] = null;
             }
-
-            if ($request->hasFile('document_file')) {
-                $data['document_file'] = $request->file('document_file')->store('employees/documents', 'public');
-            }
-
-            // Debug: Log the data being updated
-            \Log::info('Employee Update - Data to update:', $data);
 
             $employee->update($data);
-            
-            // Debug: Log the updated employee
-            \Log::info('Employee Update - After update:', $employee->fresh()->toArray());
 
             DB::commit();
             return redirect()->route('employees.index')->with('success', 'Funcionário atualizado com sucesso!');
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            DB::rollBack();
+            return back()->withErrors($e->errors())->withInput();
         } catch (\Exception $e) {
             DB::rollBack();
-            throw ValidationException::withMessages(['error' => 'Erro ao atualizar funcionário. ' . $e->getMessage()]);
+            \Log::error('Erro ao atualizar funcionário: ' . $e->getMessage(), [
+                'employee_id' => $employee->id,
+                'request_data' => $request->all(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            return back()->withErrors(['error' => 'Erro ao atualizar funcionário: ' . $e->getMessage()])->withInput();
         }
     }
 
@@ -276,17 +308,64 @@ class EmployeeController extends Controller
             'date' => $validated['date'],
         ]);
 
+        // Retornar JSON para requisições AJAX
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Desconto adicionado com sucesso!'
+            ]);
+        }
+
         return redirect()->back()->with('success', 'Desconto adicionado com sucesso!');
     }
 
-    public function destroyDeduction(Employee $employee, EmployeeDeduction $deduction)
+    public function destroyDeduction(Request $request, Employee $employee, EmployeeDeduction $deduction)
     {
         if ($deduction->employee_id !== $employee->id) {
+            // Retornar JSON para requisições AJAX
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Desconto não pertence a este funcionário.'
+                ], 403);
+            }
             return redirect()->back()->with('error', 'Desconto não pertence a este funcionário.');
         }
 
         $deduction->delete();
 
+        // Retornar JSON para requisições AJAX
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Desconto excluído com sucesso!'
+            ]);
+        }
+
         return redirect()->back()->with('success', 'Desconto excluído com sucesso!');
+    }
+
+    public function storeEmployeeDocument(Request $request, Employee $employee)
+    {
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'document' => 'required|file|mimes:pdf,jpg,jpeg,png,doc,docx|max:10240',
+            'description' => 'nullable|string',
+        ]);
+
+        $file = $request->file('document');
+        $path = $file->store('employees/documents', 'public');
+
+        EmployeeDocument::create([
+            'employee_id' => $employee->id,
+            'name' => $validated['name'],
+            'file_path' => $path,
+            'file_type' => $file->getMimeType(),
+            'file_size' => $file->getSize(),
+            'description' => $validated['description'] ?? null,
+        ]);
+
+        return redirect()->route('employees.show', $employee)
+            ->with('success', 'Documento adicionado com sucesso!');
     }
 }

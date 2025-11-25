@@ -96,12 +96,18 @@ class EquipmentRequestForm extends Component
             }
             
             foreach ($equipmentRequest->items as $item) {
+                $photo = null;
+                if ($item->equipment->photos && count($item->equipment->photos) > 0) {
+                    $photo = $item->equipment->photos[0];
+                }
+                
                 $this->selectedEquipment[] = [
                     'id' => $item->equipment_id,
                     'name' => $item->equipment->name,
                     'serial_number' => $item->equipment->serial_number,
                     'quantity' => $item->quantity,
                     'condition_notes' => $item->condition_notes,
+                    'photo' => $photo,
                 ];
             }
         } else {

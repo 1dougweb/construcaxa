@@ -8,6 +8,7 @@ use App\Models\EquipmentRequest;
 use App\Models\Equipment;
 use App\Models\Employee;
 use App\Models\ServiceOrder;
+use App\Services\NotificationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
@@ -109,7 +110,13 @@ class EquipmentRequestController extends Controller
 
     public function show(EquipmentRequest $equipmentRequest)
     {
-        $equipmentRequest->load(['employee', 'serviceOrder', 'items.equipment', 'user']);
+        $equipmentRequest->load([
+            'employee.user', 
+            'serviceOrder', 
+            'items.equipment.currentEmployee.user',
+            'items.equipment.equipmentRequestItems.equipmentRequest.employee.user',
+            'user'
+        ]);
         return view('equipment-requests.show', compact('equipmentRequest'));
     }
 
@@ -172,6 +179,11 @@ class EquipmentRequestController extends Controller
             }
 
             DB::commit();
+            
+            // Criar notificação para o funcionário
+            if ($equipmentRequest->type === 'loan') {
+                NotificationService::createEquipmentLoanNotification($equipmentRequest);
+            }
             
             // Disparar evento de mudança de status
             broadcast(new RequestStatusChanged(

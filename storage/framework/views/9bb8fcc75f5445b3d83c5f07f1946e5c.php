@@ -25,14 +25,14 @@
 <?php endif; ?>
                 <?php if (isset($component)) { $__componentOriginalc2fcfa88dc54fee60e0757a7e0572df1 = $component; } ?>
 <?php if (isset($attributes)) { $__attributesOriginalc2fcfa88dc54fee60e0757a7e0572df1 = $attributes; } ?>
-<?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.input','data' => ['id' => 'number','type' => 'text','class' => 'block mt-1 w-full bg-gray-50','wire:model' => 'number','readonly' => true]] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
+<?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.input','data' => ['id' => 'number','type' => 'text','class' => 'block mt-1 w-full bg-gray-50 dark:bg-gray-700','wire:model' => 'number','readonly' => true]] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
 <?php $component->withName('input'); ?>
 <?php if ($component->shouldRender()): ?>
 <?php $__env->startComponent($component->resolveView(), $component->data()); ?>
 <?php if (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag): ?>
 <?php $attributes = $attributes->except(\Illuminate\View\AnonymousComponent::ignoredParameterNames()); ?>
 <?php endif; ?>
-<?php $component->withAttributes(['id' => 'number','type' => 'text','class' => 'block mt-1 w-full bg-gray-50','wire:model' => 'number','readonly' => true]); ?>
+<?php $component->withAttributes(['id' => 'number','type' => 'text','class' => 'block mt-1 w-full bg-gray-50 dark:bg-gray-700','wire:model' => 'number','readonly' => true]); ?>
 <?php echo $__env->renderComponent(); ?>
 <?php endif; ?>
 <?php if (isset($__attributesOriginalc2fcfa88dc54fee60e0757a7e0572df1)): ?>
@@ -87,7 +87,7 @@
 <?php $component = $__componentOriginald8ba2b4c22a13c55321e34443c386276; ?>
 <?php unset($__componentOriginald8ba2b4c22a13c55321e34443c386276); ?>
 <?php endif; ?>
-                <select wire:model="type" id="type" class="border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm block mt-1 w-full">
+                <select wire:model="type" id="type" class="border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-400 focus:ring-indigo-500 dark:focus:ring-indigo-400 rounded-md shadow-sm block mt-1 w-full">
                     <option value="loan">Empréstimo</option>
                     <option value="return">Devolução</option>
                 </select>
@@ -137,11 +137,11 @@
 <?php $component = $__componentOriginald8ba2b4c22a13c55321e34443c386276; ?>
 <?php unset($__componentOriginald8ba2b4c22a13c55321e34443c386276); ?>
 <?php endif; ?>
-                <select wire:model="employee_id" id="employee_id" class="border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm block mt-1 w-full">
+                <select wire:model="employee_id" id="employee_id" class="border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-400 focus:ring-indigo-500 dark:focus:ring-indigo-400 rounded-md shadow-sm block mt-1 w-full">
                     <option value="">Selecione um funcionário</option>
-                    <!--[if BLOCK]><![endif]--><?php $__currentLoopData = $employees; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $employee): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                    <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php $__currentLoopData = $employees; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $employee): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
                         <option value="<?php echo e($employee->id); ?>"><?php echo e($employee->name); ?> - <?php echo e($employee->department); ?></option>
-                    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><!--[if ENDBLOCK]><![endif]-->
+                    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                 </select>
                 <?php if (isset($component)) { $__componentOriginalf94ed9c5393ef72725d159fe01139746 = $component; } ?>
 <?php if (isset($attributes)) { $__attributesOriginalf94ed9c5393ef72725d159fe01139746 = $attributes; } ?>
@@ -166,7 +166,7 @@
             </div>
 
             <!-- Data Prevista de Devolução -->
-            <!--[if BLOCK]><![endif]--><?php if($type === 'loan'): ?>
+            <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($type === 'loan'): ?>
             <div>
                 <?php if (isset($component)) { $__componentOriginald8ba2b4c22a13c55321e34443c386276 = $component; } ?>
 <?php if (isset($attributes)) { $__attributesOriginald8ba2b4c22a13c55321e34443c386276 = $attributes; } ?>
@@ -229,7 +229,7 @@
 <?php unset($__componentOriginalf94ed9c5393ef72725d159fe01139746); ?>
 <?php endif; ?>
             </div>
-            <?php endif; ?><!--[if ENDBLOCK]><![endif]-->
+            <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
         </div>
 
         <!-- Busca de OS -->
@@ -255,13 +255,13 @@
 <?php unset($__componentOriginald8ba2b4c22a13c55321e34443c386276); ?>
 <?php endif; ?>
             <div class="mt-1 relative">
-                <!--[if BLOCK]><![endif]--><?php if($selectedServiceOrder ?? null): ?>
-                    <div class="flex items-center justify-between p-3 bg-gray-50 border border-gray-300 rounded-md">
+                <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($selectedServiceOrder ?? null): ?>
+                    <div class="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md">
                         <div>
-                            <div class="font-medium text-gray-900"><?php echo e($selectedServiceOrder->number); ?></div>
-                            <div class="text-sm text-gray-500"><?php echo e($selectedServiceOrder->client_name); ?></div>
+                            <div class="font-medium text-gray-900 dark:text-gray-100"><?php echo e($selectedServiceOrder->number); ?></div>
+                            <div class="text-sm text-gray-500 dark:text-gray-400"><?php echo e($selectedServiceOrder->client_name); ?></div>
                         </div>
-                        <button type="button" wire:click="clearServiceOrder" class="text-red-600 hover:text-red-900">
+                        <button type="button" wire:click="clearServiceOrder" class="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                             </svg>
@@ -290,21 +290,21 @@
 <?php endif; ?>
                     <input type="hidden" wire:model="service_order_id" />
                     
-                    <!--[if BLOCK]><![endif]--><?php if($osSearchResults && count($osSearchResults) > 0): ?>
-                        <div class="absolute z-10 mt-1 w-full bg-white shadow-lg max-h-60 rounded-md py-1 text-base ring-1 ring-black ring-opacity-5 overflow-auto focus:outline-none">
-                            <!--[if BLOCK]><![endif]--><?php $__currentLoopData = $osSearchResults; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $os): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                    <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($osSearchResults && count($osSearchResults) > 0): ?>
+                        <div class="absolute z-10 mt-1 w-full bg-white dark:bg-gray-800 shadow-lg max-h-60 rounded-md py-1 text-base ring-1 ring-black dark:ring-gray-600 ring-opacity-5 overflow-auto focus:outline-none">
+                            <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php $__currentLoopData = $osSearchResults; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $os): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
                                 <button 
                                     type="button"
                                     wire:click="selectServiceOrder(<?php echo e($os->id); ?>)"
-                                    class="w-full text-left px-4 py-2 hover:bg-indigo-50 hover:text-indigo-900 cursor-pointer"
+                                    class="w-full text-left px-4 py-2 hover:bg-indigo-50 dark:hover:bg-indigo-900/50 hover:text-indigo-900 dark:hover:text-indigo-300 cursor-pointer"
                                 >
-                                    <div class="font-medium"><?php echo e($os->number); ?></div>
-                                    <div class="text-sm text-gray-500"><?php echo e($os->client_name); ?></div>
+                                    <div class="font-medium text-gray-900 dark:text-gray-100"><?php echo e($os->number); ?></div>
+                                    <div class="text-sm text-gray-500 dark:text-gray-400"><?php echo e($os->client_name); ?></div>
                                 </button>
-                            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><!--[if ENDBLOCK]><![endif]-->
+                            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                         </div>
-                    <?php endif; ?><!--[if ENDBLOCK]><![endif]-->
-                <?php endif; ?><!--[if ENDBLOCK]><![endif]-->
+                    <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+                <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
             </div>
             <?php if (isset($component)) { $__componentOriginalf94ed9c5393ef72725d159fe01139746 = $component; } ?>
 <?php if (isset($attributes)) { $__attributesOriginalf94ed9c5393ef72725d159fe01139746 = $attributes; } ?>
@@ -329,7 +329,7 @@
         </div>
 
         <!-- Finalidade -->
-        <!--[if BLOCK]><![endif]--><?php if($type === 'loan'): ?>
+        <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($type === 'loan'): ?>
         <div>
             <?php if (isset($component)) { $__componentOriginald8ba2b4c22a13c55321e34443c386276 = $component; } ?>
 <?php if (isset($attributes)) { $__attributesOriginald8ba2b4c22a13c55321e34443c386276 = $attributes; } ?>
@@ -392,7 +392,7 @@
 <?php unset($__componentOriginalf94ed9c5393ef72725d159fe01139746); ?>
 <?php endif; ?>
         </div>
-        <?php endif; ?><!--[if ENDBLOCK]><![endif]-->
+        <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
 
         <!-- Busca de Equipamentos -->
         <div>
@@ -438,54 +438,54 @@
 <?php unset($__componentOriginalc2fcfa88dc54fee60e0757a7e0572df1); ?>
 <?php endif; ?>
                 
-                <!--[if BLOCK]><![endif]--><?php if($searchResults && count($searchResults) > 0): ?>
-                    <div class="absolute z-10 mt-1 w-full bg-white shadow-lg max-h-60 rounded-md py-1 text-base ring-1 ring-black ring-opacity-5 overflow-auto focus:outline-none">
-                        <!--[if BLOCK]><![endif]--><?php $__currentLoopData = $searchResults; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $equipment): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($searchResults && count($searchResults) > 0): ?>
+                    <div class="absolute z-10 mt-1 w-full bg-white dark:bg-gray-800 shadow-lg max-h-60 rounded-md py-1 text-base ring-1 ring-black dark:ring-gray-600 ring-opacity-5 overflow-auto focus:outline-none">
+                        <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php $__currentLoopData = $searchResults; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $equipment): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
                             <button 
                                 type="button"
                                 wire:click="selectEquipment(<?php echo e($equipment->id); ?>)"
-                                class="w-full text-left px-4 py-2 hover:bg-indigo-50 hover:text-indigo-900 cursor-pointer flex items-center"
+                                class="w-full text-left px-4 py-2 hover:bg-indigo-50 dark:hover:bg-indigo-900/50 hover:text-indigo-900 dark:hover:text-indigo-300 cursor-pointer flex items-center"
                             >
-                                <!--[if BLOCK]><![endif]--><?php if($equipment->photos && count($equipment->photos) > 0): ?>
+                                <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($equipment->photos && count($equipment->photos) > 0): ?>
                                     <img src="<?php echo e(asset('storage/' . $equipment->photos[0])); ?>" alt="<?php echo e($equipment->name); ?>" class="h-8 w-8 rounded object-cover mr-3">
                                 <?php else: ?>
-                                    <div class="h-8 w-8 rounded bg-gray-200 mr-3 flex items-center justify-center">
-                                        <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <div class="h-8 w-8 rounded bg-gray-200 dark:bg-gray-700 mr-3 flex items-center justify-center">
+                                        <svg class="w-5 h-5 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                                         </svg>
                                     </div>
-                                <?php endif; ?><!--[if ENDBLOCK]><![endif]-->
+                                <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                                 <div>
-                                    <div class="font-medium"><?php echo e($equipment->name); ?></div>
-                                    <div class="text-sm text-gray-500"><?php echo e($equipment->serial_number); ?></div>
+                                    <div class="font-medium text-gray-900 dark:text-gray-100"><?php echo e($equipment->name); ?></div>
+                                    <div class="text-sm text-gray-500 dark:text-gray-400"><?php echo e($equipment->serial_number); ?></div>
                                 </div>
                             </button>
-                        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><!--[if ENDBLOCK]><![endif]-->
+                        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                     </div>
-                <?php endif; ?><!--[if ENDBLOCK]><![endif]-->
+                <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
             </div>
         </div>
 
         <!-- Equipamentos Selecionados -->
-        <!--[if BLOCK]><![endif]--><?php if(count($selectedEquipment) > 0): ?>
+        <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(count($selectedEquipment) > 0): ?>
             <div>
-                <h3 class="text-lg font-medium text-gray-900 mb-3"><?php echo e(__('Equipamentos Selecionados')); ?></h3>
+                <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-3"><?php echo e(__('Equipamentos Selecionados')); ?></h3>
                 <div class="space-y-3">
-                    <!--[if BLOCK]><![endif]--><?php $__currentLoopData = $selectedEquipment; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $index => $equipment): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
-                        <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                    <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php $__currentLoopData = $selectedEquipment; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $index => $equipment): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                        <div class="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
                             <div class="flex items-center flex-1">
-                                <!--[if BLOCK]><![endif]--><?php if(isset($equipment['photo']) && $equipment['photo']): ?>
+                                <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(isset($equipment['photo']) && $equipment['photo']): ?>
                                     <img src="<?php echo e(asset('storage/' . $equipment['photo'])); ?>" alt="<?php echo e($equipment['name']); ?>" class="h-12 w-12 rounded object-cover mr-4">
                                 <?php else: ?>
-                                    <div class="h-12 w-12 rounded bg-gray-200 mr-4 flex items-center justify-center">
-                                        <svg class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <div class="h-12 w-12 rounded bg-gray-200 dark:bg-gray-600 mr-4 flex items-center justify-center">
+                                        <svg class="w-6 h-6 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                                         </svg>
                                     </div>
-                                <?php endif; ?><!--[if ENDBLOCK]><![endif]-->
+                                <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                                 <div class="flex-1">
-                                    <h4 class="font-medium text-gray-900"><?php echo e($equipment['name']); ?></h4>
-                                    <p class="text-sm text-gray-500">Série: <?php echo e($equipment['serial_number']); ?></p>
+                                    <h4 class="font-medium text-gray-900 dark:text-gray-100"><?php echo e($equipment['name']); ?></h4>
+                                    <p class="text-sm text-gray-500 dark:text-gray-400">Série: <?php echo e($equipment['serial_number']); ?></p>
                                 </div>
                             </div>
                             
@@ -532,7 +532,7 @@
 <?php unset($__componentOriginalc2fcfa88dc54fee60e0757a7e0572df1); ?>
 <?php endif; ?>
                                 </div>
-                                <!--[if BLOCK]><![endif]--><?php if($type === 'return'): ?>
+                                <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($type === 'return'): ?>
                                 <div class="flex-1 max-w-xs">
                                     <?php if (isset($component)) { $__componentOriginald8ba2b4c22a13c55321e34443c386276 = $component; } ?>
 <?php if (isset($attributes)) { $__attributesOriginald8ba2b4c22a13c55321e34443c386276 = $attributes; } ?>
@@ -574,19 +574,20 @@
 <?php $component = $__componentOriginalc2fcfa88dc54fee60e0757a7e0572df1; ?>
 <?php unset($__componentOriginalc2fcfa88dc54fee60e0757a7e0572df1); ?>
 <?php endif; ?>
+                                    <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Anote o estado físico do equipamento ao devolver</p>
                                 </div>
-                                <?php endif; ?><!--[if ENDBLOCK]><![endif]-->
-                                <button type="button" wire:click="removeEquipment(<?php echo e($index); ?>)" class="text-red-600 hover:text-red-900 p-2">
+                                <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+                                <button type="button" wire:click="removeEquipment(<?php echo e($index); ?>)" class="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300 p-2">
                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                                     </svg>
                                 </button>
                             </div>
                         </div>
-                    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><!--[if ENDBLOCK]><![endif]-->
+                    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                 </div>
             </div>
-        <?php endif; ?><!--[if ENDBLOCK]><![endif]-->
+        <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
 
         <?php if (isset($component)) { $__componentOriginalf94ed9c5393ef72725d159fe01139746 = $component; } ?>
 <?php if (isset($attributes)) { $__attributesOriginalf94ed9c5393ef72725d159fe01139746 = $attributes; } ?>
@@ -675,7 +676,7 @@
 
         <!-- Botões -->
         <div class="flex justify-end space-x-4 pt-4">
-            <a href="<?php echo e(route('equipment-requests.index')); ?>" class="inline-flex items-center px-4 py-2 bg-gray-800 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700 focus:bg-gray-700 active:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition ease-in-out duration-150">
+            <a href="<?php echo e(route('equipment-requests.index')); ?>" class="inline-flex items-center px-4 py-2 bg-gray-800 dark:bg-gray-700 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700 dark:hover:bg-gray-600 focus:bg-gray-700 active:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition ease-in-out duration-150">
                 <?php echo e(__('Cancelar')); ?>
 
             </a>

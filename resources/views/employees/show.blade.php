@@ -73,6 +73,20 @@ use Illuminate\Support\Facades\Storage;
                                 </div>
                                 @endif
 
+                                @if($employee->rg)
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ __('RG') }}</label>
+                                    <p class="mt-1 text-sm text-gray-900 dark:text-gray-100">{{ $employee->rg }}</p>
+                                </div>
+                                @endif
+
+                                @if($employee->cnpj)
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ __('CNPJ (MEI)') }}</label>
+                                    <p class="mt-1 text-sm text-gray-900 dark:text-gray-100">{{ $employee->cnpj }}</p>
+                                </div>
+                                @endif
+
                                 @if($employee->hire_date)
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ __('Data de Contratação') }}</label>
@@ -80,26 +94,6 @@ use Illuminate\Support\Facades\Storage;
                                 </div>
                                 @endif
 
-                                @if($employee->hourly_rate)
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ __('Valor por Hora') }}</label>
-                                    <p class="mt-1 text-sm text-gray-900 dark:text-gray-100">R$ {{ number_format($employee->hourly_rate, 2, ',', '.') }}</p>
-                                </div>
-                                @endif
-
-                                @if($employee->monthly_salary)
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ __('Salário Mensal') }}</label>
-                                    <p class="mt-1 text-sm text-gray-900 dark:text-gray-100">R$ {{ number_format($employee->monthly_salary, 2, ',', '.') }}</p>
-                                </div>
-                                @endif
-
-                                @if($employee->expected_daily_hours)
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">{{ __('Horas Diárias Esperadas') }}</label>
-                                    <p class="mt-1 text-sm text-gray-900 dark:text-gray-100">{{ number_format($employee->expected_daily_hours, 2, ',', '.') }}h</p>
-                                </div>
-                                @endif
                             </div>
 
                             @if($employee->address)

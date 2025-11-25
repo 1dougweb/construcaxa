@@ -9,7 +9,7 @@
 <?php endif; ?>
 <?php $component->withAttributes([]); ?>
      <?php $__env->slot('header', null, []); ?> 
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+        <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
             <?php echo e(__('Mapa de Obras')); ?>
 
         </h2>
@@ -23,7 +23,11 @@ $__split = function ($name, $params = []) {
 };
 [$__name, $__params] = $__split('google-maps-component');
 
-$__html = app('livewire')->mount($__name, $__params, 'lw-902009647-0', $__slots ?? [], get_defined_vars());
+$key = null;
+
+$key ??= \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::generateKey('lw-902009647-0', null);
+
+$__html = app('livewire')->mount($__name, $__params, $key);
 
 echo $__html;
 

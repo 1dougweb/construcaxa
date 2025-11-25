@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Str;
 
 class Equipment extends Model
 {
@@ -12,6 +13,7 @@ class Equipment extends Model
 
     protected $fillable = [
         'name',
+        'slug',
         'serial_number',
         'description',
         'photos',
@@ -23,6 +25,44 @@ class Equipment extends Model
         'purchase_date',
         'notes',
     ];
+
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::creating(function ($equipment) {
+            if (empty($equipment->slug)) {
+                $equipment->slug = static::generateUniqueSlug($equipment->name);
+            }
+        });
+
+        static::updating(function ($equipment) {
+            if ($equipment->isDirty('name')) {
+                $equipment->slug = static::generateUniqueSlug($equipment->name, $equipment->id);
+            }
+        });
+    }
+
+    protected static function generateUniqueSlug($name, $excludeId = null)
+    {
+        $baseSlug = Str::slug($name);
+        $slug = $baseSlug;
+        $counter = 1;
+
+        while (static::where('slug', $slug)->when($excludeId, function ($query) use ($excludeId) {
+            return $query->where('id', '!=', $excludeId);
+        })->exists()) {
+            $slug = $baseSlug . '-' . $counter;
+            $counter++;
+        }
+
+        return $slug;
+    }
+
+    public function getRouteKeyName()
+    {
+        return 'slug';
+    }
 
     protected $casts = [
         'photos' => 'array',
@@ -98,5 +138,18 @@ class Equipment extends Model
     public function isAvailable()
     {
         return $this->status === 'available';
+    }
+
+    // Método para obter a última requisição de empréstimo completada
+    public function getLastLoan()
+    {
+        return $this->equipmentRequestItems()
+            ->whereHas('equipmentRequest', function($q) {
+                $q->where('type', 'loan')
+                  ->where('status', 'completed');
+            })
+            ->with(['equipmentRequest.employee.user'])
+            ->orderBy('created_at', 'desc')
+            ->first();
     }
 }

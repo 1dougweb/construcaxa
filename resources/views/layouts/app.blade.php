@@ -2,20 +2,65 @@
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
     <head>
         <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
         <meta name="csrf-token" content="{{ csrf_token() }}">
 
         <title>{{ config('app.name', 'Laravel') }}</title>
 
+        <!-- PWA Meta Tags -->
+        <meta name="theme-color" content="#1E2780">
+        <meta name="mobile-web-app-capable" content="yes">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+        <meta name="apple-mobile-web-app-title" content="{{ config('app.name', 'Stock Master') }}">
+        <meta name="description" content="Sistema de gestão de estoque e projetos">
+        
+        <!-- PWA Manifest -->
+        <link rel="manifest" href="{{ url('manifest.json') }}">
+        
+        <!-- Apple Touch Icons (opcional - só carrega se existir) -->
+        @if(file_exists(public_path('icons/icon-192x192.png')))
+        <link rel="apple-touch-icon" href="{{ asset('icons/icon-192x192.png') }}">
+        <link rel="apple-touch-icon" sizes="152x152" href="{{ asset('icons/icon-152x152.png') }}">
+        <link rel="apple-touch-icon" sizes="180x180" href="{{ asset('icons/icon-192x192.png') }}">
+        @endif
+        
+        <!-- Favicon (opcional - só carrega se existir) -->
+        @if(file_exists(public_path('icons/icon-192x192.png')))
+        <link rel="icon" type="image/png" sizes="192x192" href="{{ asset('icons/icon-192x192.png') }}">
+        <link rel="icon" type="image/png" sizes="512x512" href="{{ asset('icons/icon-512x512.png') }}">
+        @endif
+
         <!-- Notificações de sessão flash -->
         @if(session('success'))
             <meta name="notification-success" content="{{ session('success') }}">
+            <script>
+                document.addEventListener('DOMContentLoaded', function() {
+                    if (window.showNotification) {
+                        window.showNotification('{{ session('success') }}', 'success');
+                    }
+                });
+            </script>
         @endif
         @if(session('error'))
             <meta name="notification-error" content="{{ session('error') }}">
+            <script>
+                document.addEventListener('DOMContentLoaded', function() {
+                    if (window.showNotification) {
+                        window.showNotification('{{ session('error') }}', 'error');
+                    }
+                });
+            </script>
         @endif
         @if(session('info'))
             <meta name="notification-info" content="{{ session('info') }}">
+            <script>
+                document.addEventListener('DOMContentLoaded', function() {
+                    if (window.showNotification) {
+                        window.showNotification('{{ session('info') }}', 'info');
+                    }
+                });
+            </script>
         @endif
 
         <!-- Fonts -->
@@ -148,6 +193,9 @@
         
         <!-- Import IMask before using it -->
         <script src="https://unpkg.com/imask"></script>
+        
+        <!-- PWA Service Worker -->
+        <script src="{{ asset('js/pwa.js') }}"></script>
         
         <!-- WebSocket Configuration -->
         <script>

@@ -71,7 +71,7 @@
                                             @if($row->latitude && $row->longitude)
                                                 <button 
                                                     type="button"
-                                                    @click="openMapModal({{ $row->latitude }}, {{ $row->longitude }}, '{{ $row->id }}', '{{ optional($row->punched_date)->format('d/m/Y') }}', '{{ optional($row->punched_at)->format('H:i') }}', '{{ $row->type === 'entry' ? 'Entrada' : 'Saída' }}', '{{ optional($row->user)->name }}', {{ $row->accuracy ?? 'null' }})"
+                                                    @click="window.openMapModal({{ $row->latitude }}, {{ $row->longitude }}, '{{ $row->id }}', '{{ optional($row->punched_date)->format('d/m/Y') }}', '{{ optional($row->punched_at)->format('H:i') }}', '{{ $row->type === 'entry' ? 'Entrada' : 'Saída' }}', '{{ optional($row->user)->name }}', {{ $row->accuracy ?? 'null' }})"
                                                     class="text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 hover:underline text-sm font-medium">
                                                     Ver no Mapa
                                                 </button>
@@ -167,6 +167,17 @@
             <div id="map-container" class="w-full h-96 rounded-md border border-gray-300 dark:border-gray-600" style="min-height: 384px;"></div>
         </div>
     </div>
+
+    <script>
+        // Definir stub inicial para garantir que a função esteja disponível para Alpine
+        // Isso garante que a função exista antes do Alpine tentar usá-la
+        (function() {
+            window.openMapModal = window.openMapModal || function() {
+                console.warn('openMapModal: Google Maps não está configurado ainda');
+            };
+            window.closeMap = window.closeMap || function() {};
+        })();
+    </script>
 
     @if($googleMapsApiKey)
     <script>
@@ -404,10 +415,7 @@
                 });
             }
 
-            // Verificar se está em dark mode
-            const isDarkMode = document.documentElement.classList.contains('dark');
-            
-            // Info window com informações
+            // Info window com informações (reutilizando isDarkMode já declarado acima)
             const infoWindow = new google.maps.InfoWindow({
                 content: `
                     <div class="p-2 ${isDarkMode ? 'dark' : ''}">

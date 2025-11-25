@@ -125,13 +125,28 @@ RUN echo '[supervisord]' > /etc/supervisor/conf.d/supervisord.conf && \
     echo 'stderr_logfile=/var/log/php-fpm.err.log' >> /etc/supervisor/conf.d/supervisord.conf && \
     echo 'stdout_logfile=/var/log/php-fpm.out.log' >> /etc/supervisor/conf.d/supervisord.conf && \
     echo 'priority=999' >> /etc/supervisor/conf.d/supervisord.conf && \
+    echo 'startsecs=3' >> /etc/supervisor/conf.d/supervisord.conf && \
     echo '' >> /etc/supervisor/conf.d/supervisord.conf && \
     echo '[program:nginx]' >> /etc/supervisor/conf.d/supervisord.conf && \
     echo 'command=nginx -g "daemon off;"' >> /etc/supervisor/conf.d/supervisord.conf && \
     echo 'autostart=true' >> /etc/supervisor/conf.d/supervisord.conf && \
     echo 'autorestart=true' >> /etc/supervisor/conf.d/supervisord.conf && \
     echo 'stderr_logfile=/var/log/nginx.err.log' >> /etc/supervisor/conf.d/supervisord.conf && \
-    echo 'stdout_logfile=/var/log/nginx.out.log' >> /etc/supervisor/conf.d/supervisord.conf
+    echo 'stdout_logfile=/var/log/nginx.out.log' >> /etc/supervisor/conf.d/supervisord.conf && \
+    echo 'priority=998' >> /etc/supervisor/conf.d/supervisord.conf && \
+    echo 'startsecs=2' >> /etc/supervisor/conf.d/supervisord.conf && \
+    echo '' >> /etc/supervisor/conf.d/supervisord.conf && \
+    echo '[program:reverb]' >> /etc/supervisor/conf.d/supervisord.conf && \
+    echo 'command=/bin/bash -c "cd /var/www && php artisan reverb:start"' >> /etc/supervisor/conf.d/supervisord.conf && \
+    echo 'autostart=true' >> /etc/supervisor/conf.d/supervisord.conf && \
+    echo 'autorestart=true' >> /etc/supervisor/conf.d/supervisord.conf && \
+    echo 'stderr_logfile=/var/log/reverb.err.log' >> /etc/supervisor/conf.d/supervisord.conf && \
+    echo 'stdout_logfile=/var/log/reverb.out.log' >> /etc/supervisor/conf.d/supervisord.conf && \
+    echo 'priority=997' >> /etc/supervisor/conf.d/supervisord.conf && \
+    echo 'startsecs=5' >> /etc/supervisor/conf.d/supervisord.conf && \
+    echo 'startretries=3' >> /etc/supervisor/conf.d/supervisord.conf && \
+    echo 'user=www' >> /etc/supervisor/conf.d/supervisord.conf && \
+    echo 'environment=HOME="/var/www",USER="www",PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"'
 
 # Set permissions (as root)
 RUN chown -R www:www /var/www || true
@@ -216,12 +231,24 @@ RUN echo '#!/bin/bash' > /usr/local/bin/docker-entrypoint.sh && \
     echo '    fi' >> /usr/local/bin/docker-entrypoint.sh && \
     echo 'fi' >> /usr/local/bin/docker-entrypoint.sh && \
     echo '' >> /usr/local/bin/docker-entrypoint.sh && \
+    echo '# Wait for Laravel to be ready before starting Reverb' >> /usr/local/bin/docker-entrypoint.sh && \
+    echo 'echo "Waiting for Laravel to be ready..."' >> /usr/local/bin/docker-entrypoint.sh && \
+    echo 'cd /var/www' >> /usr/local/bin/docker-entrypoint.sh && \
+    echo 'for i in {1..30}; do' >> /usr/local/bin/docker-entrypoint.sh && \
+    echo '    if php artisan --version >/dev/null 2>&1; then' >> /usr/local/bin/docker-entrypoint.sh && \
+    echo '        echo "✓ Laravel is ready"' >> /usr/local/bin/docker-entrypoint.sh && \
+    echo '        break' >> /usr/local/bin/docker-entrypoint.sh && \
+    echo '    fi' >> /usr/local/bin/docker-entrypoint.sh && \
+    echo '    echo "Waiting for Laravel... ($i/30)"' >> /usr/local/bin/docker-entrypoint.sh && \
+    echo '    sleep 1' >> /usr/local/bin/docker-entrypoint.sh && \
+    echo 'done' >> /usr/local/bin/docker-entrypoint.sh && \
+    echo '' >> /usr/local/bin/docker-entrypoint.sh && \
     echo '# Start supervisor' >> /usr/local/bin/docker-entrypoint.sh && \
     echo 'exec /usr/bin/supervisord -c /etc/supervisor/conf.d/supervisord.conf' >> /usr/local/bin/docker-entrypoint.sh && \
     chmod +x /usr/local/bin/docker-entrypoint.sh
 
-# Expose port 80 for web server
-EXPOSE 80
+# Expose ports: 80 for web server, 8080 for Reverb WebSocket
+EXPOSE 80 8080
 
 # Start supervisor to run both PHP-FPM and Nginx (as root)
 # Supervisor precisa rodar como root para gerenciar processos

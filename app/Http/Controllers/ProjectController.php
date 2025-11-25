@@ -13,6 +13,7 @@ use App\Models\ProjectTask;
 use App\Models\Service;
 use App\Models\LaborType;
 use App\Services\GoogleMapsService;
+use App\Services\NotificationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -627,6 +628,10 @@ class ProjectController extends Controller
             }
 
             DB::commit();
+            
+            // Criar notificação para o cliente
+            NotificationService::createBudgetApprovalNotification($budget);
+            
             return back()->with('success', $message);
         } catch (\Exception $e) {
             DB::rollBack();

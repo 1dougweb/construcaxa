@@ -1,18 +1,18 @@
 <div>
-    <!--[if BLOCK]><![endif]--><?php if(empty($apiKey)): ?>
-        <div class="bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-3 rounded mb-4">
+    <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(empty($apiKey)): ?>
+        <div class="bg-yellow-100 dark:bg-yellow-900/30 border border-yellow-400 dark:border-yellow-600 text-yellow-700 dark:text-yellow-300 px-4 py-3 rounded mb-4">
             <p class="font-semibold">Google Maps não configurado</p>
             <p>Configure a chave da API do Google Maps nas 
-                <a href="<?php echo e(route('admin.settings')); ?>" class="underline text-yellow-800">configurações do sistema</a>
+                <a href="<?php echo e(route('admin.settings')); ?>" class="underline text-yellow-800 dark:text-yellow-400">configurações do sistema</a>
                 para visualizar o mapa das obras.
             </p>
         </div>
     <?php else: ?>
-        <div class="bg-white rounded-lg shadow-lg overflow-hidden">
-            <div class="p-4 bg-gray-50 border-b">
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden border border-gray-200 dark:border-gray-700">
+            <div class="p-4 bg-gray-50 dark:bg-gray-700/50 border-b border-gray-200 dark:border-gray-600">
                 <div>
-                    <h3 class="text-lg font-semibold text-gray-900">Obras em Andamento</h3>
-                    <p class="text-sm text-gray-600"><?php echo e(count($projects)); ?> obra(s) localizadas no mapa</p>
+                    <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Obras em Andamento</h3>
+                    <p class="text-sm text-gray-600 dark:text-gray-400"><?php echo e(count($projects)); ?> obra(s) localizadas no mapa</p>
                 </div>
             </div>
             
@@ -59,18 +59,110 @@
                         const centerLng = parseFloat(container.dataset.centerLng);
                         const projectCount = parseInt(container.dataset.projectCount);
 
+                        // Verificar se está em dark mode
+                        const isDarkMode = document.documentElement.classList.contains('dark');
+                        
+                        // Estilos para dark mode do Google Maps
+                        const darkMapStyles = [
+                            { elementType: 'geometry', stylers: [{ color: '#242f3e' }] },
+                            { elementType: 'labels.text.stroke', stylers: [{ color: '#242f3e' }] },
+                            { elementType: 'labels.text.fill', stylers: [{ color: '#746855' }] },
+                            {
+                                featureType: 'administrative.locality',
+                                elementType: 'labels.text.fill',
+                                stylers: [{ color: '#d59563' }]
+                            },
+                            {
+                                featureType: 'poi',
+                                elementType: 'labels',
+                                stylers: [{ visibility: 'off' }]
+                            },
+                            {
+                                featureType: 'poi',
+                                elementType: 'labels.text.fill',
+                                stylers: [{ color: '#d59563' }]
+                            },
+                            {
+                                featureType: 'poi.park',
+                                elementType: 'geometry',
+                                stylers: [{ color: '#263c3f' }]
+                            },
+                            {
+                                featureType: 'poi.park',
+                                elementType: 'labels.text.fill',
+                                stylers: [{ color: '#6b9a76' }]
+                            },
+                            {
+                                featureType: 'road',
+                                elementType: 'geometry',
+                                stylers: [{ color: '#38414e' }]
+                            },
+                            {
+                                featureType: 'road',
+                                elementType: 'geometry.stroke',
+                                stylers: [{ color: '#212a37' }]
+                            },
+                            {
+                                featureType: 'road',
+                                elementType: 'labels.text.fill',
+                                stylers: [{ color: '#9ca5b3' }]
+                            },
+                            {
+                                featureType: 'road.highway',
+                                elementType: 'geometry',
+                                stylers: [{ color: '#746855' }]
+                            },
+                            {
+                                featureType: 'road.highway',
+                                elementType: 'geometry.stroke',
+                                stylers: [{ color: '#1f2835' }]
+                            },
+                            {
+                                featureType: 'road.highway',
+                                elementType: 'labels.text.fill',
+                                stylers: [{ color: '#f3d19c' }]
+                            },
+                            {
+                                featureType: 'transit',
+                                elementType: 'geometry',
+                                stylers: [{ color: '#2f3948' }]
+                            },
+                            {
+                                featureType: 'transit.station',
+                                elementType: 'labels.text.fill',
+                                stylers: [{ color: '#d59563' }]
+                            },
+                            {
+                                featureType: 'water',
+                                elementType: 'geometry',
+                                stylers: [{ color: '#17263c' }]
+                            },
+                            {
+                                featureType: 'water',
+                                elementType: 'labels.text.fill',
+                                stylers: [{ color: '#515c6d' }]
+                            },
+                            {
+                                featureType: 'water',
+                                elementType: 'labels.text.stroke',
+                                stylers: [{ color: '#17263c' }]
+                            }
+                        ];
+                        
+                        const lightMapStyles = [
+                            {
+                                featureType: 'poi',
+                                elementType: 'labels',
+                                stylers: [{ visibility: 'off' }]
+                            }
+                        ];
+                        
                         // Configuração do mapa com zoom aumentado
                         map = new google.maps.Map(container, {
                             zoom: projectCount > 0 ? 14 : 8,
                             center: { lat: centerLat, lng: centerLng },
                             mapTypeId: 'roadmap',
-                            styles: [
-                                {
-                                    featureType: 'poi',
-                                    elementType: 'labels',
-                                    stylers: [{ visibility: 'off' }]
-                                }
-                            ]
+                            styles: isDarkMode ? darkMapStyles : lightMapStyles
                         });
                         
                         // Forçar redimensionamento do mapa
@@ -125,18 +217,25 @@
                                 }
                             });
 
+                            // Verificar dark mode para InfoWindow
+                            const isDarkMode = document.documentElement.classList.contains('dark');
+                            const bgColor = isDarkMode ? 'bg-gray-800' : 'bg-white';
+                            const textColor = isDarkMode ? 'text-gray-100' : 'text-gray-900';
+                            const textSecondary = isDarkMode ? 'text-gray-400' : 'text-gray-600';
+                            const buttonBg = isDarkMode ? 'bg-indigo-700 hover:bg-indigo-600' : 'bg-indigo-600 hover:bg-indigo-700';
+                            
                             // Info window para cada marcador
                             const infoWindow = new google.maps.InfoWindow({
                                 content: `
-                                    <div class="p-2 max-w-xs">
-                                        <h4 class="font-semibold text-gray-900">${project.name}</h4>
-                                        <p class="text-sm text-gray-600">Código: ${project.code}</p>
-                                        ${project.os_number ? `<p class="text-sm text-gray-600">OS: ${project.os_number}</p>` : ''}
-                                        <p class="text-sm text-gray-600">Cliente: ${project.client_name}</p>
-                                        <p class="text-sm text-gray-600">Progresso: ${project.progress_percentage}%</p>
-                                        <p class="text-sm text-gray-600 mb-2">${project.address}</p>
+                                    <div class="p-2 max-w-xs ${bgColor}">
+                                        <h4 class="font-semibold ${textColor}">${project.name}</h4>
+                                        <p class="text-sm ${textSecondary}">Código: ${project.code}</p>
+                                        ${project.os_number ? `<p class="text-sm ${textSecondary}">OS: ${project.os_number}</p>` : ''}
+                                        <p class="text-sm ${textSecondary}">Cliente: ${project.client_name}</p>
+                                        <p class="text-sm ${textSecondary}">Progresso: ${project.progress_percentage}%</p>
+                                        <p class="text-sm ${textSecondary} mb-2">${project.address}</p>
                                         <a href="${project.url}" 
-                                           class="inline-block bg-indigo-600 text-white px-3 py-1 rounded text-sm hover:bg-indigo-700">
+                                           class="inline-block ${buttonBg} text-white px-3 py-1 rounded text-sm transition-colors">
                                             Ver Detalhes
                                         </a>
                                     </div>
@@ -149,7 +248,7 @@
                                 infoWindow.open(map, marker);
                             });
 
-                            markers.push({ marker: marker, infoWindow: infoWindow });
+                            markers.push({ marker: marker, infoWindow: infoWindow, project: project });
                         });
 
                         // Ajustar zoom para mostrar todos os marcadores
@@ -320,9 +419,172 @@
                     }
                 }
 
+                // Função para atualizar o tema do mapa quando mudar
+                function updateMapTheme() {
+                    if (!map) return;
+                    
+                    const isDarkMode = document.documentElement.classList.contains('dark');
+                    const darkMapStyles = [
+                        { elementType: 'geometry', stylers: [{ color: '#242f3e' }] },
+                        { elementType: 'labels.text.stroke', stylers: [{ color: '#242f3e' }] },
+                        { elementType: 'labels.text.fill', stylers: [{ color: '#746855' }] },
+                        {
+                            featureType: 'administrative.locality',
+                            elementType: 'labels.text.fill',
+                            stylers: [{ color: '#d59563' }]
+                        },
+                        {
+                            featureType: 'poi',
+                            elementType: 'labels',
+                            stylers: [{ visibility: 'off' }]
+                        },
+                        {
+                            featureType: 'poi',
+                            elementType: 'labels.text.fill',
+                            stylers: [{ color: '#d59563' }]
+                        },
+                        {
+                            featureType: 'poi.park',
+                            elementType: 'geometry',
+                            stylers: [{ color: '#263c3f' }]
+                        },
+                        {
+                            featureType: 'poi.park',
+                            elementType: 'labels.text.fill',
+                            stylers: [{ color: '#6b9a76' }]
+                        },
+                        {
+                            featureType: 'road',
+                            elementType: 'geometry',
+                            stylers: [{ color: '#38414e' }]
+                        },
+                        {
+                            featureType: 'road',
+                            elementType: 'geometry.stroke',
+                            stylers: [{ color: '#212a37' }]
+                        },
+                        {
+                            featureType: 'road',
+                            elementType: 'labels.text.fill',
+                            stylers: [{ color: '#9ca5b3' }]
+                        },
+                        {
+                            featureType: 'road.highway',
+                            elementType: 'geometry',
+                            stylers: [{ color: '#746855' }]
+                        },
+                        {
+                            featureType: 'road.highway',
+                            elementType: 'geometry.stroke',
+                            stylers: [{ color: '#1f2835' }]
+                        },
+                        {
+                            featureType: 'road.highway',
+                            elementType: 'labels.text.fill',
+                            stylers: [{ color: '#f3d19c' }]
+                        },
+                        {
+                            featureType: 'transit',
+                            elementType: 'geometry',
+                            stylers: [{ color: '#2f3948' }]
+                        },
+                        {
+                            featureType: 'transit.station',
+                            elementType: 'labels.text.fill',
+                            stylers: [{ color: '#d59563' }]
+                        },
+                        {
+                            featureType: 'water',
+                            elementType: 'geometry',
+                            stylers: [{ color: '#17263c' }]
+                        },
+                        {
+                            featureType: 'water',
+                            elementType: 'labels.text.fill',
+                            stylers: [{ color: '#515c6d' }]
+                        },
+                        {
+                            featureType: 'water',
+                            elementType: 'labels.text.stroke',
+                            stylers: [{ color: '#17263c' }]
+                        }
+                    ];
+                    
+                    const lightMapStyles = [
+                        {
+                            featureType: 'poi',
+                            elementType: 'labels',
+                            stylers: [{ visibility: 'off' }]
+                        }
+                    ];
+                    
+                    map.setOptions({
+                        styles: isDarkMode ? darkMapStyles : lightMapStyles
+                    });
+                }
+                
+                // Observer para mudanças no tema
+                let themeObserver = null;
+                function setupThemeObserver() {
+                    if (themeObserver) return;
+                    
+                    themeObserver = new MutationObserver(() => {
+                        updateMapTheme();
+                        // Atualizar InfoWindows abertas
+                        markers.forEach(m => {
+                            if (m.infoWindow && m.project) {
+                                // Verificar se a InfoWindow está aberta
+                                const isOpen = m.infoWindow.getMap() !== null;
+                                if (isOpen) {
+                                    const marker = m.marker;
+                                    const project = m.project;
+                                    
+                                    // Recriar InfoWindow com novo tema
+                                    const isDarkMode = document.documentElement.classList.contains('dark');
+                                    const bgColor = isDarkMode ? 'bg-gray-800' : 'bg-white';
+                                    const textColor = isDarkMode ? 'text-gray-100' : 'text-gray-900';
+                                    const textSecondary = isDarkMode ? 'text-gray-400' : 'text-gray-600';
+                                    const buttonBg = isDarkMode ? 'bg-indigo-700 hover:bg-indigo-600' : 'bg-indigo-600 hover:bg-indigo-700';
+                                    
+                                    const newInfoWindow = new google.maps.InfoWindow({
+                                        content: `
+                                            <div class="p-2 max-w-xs ${bgColor}">
+                                                <h4 class="font-semibold ${textColor}">${project.name}</h4>
+                                                <p class="text-sm ${textSecondary}">Código: ${project.code}</p>
+                                                ${project.os_number ? `<p class="text-sm ${textSecondary}">OS: ${project.os_number}</p>` : ''}
+                                                <p class="text-sm ${textSecondary}">Cliente: ${project.client_name}</p>
+                                                <p class="text-sm ${textSecondary}">Progresso: ${project.progress_percentage}%</p>
+                                                <p class="text-sm ${textSecondary} mb-2">${project.address}</p>
+                                                <a href="${project.url}" 
+                                                   class="inline-block ${buttonBg} text-white px-3 py-1 rounded text-sm transition-colors">
+                                                    Ver Detalhes
+                                                </a>
+                                            </div>
+                                        `
+                                    });
+                                    
+                                    m.infoWindow.close();
+                                    m.infoWindow = newInfoWindow;
+                                    newInfoWindow.open(map, marker);
+                                }
+                            }
+                        });
+                    });
+                    
+                    themeObserver.observe(document.documentElement, {
+                        attributes: true,
+                        attributeFilter: ['class']
+                    });
+                }
+                
                 // Inicializar quando o documento estiver pronto
                 document.addEventListener('DOMContentLoaded', function() {
                     waitForGoogleMaps();
+                    
+                    // Configurar observer de tema após o mapa ser criado
+                    setTimeout(() => {
+                        setupThemeObserver();
+                    }, 1000);
                 });
             </script>
             
@@ -331,6 +593,6 @@
                     onload="waitForGoogleMaps()">
             </script>
         </div>
-    <?php endif; ?><!--[if ENDBLOCK]><![endif]-->
+    <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
 </div>
 <?php /**PATH C:\Users\Douglas\Documents\Projetos\stock-master\resources\views/livewire/google-maps-component.blade.php ENDPATH**/ ?>

@@ -35,6 +35,16 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/profile/photo', [ProfileController::class, 'updatePhoto'])->name('profile.photo');
     Route::put('/profile/password', [ProfileController::class, 'updatePassword'])->name('profile.password');
 
+    // Notificações
+    Route::get('/notifications', [\App\Http\Controllers\NotificationController::class, 'index'])->name('notifications.index');
+    Route::get('/api/notifications/unread', [\App\Http\Controllers\NotificationController::class, 'unread'])->name('notifications.unread');
+    Route::get('/api/notifications/recent', [\App\Http\Controllers\NotificationController::class, 'recent'])->name('notifications.recent');
+    Route::get('/api/notifications/sounds', [\App\Http\Controllers\NotificationController::class, 'availableSounds'])->name('notifications.sounds');
+    Route::post('/notifications/{notification}/read', [\App\Http\Controllers\NotificationController::class, 'markAsRead'])->name('notifications.read');
+    Route::post('/notifications/read-all', [\App\Http\Controllers\NotificationController::class, 'markAllAsRead'])->name('notifications.read-all');
+    Route::post('/notifications/test', [\App\Http\Controllers\NotificationController::class, 'sendTest'])->name('notifications.test');
+    Route::delete('/notifications/{notification}', [\App\Http\Controllers\NotificationController::class, 'destroy'])->name('notifications.destroy');
+
     // Produtos - Criação (deve vir antes das rotas com parâmetros)
     Route::middleware(['permission:create products'])->group(function () {
         Route::get('products/create', [ProductController::class, 'create'])->name('products.create');
@@ -180,11 +190,27 @@ Route::middleware(['auth'])->group(function () {
         Route::delete('employees/{employee}/photos', [EmployeeController::class, 'destroyPhoto'])->name('employees.photos.destroy');
         Route::post('employees/{employee}/deductions', [EmployeeController::class, 'storeDeduction'])->name('employees.deductions.store');
         Route::delete('employees/{employee}/deductions/{deduction}', [EmployeeController::class, 'destroyDeduction'])->name('employees.deductions.destroy');
+        Route::post('employees/{employee}/documents', [EmployeeController::class, 'storeDocument'])->name('employees.documents.store');
+        Route::delete('employees/{employee}/documents/{document}', [EmployeeController::class, 'destroyDocument'])->name('employees.documents.destroy');
     });
 
     Route::middleware(['permission:delete employees'])->group(function () {
         Route::delete('employees/{employee}', [EmployeeController::class, 'destroy'])->name('employees.destroy');
     });
+
+    // Propostas de Funcionários
+    Route::middleware(['permission:view employees'])->group(function () {
+        Route::get('proposals', [\App\Http\Controllers\EmployeeProposalController::class, 'index'])->name('proposals.index');
+        Route::get('employees/{employee}/proposals', [\App\Http\Controllers\EmployeeProposalController::class, 'index'])->name('employees.proposals.index');
+        Route::get('employees/{employee}/proposals/create', [\App\Http\Controllers\EmployeeProposalController::class, 'create'])->name('employees.proposals.create');
+        Route::post('employees/{employee}/proposals', [\App\Http\Controllers\EmployeeProposalController::class, 'store'])->name('employees.proposals.store');
+        Route::get('employees/{employee}/proposals/{proposal}', [\App\Http\Controllers\EmployeeProposalController::class, 'show'])->name('employees.proposals.show');
+    });
+
+    // Visualização pública de propostas (sem autenticação)
+    Route::get('proposals/view/{token}', [\App\Http\Controllers\EmployeeProposalController::class, 'viewByToken'])->name('proposals.view');
+    Route::post('proposals/{token}/accept', [\App\Http\Controllers\EmployeeProposalController::class, 'accept'])->name('proposals.accept');
+    Route::post('proposals/{token}/reject', [\App\Http\Controllers\EmployeeProposalController::class, 'reject'])->name('proposals.reject');
 
     // Ponto (Attendance) - apenas funcionários
     Route::middleware(['role:employee'])->group(function () {

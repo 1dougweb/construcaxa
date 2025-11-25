@@ -3,7 +3,7 @@ if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('/sw.js')
       .then((registration) => {
-        console.log('Service Worker registrado com sucesso:', registration.scope);
+        // Service Worker registrado silenciosamente
 
         // Verificar atualizações periodicamente
         setInterval(() => {
@@ -25,8 +25,8 @@ if ('serviceWorker' in navigator) {
           });
         });
       })
-      .catch((error) => {
-        console.log('Erro ao registrar Service Worker:', error);
+      .catch(() => {
+        // Erro ao registrar Service Worker (silencioso)
       });
 
     // Escutar mensagens do service worker
@@ -55,8 +55,7 @@ window.addEventListener('beforeinstallprompt', (e) => {
       deferredPrompt.prompt();
       
       // Aguardar resposta do usuário
-      const { outcome } = await deferredPrompt.userChoice;
-      console.log(`Resultado do prompt: ${outcome}`);
+      await deferredPrompt.userChoice;
       
       // Limpar a referência
       deferredPrompt = null;
@@ -71,7 +70,6 @@ window.addEventListener('beforeinstallprompt', (e) => {
 
 // Quando o app for instalado
 window.addEventListener('appinstalled', () => {
-  console.log('PWA instalado com sucesso');
   deferredPrompt = null;
   
   if (installButton) {

@@ -8,21 +8,21 @@
         <title><?php echo e(config('app.name', 'Laravel')); ?></title>
 
         <!-- Notificações de sessão flash -->
-        <?php if(session('success')): ?>
+        <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(session('success')): ?>
             <meta name="notification-success" content="<?php echo e(session('success')); ?>">
-        <?php endif; ?>
-        <?php if(session('error')): ?>
+        <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+        <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(session('error')): ?>
             <meta name="notification-error" content="<?php echo e(session('error')); ?>">
-        <?php endif; ?>
-        <?php if(session('info')): ?>
+        <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+        <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(session('info')): ?>
             <meta name="notification-info" content="<?php echo e(session('info')); ?>">
-        <?php endif; ?>
-        <?php if(session('test_success')): ?>
+        <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+        <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(session('test_success')): ?>
             <meta name="notification-info" content="<?php echo e(session('test_success')); ?>">
-        <?php endif; ?>
-        <?php if(session('test_error')): ?>
+        <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+        <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(session('test_error')): ?>
             <meta name="notification-error" content="<?php echo e(session('test_error')); ?>">
-        <?php endif; ?>
+        <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
 
         <!-- PWA Meta Tags -->
         <meta name="theme-color" content="#1E2780">
@@ -36,27 +36,37 @@
         <link rel="manifest" href="<?php echo e(url('manifest.json')); ?>">
         
         <!-- Apple Touch Icons (opcional - só carrega se existir) -->
-        <?php if(file_exists(public_path('icons/icon-192x192.png'))): ?>
+        <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(file_exists(public_path('icons/icon-192x192.png'))): ?>
         <link rel="apple-touch-icon" href="<?php echo e(asset('icons/icon-192x192.png')); ?>">
         <link rel="apple-touch-icon" sizes="152x152" href="<?php echo e(asset('icons/icon-152x152.png')); ?>">
         <link rel="apple-touch-icon" sizes="180x180" href="<?php echo e(asset('icons/icon-192x192.png')); ?>">
-        <?php endif; ?>
+        <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
         
         <!-- Favicon (opcional - só carrega se existir) -->
-        <?php if(file_exists(public_path('icons/icon-192x192.png'))): ?>
+        <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(file_exists(public_path('icons/icon-192x192.png'))): ?>
         <link rel="icon" type="image/png" sizes="192x192" href="<?php echo e(asset('icons/icon-192x192.png')); ?>">
         <link rel="icon" type="image/png" sizes="512x512" href="<?php echo e(asset('icons/icon-512x512.png')); ?>">
-        <?php endif; ?>
+        <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
 
         <!-- Fonts -->
         <link rel="preconnect" href="https://fonts.bunny.net">
         <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
 
+        <!-- WebSocket Configuration (antes dos scripts para garantir disponibilidade) -->
+        <script>
+            window.Laravel = {
+                <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(auth()->guard()->check()): ?>
+                user: <?php echo json_encode(auth()->user(), 15, 512) ?>,
+                <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+                csrfToken: '<?php echo e(csrf_token()); ?>',
+                appUrl: '<?php echo e(config('app.url')); ?>'
+            };
+        </script>
+
         <!-- Scripts -->
         <?php echo app('Illuminate\Foundation\Vite')(['resources/css/app.css', 'resources/js/app.js', 'resources/js/notifications.js']); ?>
 
-        <!-- Icons -->
-        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+        <!-- Flaticon UIcons será carregado via Vite -->
 
         <!-- Styles -->
         <?php echo \Livewire\Mechanisms\FrontendAssets\FrontendAssets::styles(); ?>
@@ -227,20 +237,20 @@
                 }">
                     <!-- Dashboard sempre visível -->
                     <a href="<?php echo e(route('dashboard')); ?>" class="flex items-center px-3 py-2 rounded-md text-sm font-medium <?php echo e(request()->routeIs('dashboard') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'); ?>">
-                        <i class="bi bi-speedometer2 mr-3 text-base"></i>
+                        <i class="fi fi-rr-dashboard mr-3 text-base"></i>
                         <?php echo e(__('Dashboard')); ?>
 
                     </a>
 
                     <!-- Dropdown Estoque -->
-                    <?php if(auth()->user()->can('view products') || auth()->user()->can('view service-orders') || auth()->user()->can('view suppliers') || auth()->user()->hasAnyRole(['admin', 'manager'])): ?>
+                    <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(auth()->user()->can('view products') || auth()->user()->can('view service-orders') || auth()->user()->can('view suppliers') || auth()->user()->hasAnyRole(['admin', 'manager'])): ?>
                     <div>
                         <button @click="estoqueOpen = !estoqueOpen" class="w-full flex items-center justify-between px-3 py-2 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
                             <div class="flex items-center">
-                                <i class="bi bi-boxes mr-3 text-base"></i>
+                                <i class="fi fi-rr-box mr-3 text-base"></i>
                                 <span><?php echo e(__('Estoque')); ?></span>
                             </div>
-                            <i class="bi bi-chevron-down text-xs transition-transform duration-200" :class="{ 'rotate-180': estoqueOpen }"></i>
+                            <i class="fi fi-rr-angle-small-down text-xs transition-transform duration-200" :class="{ 'rotate-180': estoqueOpen }"></i>
                         </button>
                         <div x-show="estoqueOpen" 
                              x-transition:enter="transition ease-out duration-200"
@@ -252,52 +262,52 @@
                              class="ml-3 mt-0.5 mb-1 space-y-0.5 border-l-2 border-gray-200 dark:border-gray-700 pl-3">
                             <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('view products')): ?>
                             <a href="<?php echo e(route('products.index')); ?>" class="flex items-center px-3 py-2 rounded-md text-sm font-medium <?php echo e(request()->routeIs('products.*') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 -ml-3 pl-5' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'); ?>">
-                                <i class="bi bi-box-seam mr-3 text-base"></i>
+                                <i class="fi fi-rr-box mr-3 text-base"></i>
                                 <?php echo e(__('Produtos')); ?>
 
                             </a>
                             <?php endif; ?>
                             <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('view products')): ?>
                             <a href="<?php echo e(route('equipment.index')); ?>" class="flex items-center px-3 py-2 rounded-md text-sm font-medium <?php echo e(request()->routeIs('equipment.*') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 -ml-3 pl-5' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'); ?>">
-                                <i class="bi bi-tools mr-3 text-base"></i>
+                                <i class="fi fi-rr-tools mr-3 text-base"></i>
                                 <?php echo e(__('Equipamentos')); ?>
 
                             </a>
                             <?php endif; ?>
                             <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('view service-orders')): ?>
                             <a href="<?php echo e(route('material-requests.index')); ?>" class="flex items-center px-3 py-2 rounded-md text-sm font-medium <?php echo e(request()->routeIs('material-requests.*') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 -ml-3 pl-5' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'); ?>">
-                                <i class="bi bi-clipboard-check mr-3 text-base"></i>
+                                <i class="fi fi-rr-clipboard mr-3 text-base"></i>
                                 <?php echo e(__('Requisições de Material')); ?>
 
                             </a>
                             <?php endif; ?>
                             <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('view service-orders')): ?>
                             <a href="<?php echo e(route('equipment-requests.index')); ?>" class="flex items-center px-3 py-2 rounded-md text-sm font-medium <?php echo e(request()->routeIs('equipment-requests.*') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 -ml-3 pl-5' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'); ?>">
-                                <i class="bi bi-wrench-adjustable mr-3 text-base"></i>
+                                <i class="fi fi-rr-clipboard mr-3 text-base"></i>
                                 <?php echo e(__('Requisições de Equipamento')); ?>
 
                             </a>
                             <?php endif; ?>
                             <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('view suppliers')): ?>
                             <a href="<?php echo e(route('suppliers.index')); ?>" class="flex items-center px-3 py-2 rounded-md text-sm font-medium <?php echo e(request()->routeIs('suppliers.*') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 -ml-3 pl-5' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'); ?>">
-                                <i class="bi bi-truck mr-3 text-base"></i>
+                                <i class="fi fi-rr-truck-side mr-3 text-base"></i>
                                 <?php echo e(__('Fornecedores')); ?>
 
                             </a>
                             <?php endif; ?>
                         </div>
                     </div>
-                    <?php endif; ?>
+                    <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
 
                     <!-- Dropdown Gestão -->
                     <?php if(auth()->user()->can('view employees') || auth()->user()->can('manage attendance') || auth()->user()->can('view budgets') || auth()->user()->can('view projects') || auth()->user()->can('manage services') || auth()->user()->can('view clients') || auth()->user()->can('view inspections') || auth()->user()->hasAnyRole(['admin', 'manager'])): ?>
                     <div>
                         <button @click="gestaoOpen = !gestaoOpen" class="w-full flex items-center justify-between px-3 py-2 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
                             <div class="flex items-center">
-                                <i class="bi bi-gear mr-3 text-base"></i>
+                                <i class="fi fi-rr-settings mr-3 text-base"></i>
                                 <span><?php echo e(__('Gestão')); ?></span>
                             </div>
-                            <i class="bi bi-chevron-down text-xs transition-transform duration-200" :class="{ 'rotate-180': gestaoOpen }"></i>
+                            <i class="fi fi-rr-angle-small-down text-xs transition-transform duration-200" :class="{ 'rotate-180': gestaoOpen }"></i>
                         </button>
                         <div x-show="gestaoOpen" 
                              x-transition:enter="transition ease-out duration-200"
@@ -314,104 +324,111 @@
                                 // Mesma lógica das rotas: role_or_permission:manager|admin|view contracts
                                 $showContracts = $user->hasAnyRole(['admin', 'manager']) || $user->can('view contracts');
                             ?>
-                            <?php if($showClients): ?>
+                            <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($showClients): ?>
                             <a href="<?php echo e(route('clients.index')); ?>" 
                                class="flex items-center px-3 py-2 rounded-md text-sm font-medium <?php echo e(request()->routeIs('clients.*') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 -ml-3 pl-5' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'); ?>">
-                                <i class="bi bi-person-badge mr-3 text-base"></i>
+                                <i class="fi fi-rr-user mr-3 text-base"></i>
                                 <?php echo e(__('Clientes')); ?>
 
                             </a>
-                            <?php endif; ?>
-                            <?php if($showContracts): ?>
+                            <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+                            <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($showContracts): ?>
                             <a href="<?php echo e(route('contracts.index')); ?>" 
                                class="flex items-center px-3 py-2 rounded-md text-sm font-medium <?php echo e(request()->routeIs('contracts.*') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 -ml-3 pl-5' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'); ?>">
-                                <i class="bi bi-file-earmark-text mr-3 text-base"></i>
+                                <i class="fi fi-rr-legal mr-3 text-base"></i>
                                 <?php echo e(__('Contratos')); ?>
+
+                            </a>
+                            <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+                            <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('view employees')): ?>
+                            <a href="<?php echo e(route('employees.index')); ?>" class="flex items-center px-3 py-2 rounded-md text-sm font-medium <?php echo e(request()->routeIs('employees.*') && !request()->routeIs('employees.proposals.*') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 -ml-3 pl-5' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'); ?>">
+                                <i class="fi fi-rr-users mr-3 text-base"></i>
+                                <?php echo e(__('Funcionários')); ?>
 
                             </a>
                             <?php endif; ?>
                             <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('view employees')): ?>
-                            <a href="<?php echo e(route('employees.index')); ?>" class="flex items-center px-3 py-2 rounded-md text-sm font-medium <?php echo e(request()->routeIs('employees.*') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 -ml-3 pl-5' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'); ?>">
-                                <i class="bi bi-people mr-3 text-base"></i>
-                                <?php echo e(__('Funcionários')); ?>
+                            <a href="<?php echo e(route('proposals.index')); ?>" class="flex items-center px-3 py-2 rounded-md text-sm font-medium <?php echo e(request()->routeIs('proposals.*') || request()->routeIs('employees.proposals.*') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 -ml-3 pl-5' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'); ?>">
+                                <i class="fi fi-rr-receipt mr-3 text-base"></i>
+                                <?php echo e(__('Propostas')); ?>
 
                             </a>
                             <?php endif; ?>
                             <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('manage attendance')): ?>
                             <a href="<?php echo e(route('attendance.manage')); ?>" class="flex items-center px-3 py-2 rounded-md text-sm font-medium <?php echo e(request()->routeIs('attendance.manage') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 -ml-3 pl-5' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'); ?>">
-                                <i class="bi bi-calendar-check mr-3 text-base"></i>
+                                <i class="fi fi-rr-calendar-check mr-3 text-base"></i>
                                 <?php echo e(__('Gestão de Pontos')); ?>
 
                             </a>
                             <?php endif; ?>
                             <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('view budgets')): ?>
                             <a href="<?php echo e(route('budgets.index')); ?>" class="flex items-center px-3 py-2 rounded-md text-sm font-medium <?php echo e(request()->routeIs('budgets.*') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 -ml-3 pl-5' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'); ?>">
-                                <i class="bi bi-receipt mr-3 text-base"></i>
+                                <i class="fi fi-rr-receipt mr-3 text-base"></i>
                                 <?php echo e(__('Orçamentos')); ?>
 
                             </a>
                             <?php endif; ?>
                             <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('view projects')): ?>
                             <a href="<?php echo e(route('projects.index')); ?>" class="flex items-center px-3 py-2 rounded-md text-sm font-medium <?php echo e(request()->routeIs('projects.*') && !request()->routeIs('client.projects.*') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 -ml-3 pl-5' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'); ?>">
-                                <i class="bi bi-building mr-3 text-base"></i>
+                                <i class="fi fi-rr-building mr-3 text-base"></i>
                                 <?php echo e(__('Obras')); ?>
 
                             </a>
                             <?php endif; ?>
                             <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('view projects')): ?>
                             <a href="<?php echo e(route('map.index')); ?>" class="flex items-center px-3 py-2 rounded-md text-sm font-medium <?php echo e(request()->routeIs('map.*') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 -ml-3 pl-5' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'); ?>">
-                                <i class="bi bi-geo-alt mr-3 text-base"></i>
+                                <i class="fi fi-rr-map mr-3 text-base"></i>
                                 <?php echo e(__('Mapa')); ?>
 
                             </a>
                             <?php endif; ?>
                             <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('view inspections')): ?>
                             <a href="<?php echo e(route('inspections.index')); ?>" class="flex items-center px-3 py-2 rounded-md text-sm font-medium <?php echo e(request()->routeIs('inspections.*') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 -ml-3 pl-5' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'); ?>">
-                                <i class="bi bi-clipboard-check mr-3 text-base"></i>
+                                <i class="fi fi-rr-clipboard-check mr-3 text-base"></i>
                                 <?php echo e(__('Vistorias')); ?>
 
                             </a>
                             <?php endif; ?>
                             <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('manage services')): ?>
                             <a href="<?php echo e(route('services.index')); ?>" class="flex items-center px-3 py-2 rounded-md text-sm font-medium <?php echo e(request()->routeIs('services.*') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 -ml-3 pl-5' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'); ?>">
-                                <i class="bi bi-tools mr-3 text-base"></i>
+                                <i class="fi fi-rr-person-dolly-empty mr-3 text-base"></i>
                                 <?php echo e(__('Serviços')); ?>
 
                             </a>
                             <?php endif; ?>
                             <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('manage services')): ?>
                             <a href="<?php echo e(route('labor-types.index')); ?>" class="flex items-center px-3 py-2 rounded-md text-sm font-medium <?php echo e(request()->routeIs('labor-types.*') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 -ml-3 pl-5' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'); ?>">
-                                <i class="bi bi-people mr-3 text-base"></i>
+                                <i class="fi fi-rr-users-alt mr-3 text-base"></i>
                                 <?php echo e(__('Tipos de Mão de Obra')); ?>
 
                             </a>
                             <?php endif; ?>
                             <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('manage services')): ?>
                             <a href="<?php echo e(route('service-categories.index')); ?>" class="flex items-center px-3 py-2 rounded-md text-sm font-medium <?php echo e(request()->routeIs('service-categories.*') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 -ml-3 pl-5' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'); ?>">
-                                <i class="bi bi-folder mr-3 text-base"></i>
+                                <i class="fi fi-rr-folder mr-3 text-base"></i>
                                 <?php echo e(__('Categorias de Serviços')); ?>
 
                             </a>
                             <?php endif; ?>
                         </div>
                     </div>
-                    <?php endif; ?>
+                    <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
 
                     <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('view client-projects')): ?>
                     <a href="<?php echo e(route('client.dashboard')); ?>" class="flex items-center px-3 py-2 rounded-md text-sm font-medium <?php echo e(request()->routeIs('client.dashboard') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'); ?>">
-                        <i class="bi bi-speedometer2 mr-3 text-base"></i>
+                        <i class="fi fi-rr-dashboard mr-3 text-base"></i>
                         <?php echo e(__('Dashboard')); ?>
 
                     </a>
                     <a href="<?php echo e(route('client.projects.index')); ?>" class="flex items-center px-3 py-2 rounded-md text-sm font-medium <?php echo e(request()->routeIs('client.projects.*') && !request()->routeIs('client.dashboard') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'); ?>">
-                        <i class="bi bi-house-door mr-3 text-base"></i>
+                        <i class="fi fi-rr-home mr-3 text-base"></i>
                         <?php echo e(__('Minhas Obras')); ?>
 
                     </a>
                     <?php endif; ?>
                     <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('view reports')): ?>
                     <a href="<?php echo e(route('reports.index')); ?>" class="flex items-center px-3 py-2 rounded-md text-sm font-medium <?php echo e(request()->routeIs('reports.*') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'); ?>">
-                        <i class="bi bi-graph-up mr-3 text-base"></i>
+                        <i class="fi fi-rr-stats mr-3 text-base"></i>
                         <?php echo e(__('Relatórios')); ?>
 
                     </a>
@@ -422,10 +439,10 @@
                     <div>
                         <button @click="financeiroOpen = !financeiroOpen" class="w-full flex items-center justify-between px-3 py-2 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
                             <div class="flex items-center">
-                                <i class="bi bi-cash-coin mr-3 text-base"></i>
+                                <i class="fi fi-rr-money mr-3 text-base"></i>
                                 <span><?php echo e(__('Financeiro')); ?></span>
                             </div>
-                            <i class="bi bi-chevron-down text-xs transition-transform duration-200" :class="{ 'rotate-180': financeiroOpen }"></i>
+                            <i class="fi fi-rr-angle-small-down text-xs transition-transform duration-200" :class="{ 'rotate-180': financeiroOpen }"></i>
                         </button>
                         <div x-show="financeiroOpen" 
                              x-transition:enter="transition ease-out duration-200"
@@ -436,27 +453,27 @@
                              x-transition:leave-end="opacity-0 transform -translate-y-2"
                              class="ml-3 mt-0.5 mb-1 space-y-0.5 border-l-2 border-gray-200 dark:border-gray-700 pl-3">
                             <a href="<?php echo e(route('financial.dashboard')); ?>" class="flex items-center px-3 py-2 rounded-md text-sm font-medium <?php echo e(request()->routeIs('financial.dashboard') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 border-l-2 border-indigo-500 dark:border-indigo-400 -ml-3 pl-5' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'); ?>">
-                                <i class="bi bi-speedometer2 mr-3 text-base"></i>
+                                <i class="fi fi-rr-dashboard mr-3 text-base"></i>
                                 <?php echo e(__('Dashboard Financeiro')); ?>
 
                             </a>
                             <a href="<?php echo e(route('financial.accounts-payable.index')); ?>" class="flex items-center px-3 py-2 rounded-md text-sm font-medium <?php echo e(request()->routeIs('financial.accounts-payable.*') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 border-l-2 border-indigo-500 dark:border-indigo-400 -ml-3 pl-5' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'); ?>">
-                                <i class="bi bi-arrow-down-circle mr-3 text-base"></i>
+                                <i class="fi fi-rr-arrow-trend-down mr-3 text-base"></i>
                                 <?php echo e(__('Contas a Pagar')); ?>
 
                             </a>
                             <a href="<?php echo e(route('financial.accounts-receivable.index')); ?>" class="flex items-center px-3 py-2 rounded-md text-sm font-medium <?php echo e(request()->routeIs('financial.accounts-receivable.*') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 border-l-2 border-indigo-500 dark:border-indigo-400 -ml-3 pl-5' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'); ?>">
-                                <i class="bi bi-arrow-up-circle mr-3 text-base"></i>
+                                <i class="fi fi-rr-arrow-trend-up mr-3 text-base"></i>
                                 <?php echo e(__('Contas a Receber')); ?>
 
                             </a>
                             <a href="<?php echo e(route('financial.invoices.index')); ?>" class="flex items-center px-3 py-2 rounded-md text-sm font-medium <?php echo e(request()->routeIs('financial.invoices.*') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 border-l-2 border-indigo-500 dark:border-indigo-400 -ml-3 pl-5' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'); ?>">
-                                <i class="bi bi-receipt-cutoff mr-3 text-base"></i>
+                                <i class="fi fi-rr-receipt mr-3 text-base"></i>
                                 <?php echo e(__('Notas Fiscais')); ?>
 
                             </a>
                             <a href="<?php echo e(route('financial.receipts.index')); ?>" class="flex items-center px-3 py-2 rounded-md text-sm font-medium <?php echo e(request()->routeIs('financial.receipts.*') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 border-l-2 border-indigo-500 dark:border-indigo-400 -ml-3 pl-5' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'); ?>">
-                                <i class="bi bi-receipt mr-3 text-base"></i>
+                                <i class="fi fi-rr-receipt mr-3 text-base"></i>
                                 <?php echo e(__('Recibos')); ?>
 
                             </a>
@@ -466,7 +483,7 @@
 
                     <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('view attendance')): ?>
                     <a href="<?php echo e(route('attendance.index')); ?>" class="flex items-center px-3 py-2 rounded-md text-sm font-medium <?php echo e(request()->routeIs('attendance.index') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'); ?>">
-                        <i class="bi bi-geo-alt mr-3 text-base"></i>
+                        <i class="fi fi-rr-map mr-3 text-base"></i>
                         <?php echo e(__('Bater Ponto')); ?>
 
                     </a>
@@ -477,10 +494,10 @@
                     <div>
                         <button @click="adminOpen = !adminOpen" class="w-full flex items-center justify-between px-3 py-2 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
                             <div class="flex items-center">
-                                <i class="bi bi-shield-check mr-3 text-base"></i>
+                                <i class="fi fi-rr-shield-check mr-3 text-base"></i>
                                 <span><?php echo e(__('Administração')); ?></span>
                             </div>
-                            <i class="bi bi-chevron-down text-xs transition-transform duration-200" :class="{ 'rotate-180': adminOpen }"></i>
+                            <i class="fi fi-rr-angle-small-down text-xs transition-transform duration-200" :class="{ 'rotate-180': adminOpen }"></i>
                         </button>
                         <div x-show="adminOpen" 
                              x-transition:enter="transition ease-out duration-200"
@@ -491,18 +508,23 @@
                              x-transition:leave-end="opacity-0 transform -translate-y-2"
                              class="ml-3 mt-0.5 mb-1 space-y-0.5 border-l-2 border-gray-200 dark:border-gray-700 pl-3">
                             <a href="<?php echo e(route('admin.permissions.users')); ?>" class="flex items-center px-3 py-2 rounded-md text-sm font-medium <?php echo e(request()->routeIs('admin.permissions.users') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 -ml-3 pl-5' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'); ?>">
-                                <i class="bi bi-person-check mr-3 text-base"></i>
+                                <i class="fi fi-rr-user-check mr-3 text-base"></i>
                                 <?php echo e(__('Permissões: Usuários')); ?>
 
                             </a>
                             <a href="<?php echo e(route('admin.permissions.roles')); ?>" class="flex items-center px-3 py-2 rounded-md text-sm font-medium <?php echo e(request()->routeIs('admin.permissions.roles') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 -ml-3 pl-5' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'); ?>">
-                                <i class="bi bi-shield-lock mr-3 text-base"></i>
+                                <i class="fi fi-rr-shield mr-3 text-base"></i>
                                 <?php echo e(__('Permissões: Papéis')); ?>
 
                             </a>
                             <a href="<?php echo e(route('admin.email.index')); ?>" class="flex items-center px-3 py-2 rounded-md text-sm font-medium <?php echo e(request()->routeIs('admin.email.*') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 -ml-3 pl-5' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'); ?>">
-                                <i class="bi bi-envelope-at mr-3 text-base"></i>
+                                <i class="fi fi-rr-envelope mr-3 text-base"></i>
                                 <?php echo e(__('Envio de Emails')); ?>
+
+                            </a>
+                            <a href="<?php echo e(route('admin.settings')); ?>" class="flex items-center px-3 py-2 rounded-md text-sm font-medium <?php echo e(request()->routeIs('admin.settings') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 -ml-3 pl-5' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'); ?>">
+                                <i class="fi fi-rr-settings mr-3 text-base"></i>
+                                <?php echo e(__('Configurações')); ?>
 
                             </a>
                         </div>
@@ -528,14 +550,14 @@
             <!-- Top Header Bar -->
             <header class="fixed top-0 right-0 left-0 lg:left-64 h-16 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 z-30 transition-all duration-200 lg:block hidden">
                 <div class="h-full px-4 sm:px-6 lg:px-6 flex items-center justify-between">
-                    <?php if(isset($header)): ?>
+                    <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(isset($header)): ?>
                         <div class="flex-1">
                             <?php echo e($header); ?>
 
                         </div>
                     <?php else: ?>
                         <div></div>
-                    <?php endif; ?>
+                    <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                     
                     <!-- User Menu and Theme Toggle -->
                     <div class="flex items-center gap-3 ml-6">
@@ -544,9 +566,95 @@
                             @click="toggleDarkMode()"
                             class="p-2 rounded-md text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                             aria-label="Toggle dark mode">
-                            <i class="bi bi-sun-fill text-lg dark:hidden"></i>
-                            <i class="bi bi-moon-fill text-lg hidden dark:inline"></i>
+                            <i class="fi fi-rr-sun text-lg dark:hidden"></i>
+                            <i class="fi fi-rr-moon text-lg hidden dark:inline"></i>
                         </button>
+                        
+                        <!-- Notifications Dropdown -->
+                        <div class="relative" 
+                             x-data="notificationDropdown()"
+                             @click.away="open = false">
+                            <button 
+                                @click="open = !open; if (open && notifications.length === 0) loadNotifications()"
+                                class="relative p-2 rounded-md text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                                aria-label="Notificações">
+                                <i class="fi fi-rr-bell text-lg"></i>
+                                <span x-show="unreadCount > 0" 
+                                      x-text="unreadCount > 99 ? '99+' : unreadCount"
+                                      class="absolute -top-1 -right-1 h-5 w-5 bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center"
+                                      style="min-width: 1.25rem;"></span>
+                            </button>
+                            
+                            <!-- Dropdown de Notificações -->
+                            <div 
+                                x-show="open"
+                                x-transition:enter="transition ease-out duration-100"
+                                x-transition:enter-start="transform opacity-0 scale-95"
+                                x-transition:enter-end="transform opacity-100 scale-100"
+                                x-transition:leave="transition ease-in duration-75"
+                                x-transition:leave-start="transform opacity-100 scale-100"
+                                x-transition:leave-end="transform opacity-0 scale-95"
+                                x-cloak
+                                class="absolute right-0 mt-2 w-80 bg-white dark:bg-gray-800 rounded-md shadow-lg border border-gray-200 dark:border-gray-700 z-50 max-h-96 overflow-hidden flex flex-col">
+                                <!-- Header -->
+                                <div class="px-4 py-3 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
+                                    <h3 class="text-sm font-semibold text-gray-900 dark:text-gray-100">Notificações</h3>
+                                        <a href="<?php echo e(route('notifications.index')); ?>" 
+                                           class="text-xs text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300">
+                                            Ver todas
+                                        </a>
+                                </div>
+                                
+                                <!-- Lista de Notificações -->
+                                <div class="overflow-y-auto flex-1" style="max-height: 20rem;">
+                                    <div x-show="loading" x-cloak class="px-4 py-8 text-center text-gray-500 dark:text-gray-400">
+                                        <i class="fi fi-rr-spinner animate-spin text-2xl mb-2"></i>
+                                        <p class="text-sm">Carregando...</p>
+                                    </div>
+                                    <div x-show="!loading && notifications.length === 0" x-cloak class="px-4 py-8 text-center text-gray-500 dark:text-gray-400">
+                                        <i class="fi fi-rr-bell-slash text-3xl mb-2"></i>
+                                        <p class="text-sm">Nenhuma notificação</p>
+                                    </div>
+                                    <div x-show="!loading && notifications.length > 0" x-cloak>
+                                        <template x-for="notification in notifications" :key="notification.id">
+                                            <div 
+                                                @click="handleNotificationClick(notification)"
+                                                :class="notification.read_at ? 'bg-white dark:bg-gray-800' : 'bg-indigo-50 dark:bg-indigo-900/20'"
+                                                class="px-4 py-3 border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer transition-colors">
+                                                <div class="flex items-start gap-3">
+                                                    <div class="flex-shrink-0 mt-1">
+                                                        <i :class="getNotificationIcon(notification.type)" 
+                                                           class="text-lg text-indigo-600 dark:text-indigo-400"></i>
+                                                    </div>
+                                                    <div class="flex-1 min-w-0">
+                                                        <p class="text-sm font-medium text-gray-900 dark:text-gray-100" 
+                                                           x-text="notification.title"></p>
+                                                        <p class="text-xs text-gray-600 dark:text-gray-400 mt-1" 
+                                                           x-text="notification.message"></p>
+                                                        <p class="text-xs text-gray-500 dark:text-gray-500 mt-1" 
+                                                           x-text="notification.time_ago"></p>
+                                                    </div>
+                                                    <div x-show="!notification.read_at" 
+                                                         class="flex-shrink-0 mt-1">
+                                                        <span class="h-2 w-2 bg-indigo-500 rounded-full block"></span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </template>
+                                    </div>
+                                </div>
+                                
+                                <!-- Footer -->
+                                <div class="px-4 py-3 border-t border-gray-200 dark:border-gray-700 space-y-2">
+                                    <button 
+                                        @click="markAllAsRead()"
+                                        x-show="unreadCount > 0"
+                                        class="w-full text-center text-xs text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 py-2 rounded-md transition-colors">
+                                        <i class="fi fi-rr-check-circle mr-1"></i> Marcar todas como lidas
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
                         
                         <!-- User Menu Dropdown -->
                         <div class="relative" x-data="{ open: false }" @click.away="open = false">
@@ -554,17 +662,17 @@
                                 @click="open = !open"
                                 class="flex items-center gap-2 p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
                                 <div class="flex-shrink-0">
-                                    <?php if(Auth::user()->profile_photo): ?>
+                                    <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(Auth::user()->profile_photo): ?>
                                         <img src="<?php echo e(asset('storage/' . Auth::user()->profile_photo)); ?>" alt="<?php echo e(Auth::user()->name); ?>" class="h-8 w-8 rounded-full object-cover border-2 border-gray-200 dark:border-gray-600">
                                     <?php else: ?>
                                         <div class="h-8 w-8 rounded-full bg-indigo-500 flex items-center justify-center text-white font-semibold text-sm border-2 border-gray-200 dark:border-gray-600">
                                             <?php echo e(strtoupper(substr(Auth::user()->name, 0, 1))); ?>
 
                                         </div>
-                                    <?php endif; ?>
+                                    <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                                 </div>
                                 <span class="hidden sm:block text-sm font-medium text-gray-700 dark:text-gray-300"><?php echo e(Auth::user()->name); ?></span>
-                                <i class="bi bi-chevron-down text-xs text-gray-600 dark:text-gray-400"></i>
+                                <i class="fi fi-rr-angle-small-down text-xs text-gray-600 dark:text-gray-400"></i>
                             </button>
                             
                             <!-- Dropdown Menu -->
@@ -585,7 +693,7 @@
                                 <a 
                                     href="<?php echo e(route('profile.edit')); ?>" 
                                     class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
-                                    <i class="bi bi-person-gear mr-2"></i>
+                                    <i class="fi fi-rr-user-pen mr-2"></i>
                                     Perfil
                                 </a>
                                 <form method="POST" action="<?php echo e(route('logout')); ?>">
@@ -593,7 +701,7 @@
                                     <button 
                                         type="submit" 
                                         class="w-full text-left px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors">
-                                        <i class="bi bi-box-arrow-right mr-2"></i>
+                                        <i class="fi fi-rr-sign-out-alt mr-2"></i>
                                         <?php echo e(__('Sair')); ?>
 
                                     </button>
@@ -613,6 +721,314 @@
             </div>
         </div>
 
+        <script>
+            function notificationDropdown() {
+                return {
+                    open: false,
+                    unreadCount: 0,
+                    notifications: [],
+                    loading: false,
+                    sendingTest: false,
+                    soundEnabled: localStorage.getItem('notificationSoundEnabled') !== 'false',
+                    soundFile: localStorage.getItem('notificationSoundFile') || 'default',
+                    audioContext: null,
+                    audioElement: null,
+                    init() {
+                        // Carregar contador inicial apenas uma vez
+                        this.loadUnreadCount();
+                        
+                        // Carregar notificações iniciais
+                        this.loadNotifications();
+                        
+                        // Escutar eventos de notificação recebida via WebSocket
+                        window.addEventListener('notification-received', (event) => {
+                            this.handleNewNotification(event.detail);
+                        });
+                    },
+                    async playNotificationSound() {
+                        if (!this.soundEnabled || !this.soundFile || this.soundFile === 'default') return;
+                        await this.playSoundFile(this.soundFile);
+                    },
+                    async playDefaultSound() {
+                        try {
+                            const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                            
+                            if (ctx.state === 'suspended') {
+                                for (let i = 0; i < 3; i++) {
+                                    try {
+                                        await ctx.resume();
+                                        await new Promise(resolve => setTimeout(resolve, 50));
+                                        if (ctx.state === 'running') break;
+                                    } catch (e) {
+                                        // Silenciosamente tenta novamente
+                                    }
+                                }
+                            }
+                            
+                            const osc = ctx.createOscillator();
+                            const gain = ctx.createGain();
+                            
+                            osc.connect(gain);
+                            gain.connect(ctx.destination);
+                            
+                            const now = ctx.currentTime;
+                            osc.frequency.setValueAtTime(800, now);
+                            osc.frequency.setValueAtTime(600, now + 0.1);
+                            osc.type = 'sine';
+                            
+                            gain.gain.setValueAtTime(0, now);
+                            gain.gain.linearRampToValueAtTime(1.0, now + 0.01);
+                            gain.gain.exponentialRampToValueAtTime(0.01, now + 0.2);
+                            
+                            gain.gain.setValueAtTime(0, now + 0.25);
+                            gain.gain.linearRampToValueAtTime(1.0, now + 0.26);
+                            gain.gain.exponentialRampToValueAtTime(0.01, now + 0.45);
+                            
+                            gain.gain.setValueAtTime(0, now + 0.5);
+                            gain.gain.linearRampToValueAtTime(1.0, now + 0.51);
+                            gain.gain.exponentialRampToValueAtTime(0.01, now + 0.7);
+                            
+                            osc.start(now);
+                            osc.stop(now + 0.7);
+                        } catch (error) {
+                            console.error('Erro ao tocar som:', error);
+                        }
+                    },
+                    async playSoundFile(filename) {
+                        try {
+                            const audioUrl = `/sounds/${filename}`;
+                            const audio = new Audio(audioUrl);
+                            audio.volume = 1.0;
+                            audio.preload = 'auto';
+                            
+                            audio.addEventListener('error', (e) => {
+                                console.error('Erro no áudio:', e, audio.error);
+                            });
+                            
+                            return new Promise((resolve, reject) => {
+                                const playIt = () => {
+                                    audio.play()
+                                        .then(() => resolve())
+                                        .catch((err) => {
+                                            console.error('Erro ao tocar:', err);
+                                            reject(err);
+                                        });
+                                };
+                                
+                                if (audio.readyState >= 2) {
+                                    playIt();
+                                } else {
+                                    audio.addEventListener('canplay', playIt, { once: true });
+                                    audio.addEventListener('error', reject, { once: true });
+                                    setTimeout(() => {
+                                        if (audio.readyState < 2) {
+                                            playIt();
+                                        }
+                                    }, 2000);
+                                }
+                            });
+                        } catch (error) {
+                            console.error('Erro ao tocar arquivo:', error);
+                        }
+                    },
+                    async testSound() {
+                        await this.playNotificationSound();
+                    },
+                    toggleSound() {
+                        this.soundEnabled = !this.soundEnabled;
+                        localStorage.setItem('notificationSoundEnabled', this.soundEnabled);
+                        if (this.soundEnabled) {
+                            this.playNotificationSound(); // Testar o som
+                        }
+                    },
+                    setSoundFile(filename) {
+                        this.soundFile = filename;
+                        localStorage.setItem('notificationSoundFile', filename);
+                        // Sincronizar com notification-system.js
+                        if (window.notificationSystem) {
+                            window.notificationSystem.setSoundFile(filename);
+                        }
+                        if (this.soundEnabled) {
+                            this.playNotificationSound(); // Testar o novo som
+                        }
+                    },
+                    handleNewNotification(data) {
+                        // O som já foi tocado pelo notification-system.js via WebSocket
+                        // Não precisa tocar novamente aqui
+                        
+                        // Atualizar contador
+                        this.unreadCount = (this.unreadCount || 0) + 1;
+                        
+                        // Adicionar notificação à lista imediatamente (sempre, não só se dropdown estiver aberto)
+                        const timeAgo = this.getTimeAgo(data.created_at);
+                        const newNotification = {
+                            ...data,
+                            time_ago: timeAgo,
+                        };
+                        
+                        // Verificar se já existe (evitar duplicatas)
+                        const exists = this.notifications.find(n => n.id === data.id);
+                        if (!exists) {
+                            // Adicionar no início da lista
+                            this.notifications.unshift(newNotification);
+                            
+                            // Limitar a 10 notificações
+                            if (this.notifications.length > 10) {
+                                this.notifications = this.notifications.slice(0, 10);
+                            }
+                        }
+                    },
+                    getTimeAgo(dateString) {
+                        if (!dateString) return 'Agora';
+                        const date = new Date(dateString);
+                        const now = new Date();
+                        const diffInSeconds = Math.floor((now - date) / 1000);
+                        
+                        if (diffInSeconds < 60) return 'Agora';
+                        if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)} min atrás`;
+                        if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)} h atrás`;
+                        return `${Math.floor(diffInSeconds / 86400)} dia${Math.floor(diffInSeconds / 86400) > 1 ? 's' : ''} atrás`;
+                    },
+                    async loadNotifications() {
+                        this.loading = true;
+                        try {
+                            const response = await fetch('<?php echo e(route('notifications.recent')); ?>');
+                            const data = await response.json();
+                            this.notifications = data.notifications || [];
+                            this.unreadCount = data.unread_count || 0;
+                        } catch (error) {
+                            console.error('Erro ao carregar notificações:', error);
+                        } finally {
+                            this.loading = false;
+                        }
+                    },
+                    async loadUnreadCount() {
+                        try {
+                            const response = await fetch('<?php echo e(route('notifications.unread')); ?>');
+                            const data = await response.json();
+                            this.unreadCount = data.count || 0;
+                        } catch (error) {
+                            console.error('Erro ao carregar contador:', error);
+                        }
+                    },
+                    handleNotificationClick(notification) {
+                        // Tocar som quando clica na notificação (se não estiver lida)
+                        if (!notification.read_at && this.soundEnabled) {
+                            this.playNotificationSound();
+                        }
+                        
+                        // Marcar como lida
+                        this.markAsRead(notification.id);
+                        
+                        // Redirecionar se tiver URL
+                        if (notification.data && notification.data.url) {
+                            window.location.href = notification.data.url;
+                        }
+                    },
+                    async markAsRead(notificationId) {
+                        try {
+                            const response = await fetch(`/notifications/${notificationId}/read`, {
+                                method: 'POST',
+                                headers: {
+                                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || '',
+                                    'Content-Type': 'application/json',
+                                },
+                            });
+                            const data = await response.json();
+                            if (data.success) {
+                                this.unreadCount = data.unread_count || 0;
+                                const notification = this.notifications.find(n => n.id === notificationId);
+                                if (notification) {
+                                    notification.read_at = new Date().toISOString();
+                                }
+                            }
+                        } catch (error) {
+                            console.error('Erro ao marcar como lida:', error);
+                        }
+                    },
+                    async markAllAsRead() {
+                        try {
+                            const response = await fetch('<?php echo e(route('notifications.read-all')); ?>', {
+                                method: 'POST',
+                                headers: {
+                                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || '',
+                                    'Content-Type': 'application/json',
+                                },
+                            });
+                            const data = await response.json();
+                            if (data.success) {
+                                this.unreadCount = 0;
+                                this.notifications.forEach(n => n.read_at = new Date().toISOString());
+                            }
+                        } catch (error) {
+                            console.error('Erro ao marcar todas como lidas:', error);
+                        }
+                    },
+                    getNotificationIcon(type) {
+                        const icons = {
+                            'equipment_loan': 'bi-tools',
+                            'material_request': 'bi-clipboard-check',
+                            'budget_approval': 'bi-receipt',
+                            'proposal_approval': 'bi-file-earmark-text',
+                            'attendance': 'bi-calendar-check',
+                            'test': 'bi-bell-fill',
+                        };
+                        return icons[type] || 'bi-bell';
+                    },
+                    async sendTestNotification() {
+                        if (this.sendingTest) return;
+                        
+                        this.sendingTest = true;
+                        try {
+                            const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content;
+                            if (!csrfToken) {
+                                console.error('CSRF token não encontrado');
+                                alert('Erro: Token CSRF não encontrado');
+                                this.sendingTest = false;
+                                return;
+                            }
+
+                            const response = await fetch('<?php echo e(route('notifications.test')); ?>', {
+                                method: 'POST',
+                                headers: {
+                                    'X-CSRF-TOKEN': csrfToken,
+                                    'Content-Type': 'application/json',
+                                    'Accept': 'application/json',
+                                },
+                            });
+
+                            if (!response.ok) {
+                                const errorData = await response.json().catch(() => ({ message: 'Erro desconhecido' }));
+                                console.error('Erro na resposta:', response.status, errorData);
+                                alert('Erro ao enviar notificação: ' + (errorData.message || response.status));
+                                this.sendingTest = false;
+                                return;
+                            }
+
+                            const data = await response.json();
+                            console.log('Notificação de teste enviada:', data);
+                            
+                            if (data.success) {
+                                // Recarregar notificações imediatamente e depois novamente após delay
+                                this.loadNotifications();
+                                this.loadUnreadCount();
+                                
+                                // Recarregar novamente após delay para pegar via WebSocket
+                                setTimeout(() => {
+                                    this.loadNotifications();
+                                    this.loadUnreadCount();
+                                }, 1000);
+                            }
+                        } catch (error) {
+                            console.error('Erro ao enviar notificação de teste:', error);
+                            alert('Erro ao enviar notificação: ' + error.message);
+                        } finally {
+                            this.sendingTest = false;
+                        }
+                    }
+                };
+            }
+        </script>
         <?php echo \Livewire\Mechanisms\FrontendAssets\FrontendAssets::scripts(); ?>
 
         <script src="https://unpkg.com/imask"></script>

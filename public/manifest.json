@@ -8,6 +8,18 @@
   "theme_color": "#1E2780",
   "orientation": "portrait-primary",
   "scope": "/",
-  "icons": []
+  "icons": [
+    {
+      "src": "/favicon.ico",
+      "sizes": "48x48",
+      "type": "image/x-icon"
+    },
+    {
+      "src": "/assets/images/logo.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
 }
 

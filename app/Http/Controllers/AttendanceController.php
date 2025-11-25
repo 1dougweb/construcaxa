@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Attendance;
 use App\Models\Employee;
 use App\Models\Setting;
+use App\Services\NotificationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -63,7 +64,7 @@ class AttendanceController extends Controller
             return back()->withErrors(['error' => 'Já registrou entrada e saída hoje.']);
         }
 
-        Attendance::create([
+        $attendance = Attendance::create([
             'user_id' => $user->id,
             'type' => $type,
             'latitude' => $validated['latitude'],
@@ -72,6 +73,14 @@ class AttendanceController extends Controller
             'punched_at' => $now,
             'punched_date' => $todayDate,
         ]);
+
+        // Criar notificação para o funcionário e admins/gerentes
+        try {
+            NotificationService::createAttendanceNotification($attendance, true);
+        } catch (\Exception $e) {
+            \Log::error('Erro ao criar notificação de ponto: ' . $e->getMessage());
+            // Continuar mesmo se a notificação falhar
+        }
 
         return redirect()->route('attendance.index')->with('success', 'Ponto de ' . ($type === 'entry' ? 'entrada' : 'saída') . ' registrado.');
     }

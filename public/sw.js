@@ -1,5 +1,5 @@
-const CACHE_NAME = 'stock-master-v2';
-const RUNTIME_CACHE = 'stock-master-runtime-v2';
+const CACHE_NAME = 'stock-master-v3';
+const RUNTIME_CACHE = 'stock-master-runtime-v3';
 
 // Assets estáticos para cachear na instalação
 const STATIC_ASSETS = [
@@ -19,15 +19,13 @@ self.addEventListener('install', (event) => {
             return fetch(url)
               .then((response) => {
                 if (response.ok) {
-                  return cache.put(url, response).catch((error) => {
+                  return cache.put(url, response).catch(() => {
                     // Ignorar erros de cache silenciosamente
-                    console.log('Erro ao cachear asset:', url, error);
                   });
                 }
               })
               .catch(() => {
                 // Ignorar erros silenciosamente
-                console.log('Asset não encontrado para cache:', url);
               });
           })
         );
@@ -90,10 +88,14 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Ignorar requisições de API e Livewire
+  // Ignorar requisições de API, Livewire, WebSocket e Broadcasting
   if (event.request.url.includes('/livewire/') || 
       event.request.url.includes('/api/') ||
-      event.request.url.includes('/_dusk/')) {
+      event.request.url.includes('/_dusk/') ||
+      event.request.url.includes('/broadcasting/') ||
+      event.request.url.includes('ws://') ||
+      event.request.url.includes('wss://') ||
+      event.request.url.includes(':8080')) {
     return;
   }
 
@@ -106,9 +108,8 @@ self.addEventListener('fetch', (event) => {
         // Cachear apenas respostas válidas e se a requisição pode ser cacheada
         if (response.status === 200 && canCacheRequest(event.request)) {
           caches.open(RUNTIME_CACHE).then((cache) => {
-            cache.put(event.request, responseToCache).catch((error) => {
+            cache.put(event.request, responseToCache).catch(() => {
               // Ignorar erros de cache silenciosamente
-              console.log('Erro ao cachear recurso:', event.request.url, error);
             });
           });
         }

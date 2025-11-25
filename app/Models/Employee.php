@@ -18,26 +18,21 @@ class Employee extends Model
         'birth_date',
         'cpf',
         'rg',
-        'document_id',
+        'cnpj',
         'phone',
+        'cellphone',
         'address',
         'profile_photo_path',
-        'document_file',
         'emergency_contact',
         'notes',
-        'hourly_rate',
-        'monthly_salary',
-        'expected_daily_hours',
         'photos',
+        'cnpj',
     ];
 
     protected $casts = [
         'hire_date' => 'date',
         'birth_date' => 'date',
         'photos' => 'array',
-        'hourly_rate' => 'decimal:2',
-        'monthly_salary' => 'decimal:2',
-        'expected_daily_hours' => 'decimal:2',
     ];
 
     protected $appends = ['name'];
@@ -68,6 +63,16 @@ class Employee extends Model
         return $this->hasMany(EmployeeDeduction::class);
     }
 
+    public function proposals()
+    {
+        return $this->hasMany(EmployeeProposal::class);
+    }
+
+    public function documents()
+    {
+        return $this->hasMany(EmployeeDocument::class);
+    }
+
     public function getNameAttribute()
     {
         return $this->user->name ?? '';
@@ -84,26 +89,13 @@ class Employee extends Model
 
     /**
      * Calcular valor a pagar baseado em horas trabalhadas
+     * Nota: Este método foi mantido para compatibilidade, mas agora o cálculo
+     * deve ser feito através das propostas aceitas (EmployeeProposal)
      */
     public function calculatePaymentAmount(float $hoursWorked, \DateTimeInterface $from, \DateTimeInterface $to): float
     {
-        if ($this->hourly_rate) {
-            return round($hoursWorked * $this->hourly_rate, 2);
-        }
-
-        if ($this->monthly_salary && $this->expected_daily_hours) {
-            // Calcular dias úteis no período
-            $workingDays = $this->countWorkingDays($from, $to);
-            if ($workingDays > 0) {
-                $dailyRate = $this->monthly_salary / 30; // Assumindo 30 dias no mês
-                $expectedHours = $workingDays * $this->expected_daily_hours;
-                if ($expectedHours > 0) {
-                    $hourlyRate = $dailyRate / $this->expected_daily_hours;
-                    return round($hoursWorked * $hourlyRate, 2);
-                }
-            }
-        }
-
+        // O cálculo agora deve ser feito através das propostas aceitas
+        // Este método retorna 0 para manter compatibilidade
         return 0;
     }
 

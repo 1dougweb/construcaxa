@@ -37,7 +37,32 @@ if (appUrl && !appUrl.includes('127.0.0.1') && !appUrl.includes('localhost')) {
     }
 }
 
-if (reverbKey) {
+// Função para verificar se estamos em uma página de autenticação
+const isAuthPage = () => {
+    // Verificar pelo atributo data-auth-page no body (mais confiável)
+    if (document.body && document.body.hasAttribute('data-auth-page')) {
+        return true;
+    }
+    
+    // Verificar pelo pathname como fallback
+    const pathname = window.location.pathname;
+    const authPaths = ['/login', '/register', '/password/reset', '/forgot-password', '/email/verify'];
+    return authPaths.some(path => pathname.includes(path));
+};
+
+// Função para inicializar o Echo
+const initializeEcho = () => {
+    // Não inicializar se não houver reverbKey
+    if (!reverbKey) {
+        console.warn('Echo: REVERB_APP_KEY não encontrado');
+        return;
+    }
+    
+    // Não inicializar em páginas de autenticação
+    if (isAuthPage()) {
+        return;
+    }
+    
     try {
         // Configurar Echo com Reverb
         // Laravel Echo 1.19+ suporta 'reverb' como broadcaster diretamente
@@ -106,8 +131,42 @@ if (reverbKey) {
                 }
             }
         }, 100);
+        
+        // Monitorar conexão e mostrar aviso se não conectar após alguns segundos
+        setTimeout(() => {
+            if (window.Echo && window.Echo.connector && window.Echo.connector.pusher) {
+                const connection = window.Echo.connector.pusher.connection;
+                if (connection.state !== 'connected') {
+                    console.warn('⚠️ Servidor Reverb não está disponível. Execute: php artisan reverb:start');
+                }
+            }
+        }, 3000);
     } catch (error) {
         // Erro silencioso
+        console.warn('Echo initialization error:', error);
     }
+};
+
+// Função para tentar inicializar com retry
+const tryInitializeEcho = (retries = 10) => {
+    // Verificar se window.Laravel está disponível
+    if (!window.Laravel && retries > 0) {
+        setTimeout(() => tryInitializeEcho(retries - 1), 200);
+        return;
+    }
+    
+    // Inicializar normalmente
+    initializeEcho();
+};
+
+// Inicializar quando o DOM estiver pronto
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => {
+        // Aguardar um pouco mais para garantir que window.Laravel está definido
+        setTimeout(() => tryInitializeEcho(), 100);
+    });
+} else {
+    // DOM já está pronto, mas dar um pequeno delay para garantir que tudo está carregado
+    setTimeout(() => tryInitializeEcho(), 200);
 }
 

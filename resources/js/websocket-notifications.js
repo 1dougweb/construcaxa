@@ -20,6 +20,17 @@ class WebSocketNotificationManager {
     }
 
     setupEcho() {
+        // Não tentar conectar em páginas de autenticação
+        const isAuthPage = window.location.pathname.includes('/login') || 
+                          window.location.pathname.includes('/register') || 
+                          window.location.pathname.includes('/password/reset') ||
+                          window.location.pathname.includes('/forgot-password') ||
+                          document.querySelector('body[data-auth-page]');
+        
+        if (isAuthPage) {
+            return;
+        }
+        
         // Aguardar o Echo estar disponível
         if (window.Echo) {
             this.echo = window.Echo;
