@@ -230,7 +230,7 @@
                 </div>
                 <nav class="flex-1 overflow-y-auto sidebar-scroll p-4 space-y-1" x-data="{ 
                     estoqueOpen: <?php echo e(request()->routeIs('products.*') || request()->routeIs('equipment.*') || request()->routeIs('material-requests.*') || request()->routeIs('equipment-requests.*') || request()->routeIs('suppliers.*') ? 'true' : 'false'); ?>,
-                    gestaoOpen: <?php echo e(request()->routeIs('employees.*') || request()->routeIs('attendance.manage') || request()->routeIs('budgets.*') || (request()->routeIs('projects.*') && !request()->routeIs('client.projects.*')) || request()->routeIs('services.*') || request()->routeIs('labor-types.*') || request()->routeIs('service-categories.*') || request()->routeIs('map.*') || request()->routeIs('clients.*') || request()->routeIs('contracts.*') || request()->routeIs('inspections.*') ? 'true' : 'false'); ?>,
+                    gestaoOpen: <?php echo e(request()->routeIs('employees.*') || request()->routeIs('attendance.manage') || request()->routeIs('budgets.*') || (request()->routeIs('projects.*') && !request()->routeIs('client.projects.*')) || request()->routeIs('services.*') || request()->routeIs('labor-types.*') || request()->routeIs('service-categories.*') || request()->routeIs('map.*') || request()->routeIs('clients.*') || request()->routeIs('contracts.*') || request()->routeIs('inspections.*') || request()->routeIs('technical-inspections.*') ? 'true' : 'false'); ?>,
                     financeiroOpen: <?php echo e(request()->routeIs('financial.*') ? 'true' : 'false'); ?>,
                     adminOpen: <?php echo e(request()->routeIs('admin.permissions.*') || request()->routeIs('admin.email.*') ? 'true' : 'false'); ?>
 
@@ -300,7 +300,7 @@
                     <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
 
                     <!-- Dropdown Gestão -->
-                    <?php if(auth()->user()->can('view employees') || auth()->user()->can('manage attendance') || auth()->user()->can('view budgets') || auth()->user()->can('view projects') || auth()->user()->can('manage services') || auth()->user()->can('view clients') || auth()->user()->can('view inspections') || auth()->user()->hasAnyRole(['admin', 'manager'])): ?>
+                    <?php if(auth()->user()->can('view employees') || auth()->user()->can('manage attendance') || auth()->user()->can('view budgets') || auth()->user()->can('view projects') || auth()->user()->can('manage services') || auth()->user()->can('view clients') || auth()->user()->can('view inspections') || auth()->user()->can('view service-orders') || auth()->user()->hasAnyRole(['admin', 'manager'])): ?>
                     <div>
                         <button @click="gestaoOpen = !gestaoOpen" class="w-full flex items-center justify-between px-3 py-2 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
                             <div class="flex items-center">
@@ -386,6 +386,13 @@
                             <a href="<?php echo e(route('inspections.index')); ?>" class="flex items-center px-3 py-2 rounded-md text-sm font-medium <?php echo e(request()->routeIs('inspections.*') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 -ml-3 pl-5' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'); ?>">
                                 <i class="fi fi-rr-clipboard-check mr-3 text-base"></i>
                                 <?php echo e(__('Vistorias')); ?>
+
+                            </a>
+                            <?php endif; ?>
+                            <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('view service-orders')): ?>
+                            <a href="<?php echo e(route('technical-inspections.index')); ?>" class="flex items-center px-3 py-2 rounded-md text-sm font-medium <?php echo e(request()->routeIs('technical-inspections.*') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 -ml-3 pl-5' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'); ?>">
+                                <i class="fi fi-rr-clipboard-list mr-3 text-base"></i>
+                                <?php echo e(__('Vistorias Técnicas')); ?>
 
                             </a>
                             <?php endif; ?>
@@ -970,7 +977,7 @@
                             'material_request': 'bi-clipboard-check',
                             'budget_approval': 'bi-receipt',
                             'proposal_approval': 'bi-file-earmark-text',
-                            'attendance': 'bi-calendar-check',
+                            'attendance': 'fi fi-rr-calendar-clock',
                             'test': 'bi-bell-fill',
                         };
                         return icons[type] || 'bi-bell';

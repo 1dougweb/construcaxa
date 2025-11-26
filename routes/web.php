@@ -21,6 +21,7 @@ use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\ReceiptController;
 use App\Http\Controllers\FinancialDashboardController;
 use App\Http\Controllers\ProjectFinancialBalanceController;
+use App\Http\Controllers\TechnicalInspectionController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 
@@ -333,6 +334,34 @@ Route::middleware(['auth'])->group(function () {
         Route::delete('equipment-requests/{equipmentRequest}', [EquipmentRequestController::class, 'destroy'])
             ->whereNumber('equipmentRequest')
             ->name('equipment-requests.destroy');
+    });
+
+    // Vistorias Técnicas
+    Route::middleware(['permission:view service-orders'])->group(function () {
+        Route::get('technical-inspections', [TechnicalInspectionController::class, 'index'])->name('technical-inspections.index');
+        Route::get('technical-inspections/{technicalInspection}', [TechnicalInspectionController::class, 'show'])
+            ->whereNumber('technicalInspection')
+            ->name('technical-inspections.show');
+        Route::get('technical-inspections/{technicalInspection}/pdf', [TechnicalInspectionController::class, 'generatePDF'])
+            ->whereNumber('technicalInspection')
+            ->name('technical-inspections.pdf');
+        Route::get('technical-inspections/{technicalInspection}/view-pdf', [TechnicalInspectionController::class, 'viewPDF'])
+            ->whereNumber('technicalInspection')
+            ->name('technical-inspections.view-pdf');
+    });
+
+    Route::middleware(['permission:edit service-orders'])->group(function () {
+        Route::get('technical-inspections/create', [TechnicalInspectionController::class, 'create'])->name('technical-inspections.create');
+        Route::post('technical-inspections', [TechnicalInspectionController::class, 'store'])->name('technical-inspections.store');
+        Route::get('technical-inspections/{technicalInspection}/edit', [TechnicalInspectionController::class, 'edit'])
+            ->whereNumber('technicalInspection')
+            ->name('technical-inspections.edit');
+        Route::put('technical-inspections/{technicalInspection}', [TechnicalInspectionController::class, 'update'])
+            ->whereNumber('technicalInspection')
+            ->name('technical-inspections.update');
+        Route::delete('technical-inspections/{technicalInspection}', [TechnicalInspectionController::class, 'destroy'])
+            ->whereNumber('technicalInspection')
+            ->name('technical-inspections.destroy');
     });
 
     // Relatórios (apenas admin/manager)
