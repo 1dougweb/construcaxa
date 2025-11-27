@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class InspectionEnvironmentTemplate extends Model
 {
@@ -21,7 +22,11 @@ class InspectionEnvironmentTemplate extends Model
         'is_active' => 'boolean',
     ];
 
-    // Scopes
+    public function environments(): HasMany
+    {
+        return $this->hasMany(InspectionEnvironment::class, 'template_id');
+    }
+
     public function scopeActive($query)
     {
         return $query->where('is_active', true);

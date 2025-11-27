@@ -10,22 +10,24 @@
 <?php $component->withAttributes([]); ?>
      <?php $__env->slot('header', null, []); ?> 
         <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-            <?php echo e(__('Nova Vistoria Técnica')); ?>
+            <?php echo e(__('Nova Vistoria')); ?>
 
         </h2>
      <?php $__env->endSlot(); ?>
 
     <div class="py-6">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            <?php
+            <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-xl sm:rounded-lg">
+                <div class="p-6 dark:bg-gray-800">
+                    <?php
 $__split = function ($name, $params = []) {
     return [$name, $params];
 };
-[$__name, $__params] = $__split('technical-inspection-form');
+[$__name, $__params] = $__split('inspection-form');
 
 $key = null;
 
-$key ??= \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::generateKey('lw-1259977443-0', null);
+$key ??= \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::generateKey('lw-2355912494-0', null);
 
 $__html = app('livewire')->mount($__name, $__params, $key);
 
@@ -37,6 +39,8 @@ unset($__params);
 unset($__split);
 if (isset($__slots)) unset($__slots);
 ?>
+                </div>
+            </div>
         </div>
     </div>
  <?php echo $__env->renderComponent(); ?>
@@ -50,4 +54,5 @@ if (isset($__slots)) unset($__slots);
 <?php unset($__componentOriginal4619374cef299e94fd7263111d0abc69); ?>
 <?php endif; ?>
 
-<?php /**PATH C:\Users\Douglas\Documents\Projetos\stock-master\resources\views/technical-inspections/create.blade.php ENDPATH**/ ?>
+
+<?php /**PATH C:\Users\Douglas\Documents\Projetos\stock-master\resources\views/inspections/create.blade.php ENDPATH**/ ?>

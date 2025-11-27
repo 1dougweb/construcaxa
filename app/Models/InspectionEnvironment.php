@@ -12,30 +12,24 @@ class InspectionEnvironment extends Model
     use HasFactory;
 
     protected $fillable = [
-        'technical_inspection_id',
+        'inspection_id',
+        'template_id',
         'name',
-        'technical_notes',
-        'photos',
-        'videos',
-        'measurements',
-        'google_drive_link',
-        'qr_code_path',
         'sort_order',
     ];
 
-    protected $casts = [
-        'photos' => 'array',
-        'videos' => 'array',
-    ];
-
-    // Relacionamentos
-    public function technicalInspection(): BelongsTo
+    public function inspection(): BelongsTo
     {
-        return $this->belongsTo(TechnicalInspection::class);
+        return $this->belongsTo(Inspection::class);
     }
 
-    public function elements(): HasMany
+    public function template(): BelongsTo
     {
-        return $this->hasMany(InspectionElement::class)->orderBy('sort_order');
+        return $this->belongsTo(InspectionEnvironmentTemplate::class, 'template_id');
+    }
+
+    public function items(): HasMany
+    {
+        return $this->hasMany(InspectionEnvironmentItem::class)->orderBy('sort_order');
     }
 }

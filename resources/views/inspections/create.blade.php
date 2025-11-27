@@ -5,14 +5,15 @@
         </h2>
     </x-slot>
 
-    <div class="p-4">
-        @livewire('inspection-form')
+    <div class="py-6">
+        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+            <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-xl sm:rounded-lg">
+                <div class="p-6 dark:bg-gray-800">
+                    @livewire('inspection-form')
+                </div>
+            </div>
+        </div>
     </div>
 </x-app-layout>
-
-
-
-
-
 
 

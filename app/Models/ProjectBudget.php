@@ -95,6 +95,6 @@ class ProjectBudget extends Model
 
     public function inspection(): BelongsTo
     {
-        return $this->belongsTo(Inspection::class);
+        return $this->belongsTo(Inspection::class, 'inspection_id');
     }
 }

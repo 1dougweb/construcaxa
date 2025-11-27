@@ -5,9 +5,8 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Support\Facades\Storage;
-use Barryvdh\DomPDF\Facade\Pdf;
 
 class Inspection extends Model
 {
@@ -19,11 +18,16 @@ class Inspection extends Model
         'version',
         'inspection_date',
         'address',
+        'latitude',
+        'longitude',
         'description',
         'inspector_id',
+        'user_id',
         'status',
         'photos',
         'pdf_path',
+        'qr_code_path',
+        'public_token',
         'signed_document_path',
         'approved_at',
         'approved_by',
@@ -33,11 +37,12 @@ class Inspection extends Model
 
     protected $casts = [
         'inspection_date' => 'date',
-        'photos' => 'array',
         'approved_at' => 'datetime',
+        'photos' => 'array',
+        'latitude' => 'decimal:8',
+        'longitude' => 'decimal:8',
     ];
 
-    // Relacionamentos
     public function client(): BelongsTo
     {
         return $this->belongsTo(Client::class);
@@ -46,6 +51,11 @@ class Inspection extends Model
     public function inspector(): BelongsTo
     {
         return $this->belongsTo(User::class, 'inspector_id');
+    }
+
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'user_id');
     }
 
     public function approvedBy(): BelongsTo
@@ -58,79 +68,48 @@ class Inspection extends Model
         return $this->belongsTo(ProjectBudget::class, 'budget_id');
     }
 
-    // Scopes
-    public function scopeApproved($query)
+    public function environments(): HasMany
     {
-        return $query->where('status', 'approved');
+        return $this->hasMany(InspectionEnvironment::class)->orderBy('sort_order');
     }
 
-    public function scopePending($query)
+    public function clientRequests(): HasMany
     {
-        return $query->where('status', 'pending');
+        return $this->hasMany(InspectionClientRequest::class)->orderBy('created_at', 'desc');
     }
 
-    public function scopeForClient($query, $clientId)
-    {
-        return $query->where('client_id', $clientId);
-    }
-
-    // Métodos
     public static function generateNumber(): string
     {
-        $lastNumber = self::where('number', 'like', 'VIS-%')->max('number');
-        $nextNumber = $lastNumber ? (intval(substr($lastNumber, 4)) + 1) : 1;
-        return 'VIS-' . str_pad($nextNumber, 4, '0', STR_PAD_LEFT);
-    }
-
-    public function getNextVersion(): int
-    {
-        $lastVersion = self::where('client_id', $this->client_id)
-            ->where('id', '!=', $this->id ?? 0)
-            ->max('version');
+        $year = date('Y');
+        $prefix = "VIST{$year}";
         
-        return ($lastVersion ?? 0) + 1;
-    }
-
-    public function approve($userId): bool
-    {
-        return $this->update([
-            'status' => 'approved',
-            'approved_at' => now(),
-            'approved_by' => $userId,
-        ]);
-    }
-
-    public function generatePDF(): string
-    {
-        $pdf = Pdf::loadView('inspections.pdf', ['inspection' => $this]);
+        $lastInspection = static::where('number', 'like', "{$prefix}%")
+            ->orderByRaw('CAST(SUBSTRING(number, ' . (strlen($prefix) + 1) . ') AS UNSIGNED) DESC')
+            ->first();
         
-        $filename = 'inspections/' . $this->number . '.pdf';
-        Storage::disk('public')->put($filename, $pdf->output());
+        if ($lastInspection && preg_match('/VIST\d{4}(\d+)/', $lastInspection->number, $matches)) {
+            $nextNumber = intval($matches[1]) + 1;
+        } else {
+            $nextNumber = 1;
+        }
         
-        $this->update(['pdf_path' => $filename]);
-        
-        return $filename;
+        return $prefix . str_pad($nextNumber, 4, '0', STR_PAD_LEFT);
     }
 
-    public function getStatusLabelAttribute(): string
+    public function generatePublicToken(): string
     {
-        return match($this->status) {
-            'draft' => 'Rascunho',
-            'pending' => 'Pendente',
-            'approved' => 'Aprovada',
-            'rejected' => 'Rejeitada',
-            default => ucfirst($this->status),
-        };
+        if (!$this->public_token) {
+            $this->public_token = bin2hex(random_bytes(32));
+            $this->save();
+        }
+        return $this->public_token;
     }
 
-    public function getStatusColorAttribute(): string
+    public function getPublicUrlAttribute(): string
     {
-        return match($this->status) {
-            'draft' => 'bg-gray-100 text-gray-800 border-gray-200',
-            'pending' => 'bg-yellow-100 text-yellow-800 border-yellow-200',
-            'approved' => 'bg-green-100 text-green-800 border-green-200',
-            'rejected' => 'bg-red-100 text-red-800 border-red-200',
-            default => 'bg-gray-100 text-gray-800 border-gray-200',
-        };
+        if (!$this->public_token) {
+            $this->generatePublicToken();
+        }
+        return route('inspections.public', $this->public_token);
     }
 }

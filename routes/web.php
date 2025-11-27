@@ -21,7 +21,6 @@ use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\ReceiptController;
 use App\Http\Controllers\FinancialDashboardController;
 use App\Http\Controllers\ProjectFinancialBalanceController;
-use App\Http\Controllers\TechnicalInspectionController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 
@@ -336,33 +335,22 @@ Route::middleware(['auth'])->group(function () {
             ->name('equipment-requests.destroy');
     });
 
-    // Vistorias Técnicas
-    Route::middleware(['permission:view service-orders'])->group(function () {
-        Route::get('technical-inspections', [TechnicalInspectionController::class, 'index'])->name('technical-inspections.index');
-        Route::get('technical-inspections/{technicalInspection}', [TechnicalInspectionController::class, 'show'])
-            ->whereNumber('technicalInspection')
-            ->name('technical-inspections.show');
-        Route::get('technical-inspections/{technicalInspection}/pdf', [TechnicalInspectionController::class, 'generatePDF'])
-            ->whereNumber('technicalInspection')
-            ->name('technical-inspections.pdf');
-        Route::get('technical-inspections/{technicalInspection}/view-pdf', [TechnicalInspectionController::class, 'viewPDF'])
-            ->whereNumber('technicalInspection')
-            ->name('technical-inspections.view-pdf');
+    // Vistorias
+    Route::middleware(['auth'])->group(function () {
+        Route::get('inspections', [\App\Http\Controllers\InspectionController::class, 'index'])->name('inspections.index');
+        Route::get('inspections/create', [\App\Http\Controllers\InspectionController::class, 'create'])->name('inspections.create');
+        Route::get('inspections/{inspection}', [\App\Http\Controllers\InspectionController::class, 'show'])->name('inspections.show');
+        Route::get('inspections/{inspection}/edit', [\App\Http\Controllers\InspectionController::class, 'edit'])->name('inspections.edit');
+        Route::get('inspections/{inspection}/pdf', [\App\Http\Controllers\InspectionController::class, 'generatePDF'])->name('inspections.pdf');
+        Route::delete('inspections/{inspection}', [\App\Http\Controllers\InspectionController::class, 'destroy'])->name('inspections.destroy');
+        Route::post('inspections/{inspection}/link-budget', [\App\Http\Controllers\InspectionController::class, 'linkBudget'])->name('inspections.link-budget');
+        Route::post('inspections/{inspection}/unlink-budget', [\App\Http\Controllers\InspectionController::class, 'unlinkBudget'])->name('inspections.unlink-budget');
+        Route::post('inspections/{inspection}/complete', [\App\Http\Controllers\InspectionController::class, 'complete'])->name('inspections.complete');
     });
 
-    Route::middleware(['permission:edit service-orders'])->group(function () {
-        Route::get('technical-inspections/create', [TechnicalInspectionController::class, 'create'])->name('technical-inspections.create');
-        Route::post('technical-inspections', [TechnicalInspectionController::class, 'store'])->name('technical-inspections.store');
-        Route::get('technical-inspections/{technicalInspection}/edit', [TechnicalInspectionController::class, 'edit'])
-            ->whereNumber('technicalInspection')
-            ->name('technical-inspections.edit');
-        Route::put('technical-inspections/{technicalInspection}', [TechnicalInspectionController::class, 'update'])
-            ->whereNumber('technicalInspection')
-            ->name('technical-inspections.update');
-        Route::delete('technical-inspections/{technicalInspection}', [TechnicalInspectionController::class, 'destroy'])
-            ->whereNumber('technicalInspection')
-            ->name('technical-inspections.destroy');
-    });
+    // Visualização pública de vistorias (sem autenticação)
+    Route::get('inspections/public/{token}', [\App\Http\Controllers\InspectionController::class, 'publicView'])->name('inspections.public');
+    Route::post('inspections/public/{token}/request', [\App\Http\Controllers\InspectionController::class, 'storeClientRequest'])->name('inspections.public.request');
 
     // Relatórios (apenas admin/manager)
     Route::middleware(['permission:view reports'])->group(function () {
@@ -494,26 +482,6 @@ Route::middleware(['auth'])->group(function () {
         Route::delete('contracts/{contract}', [\App\Http\Controllers\ContractController::class, 'destroy'])->name('contracts.destroy');
     });
 
-    // Inspections Routes
-    // IMPORTANTE: A rota 'create' deve vir ANTES da rota '{inspection}' para evitar conflito de rotas
-    Route::middleware(['role_or_permission:manager|admin|create inspections'])->group(function () {
-        Route::get('inspections/create', [\App\Http\Controllers\InspectionController::class, 'create'])->name('inspections.create');
-        Route::post('inspections', [\App\Http\Controllers\InspectionController::class, 'store'])->name('inspections.store');
-    });
-    Route::middleware(['role_or_permission:manager|admin|view inspections'])->group(function () {
-        Route::get('inspections', [\App\Http\Controllers\InspectionController::class, 'index'])->name('inspections.index');
-        Route::get('inspections/{inspection}', [\App\Http\Controllers\InspectionController::class, 'show'])->name('inspections.show');
-        Route::get('inspections/{inspection}/pdf', [\App\Http\Controllers\InspectionController::class, 'generatePDF'])->name('inspections.pdf');
-    });
-    Route::middleware(['role_or_permission:manager|admin|edit inspections'])->group(function () {
-        Route::get('inspections/{inspection}/edit', [\App\Http\Controllers\InspectionController::class, 'edit'])->name('inspections.edit');
-        Route::put('inspections/{inspection}', [\App\Http\Controllers\InspectionController::class, 'update'])->name('inspections.update');
-        Route::patch('inspections/{inspection}/approve', [\App\Http\Controllers\InspectionController::class, 'approve'])->name('inspections.approve');
-        Route::post('inspections/{inspection}/upload-signed', [\App\Http\Controllers\InspectionController::class, 'uploadSignedDocument'])->name('inspections.upload-signed');
-    });
-    Route::middleware(['role_or_permission:manager|admin|delete inspections'])->group(function () {
-        Route::delete('inspections/{inspection}', [\App\Http\Controllers\InspectionController::class, 'destroy'])->name('inspections.destroy');
-    });
 
     // Client Documents Routes
     Route::middleware(['role_or_permission:manager|admin|edit clients'])->group(function () {
@@ -526,7 +494,6 @@ Route::middleware(['auth'])->group(function () {
         Route::get('services/search', [\App\Http\Controllers\ServiceController::class, 'search'])->name('api.services.search');
         Route::get('labor-types/search', [\App\Http\Controllers\LaborTypeController::class, 'search'])->name('api.labor-types.search');
         Route::get('clients/fetch-cnpj', [\App\Http\Controllers\ClientController::class, 'fetchCnpj'])->name('api.clients.fetch-cnpj');
-        Route::get('clients/{client}/last-inspection', [\App\Http\Controllers\InspectionController::class, 'getLastInspection'])->name('api.clients.last-inspection');
     });
 
     // Financeiro - Sistema Financeiro

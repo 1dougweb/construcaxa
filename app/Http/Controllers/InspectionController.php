@@ -3,49 +3,23 @@
 namespace App\Http\Controllers;
 
 use App\Models\Inspection;
-use App\Models\Client;
-use App\Models\User;
+use App\Models\ProjectBudget;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Storage;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Support\Facades\Storage;
 
 class InspectionController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function index(Request $request)
+    public function index()
     {
-        $query = Inspection::with(['client', 'inspector']);
-
-        // Filtros
-        if ($request->filled('client_id')) {
-            $query->where('client_id', $request->client_id);
-        }
-
-        if ($request->filled('status')) {
-            $query->where('status', $request->status);
-        }
-
-        if ($request->filled('search')) {
-            $search = $request->search;
-            $query->where(function($q) use ($search) {
-                $q->where('number', 'like', "%{$search}%")
-                  ->orWhere('description', 'like', "%{$search}%")
-                  ->orWhereHas('client', function($q) use ($search) {
-                      $q->where('name', 'like', "%{$search}%");
-                  });
-            });
-        }
-
-        $inspections = $query->latest('inspection_date')
-            ->latest('created_at')
+        $inspections = Inspection::with(['client', 'user'])
+            ->latest()
             ->paginate(15);
 
-        $clients = Client::active()->orderBy('name')->get();
-
-        return view('inspections.index', compact('inspections', 'clients'));
+        return view('inspections.index', compact('inspections'));
     }
 
     /**
@@ -53,10 +27,7 @@ class InspectionController extends Controller
      */
     public function create()
     {
-        $clients = Client::active()->orderBy('name')->get();
-        $inspectors = User::orderBy('name')->get();
-
-        return view('inspections.create', compact('clients', 'inspectors'));
+        return view('inspections.create');
     }
 
     /**
@@ -64,58 +35,8 @@ class InspectionController extends Controller
      */
     public function store(Request $request)
     {
-        $validated = $request->validate([
-            'client_id' => 'required|exists:clients,id',
-            'inspection_date' => 'required|date',
-            'address' => 'nullable|string|max:500',
-            'description' => 'nullable|string',
-            'inspector_id' => 'required|exists:users,id',
-            'status' => 'required|in:draft,pending,approved,rejected',
-            'photos' => 'nullable|array',
-            'photos.*' => 'image|mimes:jpeg,png,jpg,gif,webp|max:2048',
-            'notes' => 'nullable|string',
-        ]);
-
-        DB::beginTransaction();
-        try {
-            // Gerar número e versão
-            $number = Inspection::generateNumber();
-            $client = Client::find($validated['client_id']);
-            
-            // Calcular próxima versão
-            $lastVersion = Inspection::where('client_id', $validated['client_id'])->max('version');
-            $version = ($lastVersion ?? 0) + 1;
-
-            // Processar fotos
-            $photos = [];
-            if ($request->hasFile('photos')) {
-                foreach ($request->file('photos') as $photo) {
-                    $path = $photo->store('inspections/photos', 'public');
-                    $photos[] = $path;
-                }
-            }
-
-            $inspection = Inspection::create([
-                'client_id' => $validated['client_id'],
-                'number' => $number,
-                'version' => $version,
-                'inspection_date' => $validated['inspection_date'],
-                'address' => $validated['address'] ?? null,
-                'description' => $validated['description'] ?? null,
-                'inspector_id' => $validated['inspector_id'],
-                'status' => $validated['status'],
-                'photos' => !empty($photos) ? $photos : null,
-                'notes' => $validated['notes'] ?? null,
-            ]);
-
-            DB::commit();
-
-            return redirect()->route('inspections.show', $inspection)
-                ->with('success', 'Vistoria criada com sucesso!');
-        } catch (\Exception $e) {
-            DB::rollBack();
-            return back()->withInput()->with('error', 'Erro ao criar vistoria: ' . $e->getMessage());
-        }
+        // O store é feito pelo Livewire component
+        return redirect()->route('inspections.create');
     }
 
     /**
@@ -123,9 +44,58 @@ class InspectionController extends Controller
      */
     public function show(Inspection $inspection)
     {
-        $inspection->load(['client', 'inspector', 'approvedBy', 'budget']);
-        
+        $inspection->load([
+            'client',
+            'user',
+            'inspector',
+            'environments.template',
+            'environments.items.photos',
+            'environments.items.subItems',
+            'budget',
+        ]);
+
         return view('inspections.show', compact('inspection'));
+    }
+
+    /**
+     * Public view of inspection (via token).
+     */
+    public function publicView($token)
+    {
+        $inspection = Inspection::where('public_token', $token)->firstOrFail();
+        
+        $inspection->load([
+            'client',
+            'environments.template',
+            'environments.items.photos',
+            'environments.items.subItems',
+            'clientRequests.environmentItem',
+            'clientRequests.subItem',
+        ]);
+
+        return view('inspections.public', compact('inspection'));
+    }
+
+    /**
+     * Store client request for inspection.
+     */
+    public function storeClientRequest(Request $request, $token)
+    {
+        $inspection = Inspection::where('public_token', $token)->firstOrFail();
+        
+        $validated = $request->validate([
+            'inspection_environment_item_id' => 'nullable|exists:inspection_environment_items,id',
+            'inspection_item_sub_item_id' => 'nullable|exists:inspection_item_sub_items,id',
+            'request_type' => 'required|in:alter_quality,add_observation,request_change,other',
+            'message' => 'required|string|max:2000',
+        ]);
+
+        $validated['inspection_id'] = $inspection->id;
+        $validated['status'] = 'pending';
+
+        \App\Models\InspectionClientRequest::create($validated);
+
+        return back()->with('success', 'Solicitação enviada com sucesso!');
     }
 
     /**
@@ -133,10 +103,7 @@ class InspectionController extends Controller
      */
     public function edit(Inspection $inspection)
     {
-        $clients = Client::active()->orderBy('name')->get();
-        $inspectors = User::orderBy('name')->get();
-
-        return view('inspections.edit', compact('inspection', 'clients', 'inspectors'));
+        return view('inspections.edit', compact('inspection'));
     }
 
     /**
@@ -144,52 +111,8 @@ class InspectionController extends Controller
      */
     public function update(Request $request, Inspection $inspection)
     {
-        $validated = $request->validate([
-            'client_id' => 'required|exists:clients,id',
-            'inspection_date' => 'required|date',
-            'address' => 'nullable|string|max:500',
-            'description' => 'nullable|string',
-            'inspector_id' => 'required|exists:users,id',
-            'status' => 'required|in:draft,pending,approved,rejected',
-            'photos' => 'nullable|array',
-            'photos.*' => 'image|mimes:jpeg,png,jpg,gif,webp|max:2048',
-            'notes' => 'nullable|string',
-        ]);
-
-        DB::beginTransaction();
-        try {
-            // Processar novas fotos
-            $existingPhotos = $inspection->photos ?? [];
-            $newPhotos = [];
-            
-            if ($request->hasFile('photos')) {
-                foreach ($request->file('photos') as $photo) {
-                    $path = $photo->store('inspections/photos', 'public');
-                    $newPhotos[] = $path;
-                }
-            }
-
-            $photos = array_merge($existingPhotos, $newPhotos);
-
-            $inspection->update([
-                'client_id' => $validated['client_id'],
-                'inspection_date' => $validated['inspection_date'],
-                'address' => $validated['address'] ?? null,
-                'description' => $validated['description'] ?? null,
-                'inspector_id' => $validated['inspector_id'],
-                'status' => $validated['status'],
-                'photos' => !empty($photos) ? $photos : null,
-                'notes' => $validated['notes'] ?? null,
-            ]);
-
-            DB::commit();
-
-            return redirect()->route('inspections.show', $inspection)
-                ->with('success', 'Vistoria atualizada com sucesso!');
-        } catch (\Exception $e) {
-            DB::rollBack();
-            return back()->withInput()->with('error', 'Erro ao atualizar vistoria: ' . $e->getMessage());
-        }
+        // O update é feito pelo Livewire component
+        return redirect()->route('inspections.edit', $inspection);
     }
 
     /**
@@ -197,129 +120,110 @@ class InspectionController extends Controller
      */
     public function destroy(Inspection $inspection)
     {
-        try {
-            // Deletar fotos
-            if ($inspection->photos) {
-                foreach ($inspection->photos as $photo) {
-                    Storage::disk('public')->delete($photo);
+        // Deletar fotos
+        foreach ($inspection->environments as $environment) {
+            foreach ($environment->items as $item) {
+                foreach ($item->photos as $photo) {
+                    if (Storage::disk('public')->exists($photo->photo_path)) {
+                        Storage::disk('public')->delete($photo->photo_path);
+                    }
                 }
             }
-
-            // Deletar PDF
-            if ($inspection->pdf_path) {
-                Storage::disk('public')->delete($inspection->pdf_path);
-            }
-
-            // Deletar documento assinado
-            if ($inspection->signed_document_path) {
-                Storage::disk('public')->delete($inspection->signed_document_path);
-            }
-
-            $inspection->delete();
-
-            return redirect()->route('inspections.index')
-                ->with('success', 'Vistoria excluída com sucesso!');
-        } catch (\Exception $e) {
-            return back()->with('error', 'Erro ao excluir vistoria: ' . $e->getMessage());
         }
+
+        // Deletar PDF se existir
+        if ($inspection->pdf_path && Storage::disk('public')->exists($inspection->pdf_path)) {
+            Storage::disk('public')->delete($inspection->pdf_path);
+        }
+
+        $inspection->delete();
+
+        return redirect()->route('inspections.index')
+            ->with('success', 'Vistoria excluída com sucesso!');
     }
 
     /**
-     * Generate PDF for inspection
+     * Generate PDF for the inspection.
      */
     public function generatePDF(Inspection $inspection)
     {
-        $inspection->load(['client', 'inspector']);
-        
-        $pdf = Pdf::loadView('inspections.pdf', compact('inspection'));
+        $inspection->load([
+            'client',
+            'user',
+            'inspector',
+            'environments.template',
+            'environments.items.photos',
+            'environments.items.subItems',
+        ]);
+
+        $pdf = Pdf::loadView('inspections.pdf', compact('inspection'))
+            ->setPaper('a4', 'portrait')
+            ->setOption('isHtml5ParserEnabled', true)
+            ->setOption('isRemoteEnabled', true)
+            ->setOption('defaultFont', 'DejaVu Sans')
+            ->setOption('enableFontSubsetting', true);
         
         // Salvar PDF
-        $filename = 'inspections/' . $inspection->number . '.pdf';
-        Storage::disk('public')->put($filename, $pdf->output());
-        
-        $inspection->update(['pdf_path' => $filename]);
+        $pdfPath = 'inspections/pdfs/' . $inspection->number . '.pdf';
+        Storage::disk('public')->put($pdfPath, $pdf->output());
+        $inspection->update(['pdf_path' => $pdfPath]);
         
         return $pdf->stream("vistoria-{$inspection->number}.pdf");
     }
 
     /**
-     * Approve inspection
+     * Link inspection to a budget.
      */
-    public function approve(Inspection $inspection)
+    public function linkBudget(Request $request, Inspection $inspection)
     {
-        try {
-            $inspection->approve(auth()->id());
-
-            return back()->with('success', 'Vistoria aprovada com sucesso!');
-        } catch (\Exception $e) {
-            return back()->with('error', 'Erro ao aprovar vistoria: ' . $e->getMessage());
-        }
-    }
-
-    /**
-     * Upload signed document
-     */
-    public function uploadSignedDocument(Request $request, Inspection $inspection)
-    {
-        $validated = $request->validate([
-            'signed_document' => 'required|file|mimes:pdf|max:10240',
+        $request->validate([
+            'budget_id' => 'required|exists:project_budgets,id',
         ]);
 
-        try {
-            // Deletar documento anterior se existir
-            if ($inspection->signed_document_path) {
-                Storage::disk('public')->delete($inspection->signed_document_path);
+        $budget = ProjectBudget::findOrFail($request->budget_id);
+        
+        // Verificar se o orçamento já está vinculado a outra vistoria
+        if ($budget->inspection_id && $budget->inspection_id !== $inspection->id) {
+            return back()->with('error', 'Este orçamento já está vinculado a outra vistoria.');
+        }
+
+        // Se a vistoria já tinha um orçamento vinculado, desvincular o antigo
+        if ($inspection->budget_id && $inspection->budget_id !== $request->budget_id) {
+            $oldBudget = ProjectBudget::find($inspection->budget_id);
+            if ($oldBudget) {
+                $oldBudget->update(['inspection_id' => null]);
             }
-
-            // Upload do novo documento
-            $path = $request->file('signed_document')->store('inspections/signed', 'public');
-            
-            $inspection->update(['signed_document_path' => $path]);
-
-            // Criar registro em client_documents
-            \App\Models\ClientDocument::create([
-                'client_id' => $inspection->client_id,
-                'document_type' => 'signed_inspection',
-                'name' => "Vistoria {$inspection->number} - Assinada",
-                'file_path' => $path,
-                'related_id' => $inspection->id,
-                'related_type' => Inspection::class,
-                'uploaded_by' => auth()->id(),
-            ]);
-
-            return back()->with('success', 'Documento assinado anexado com sucesso!');
-        } catch (\Exception $e) {
-            return back()->with('error', 'Erro ao anexar documento: ' . $e->getMessage());
         }
+
+        $inspection->update(['budget_id' => $request->budget_id]);
+        $budget->update(['inspection_id' => $inspection->id]);
+
+        return back()->with('success', 'Vistoria vinculada ao orçamento com sucesso!');
     }
 
     /**
-     * Get last inspection for client (API endpoint for AJAX)
+     * Unlink inspection from budget.
      */
-    public function getLastInspection(Client $client)
+    public function unlinkBudget(Inspection $inspection)
     {
-        $inspection = Inspection::where('client_id', $client->id)
-            ->approved()
-            ->latest('inspection_date')
-            ->latest('created_at')
-            ->first();
-
-        if (!$inspection) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Nenhuma vistoria aprovada encontrada para este cliente',
-            ]);
+        if ($inspection->budget_id) {
+            $budget = ProjectBudget::find($inspection->budget_id);
+            if ($budget) {
+                $budget->update(['inspection_id' => null]);
+            }
+            $inspection->update(['budget_id' => null]);
         }
 
-        return response()->json([
-            'success' => true,
-            'inspection' => [
-                'id' => $inspection->id,
-                'number' => $inspection->number,
-                'version' => $inspection->version,
-                'inspection_date' => $inspection->inspection_date->format('d/m/Y'),
-                'description' => $inspection->description,
-            ],
-        ]);
+        return back()->with('success', 'Vínculo com orçamento removido com sucesso!');
+    }
+
+    /**
+     * Complete inspection.
+     */
+    public function complete(Inspection $inspection)
+    {
+        $inspection->update(['status' => 'completed']);
+        
+        return back()->with('success', 'Vistoria marcada como concluída!');
     }
 }

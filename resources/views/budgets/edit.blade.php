@@ -27,16 +27,16 @@
                     </div>
 
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Vistoria</label>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Vistoria Técnica</label>
                         <select name="inspection_id" id="inspection_id" class="w-full border-gray-300 rounded-md">
                             <option value="">Nenhuma vistoria selecionada</option>
                             @if($budget->inspection_id)
                                 <option value="{{ $budget->inspection_id }}" selected>
-                                    {{ $budget->inspection->number ?? 'Vistoria selecionada' }}
+                                    Vistoria #{{ $budget->inspection_id }}
                                 </option>
                             @endif
                         </select>
-                        <p class="text-xs text-gray-500 mt-1" id="inspection-info"></p>
+                        <p class="text-xs text-gray-500 mt-1">Nota: Este campo está desabilitado. Use Vistorias Técnicas para criar novas vistorias.</p>
                         @error('inspection_id')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
                     </div>
 
@@ -644,46 +644,7 @@
             const discountInput = document.querySelector('[name="discount"]');
             discountInput.addEventListener('input', calculateTotals);
             
-            // Buscar última vistoria quando cliente for selecionado
-            const clientSelect = document.getElementById('client_id');
-            if (clientSelect) {
-                clientSelect.addEventListener('change', function() {
-                    const clientId = this.value;
-                    const inspectionSelect = document.getElementById('inspection_id');
-                    const inspectionInfo = document.getElementById('inspection-info');
-                    
-                    // Limpar seleção anterior
-                    inspectionSelect.innerHTML = '<option value="">Nenhuma vistoria selecionada</option>';
-                    inspectionInfo.textContent = '';
-                    
-                    if (!clientId) {
-                        return;
-                    }
-                    
-                    // Buscar última vistoria aprovada
-                    fetch(`/api/clients/${clientId}/last-inspection`)
-                        .then(response => response.json())
-                        .then(data => {
-                            if (data.success && data.inspection) {
-                                const option = document.createElement('option');
-                                option.value = data.inspection.id;
-                                option.textContent = `${data.inspection.number} - v${data.inspection.version} (${data.inspection.inspection_date})`;
-                                option.selected = true;
-                                inspectionSelect.appendChild(option);
-                                
-                                inspectionInfo.textContent = `Última vistoria: ${data.inspection.description || 'Sem descrição'}`;
-                                inspectionInfo.className = 'text-xs text-green-600 mt-1';
-                            } else {
-                                inspectionInfo.textContent = 'Nenhuma vistoria aprovada encontrada para este cliente';
-                                inspectionInfo.className = 'text-xs text-gray-500 mt-1';
-                            }
-                        })
-                        .catch(error => {
-                            console.error('Erro ao buscar vistoria:', error);
-                            inspectionInfo.textContent = '';
-                        });
-                });
-            }
+            // Funcionalidade de busca de vistoria removida - sistema antigo foi descontinuado
         });
     </script>
     @endpush

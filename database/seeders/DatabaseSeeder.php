@@ -7,6 +7,7 @@ use Database\Seeders\InitialDataSeeder;
 use Database\Seeders\MaterialRequestSeeder;
 use Database\Seeders\UserSeeder;
 use Database\Seeders\EmployeeSeeder;
+use Database\Seeders\InspectionEnvironmentTemplateSeeder;
 
 class DatabaseSeeder extends Seeder
 {
@@ -18,6 +19,7 @@ class DatabaseSeeder extends Seeder
         $this->call([
             UserSeeder::class,
             EmployeeSeeder::class,
+            InspectionEnvironmentTemplateSeeder::class,
         ]);
     }
 }

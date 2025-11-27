@@ -11,21 +11,19 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('inspection_environments', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('technical_inspection_id')->constrained()->onDelete('cascade');
-            $table->string('name');
-            $table->text('technical_notes')->nullable();
-            $table->json('photos')->nullable();
-            $table->json('videos')->nullable();
-            $table->text('measurements')->nullable();
-            $table->string('google_drive_link')->nullable();
-            $table->string('qr_code_path')->nullable();
-            $table->integer('sort_order')->default(0);
-            $table->timestamps();
-            
-            $table->index('technical_inspection_id');
-        });
+        if (!Schema::hasTable('inspection_environments')) {
+            Schema::create('inspection_environments', function (Blueprint $table) {
+                $table->id();
+                $table->foreignId('inspection_id')->constrained('inspections')->onDelete('cascade');
+                $table->foreignId('template_id')->nullable()->constrained('inspection_environment_templates')->nullOnDelete();
+                $table->string('name');
+                $table->integer('sort_order')->default(0);
+                $table->timestamps();
+                
+                $table->index('inspection_id');
+                $table->index('template_id');
+            });
+        }
     }
 
     /**

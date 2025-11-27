@@ -206,8 +206,147 @@
                         </a>
                     </div>
                 </div>
-                <!-- Espaçador para balancear o layout -->
-                <div class="w-10"></div>
+                
+                <!-- Notificações e Perfil -->
+                <div class="flex items-center gap-2">
+                    <!-- Notifications Dropdown -->
+                    <div class="relative" 
+                         x-data="notificationDropdown()"
+                         @click.away="open = false">
+                        <button 
+                            @click="open = !open; if (open && notifications.length === 0) loadNotifications()"
+                            class="relative p-2 rounded-md text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                            aria-label="Notificações">
+                            <i class="fi fi-rr-bell text-lg mt-2"></i>
+                            <span x-show="unreadCount > 0" 
+                                  x-text="unreadCount > 99 ? '99+' : unreadCount"
+                                  class="absolute -top-1 -right-1 h-5 w-5 bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center"
+                                  style="min-width: 1.25rem;"></span>
+                        </button>
+                        
+                        <!-- Dropdown de Notificações -->
+                        <div 
+                            x-show="open"
+                            x-transition:enter="transition ease-out duration-100"
+                            x-transition:enter-start="transform opacity-0 scale-95"
+                            x-transition:enter-end="transform opacity-100 scale-100"
+                            x-transition:leave="transition ease-in duration-75"
+                            x-transition:leave-start="transform opacity-100 scale-100"
+                            x-transition:leave-end="transform opacity-0 scale-95"
+                            x-cloak
+                            class="fixed right-4 top-16 w-[calc(100vw-2rem)] max-w-sm bg-white dark:bg-gray-800 rounded-md shadow-lg border border-gray-200 dark:border-gray-700 z-50 max-h-96 overflow-hidden flex flex-col">
+                            <!-- Header -->
+                            <div class="px-4 py-3 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
+                                <h3 class="text-sm font-semibold text-gray-900 dark:text-gray-100">Notificações</h3>
+                                <a href="<?php echo e(route('notifications.index')); ?>" 
+                                   class="text-xs text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300">
+                                    Ver todas
+                                </a>
+                            </div>
+                            
+                            <!-- Lista de Notificações -->
+                            <div class="overflow-y-auto flex-1" style="max-height: 20rem;">
+                                <div x-show="loading" x-cloak class="px-4 py-8 text-center text-gray-500 dark:text-gray-400">
+                                    <i class="fi fi-rr-spinner animate-spin text-2xl mb-2"></i>
+                                    <p class="text-sm">Carregando...</p>
+                                </div>
+                                <div x-show="!loading && notifications.length === 0" x-cloak class="px-4 py-8 text-center text-gray-500 dark:text-gray-400">
+                                    <i class="fi fi-rr-bell-slash text-3xl mb-2"></i>
+                                    <p class="text-sm">Nenhuma notificação</p>
+                                </div>
+                                <div x-show="!loading && notifications.length > 0" x-cloak>
+                                    <template x-for="notification in notifications" :key="notification.id">
+                                        <div 
+                                            @click="handleNotificationClick(notification)"
+                                            :class="notification.read_at ? 'bg-white dark:bg-gray-800' : 'bg-indigo-50 dark:bg-indigo-900/20'"
+                                            class="px-4 py-3 border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer transition-colors">
+                                            <div class="flex items-start gap-3">
+                                                <div class="flex-shrink-0 mt-1">
+                                                    <i :class="getNotificationIcon(notification.type)" 
+                                                       class="text-lg text-indigo-600 dark:text-indigo-400"></i>
+                                                </div>
+                                                <div class="flex-1 min-w-0">
+                                                    <p class="text-sm font-medium text-gray-900 dark:text-gray-100" 
+                                                       x-text="notification.title"></p>
+                                                    <p class="text-xs text-gray-600 dark:text-gray-400 mt-1" 
+                                                       x-text="notification.message"></p>
+                                                    <p class="text-xs text-gray-500 dark:text-gray-500 mt-1" 
+                                                       x-text="notification.time_ago"></p>
+                                                </div>
+                                                <div x-show="!notification.read_at" 
+                                                     class="flex-shrink-0 mt-1">
+                                                    <span class="h-2 w-2 bg-indigo-500 rounded-full block"></span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </template>
+                                </div>
+                            </div>
+                            
+                            <!-- Footer -->
+                            <div class="px-4 py-3 border-t border-gray-200 dark:border-gray-700 space-y-2">
+                                <button 
+                                    @click="markAllAsRead()"
+                                    x-show="unreadCount > 0"
+                                    class="w-full text-center text-xs text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 py-2 rounded-md transition-colors">
+                                    <i class="fi fi-rr-check-circle mr-1"></i> Marcar todas como lidas
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- User Menu Dropdown -->
+                    <div class="relative" x-data="{ open: false }" @click.away="open = false">
+                        <button 
+                            @click="open = !open"
+                            class="flex items-center gap-1 p-1.5 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+                            <div class="flex-shrink-0">
+                                <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(Auth::user()->profile_photo): ?>
+                                    <img src="<?php echo e(asset('storage/' . Auth::user()->profile_photo)); ?>" alt="<?php echo e(Auth::user()->name); ?>" class="h-8 w-8 rounded-full object-cover border-2 border-gray-200 dark:border-gray-600">
+                                <?php else: ?>
+                                    <div class="h-8 w-8 rounded-full bg-indigo-500 flex items-center justify-center text-white font-semibold text-sm border-2 border-gray-200 dark:border-gray-600">
+                                        <?php echo e(strtoupper(substr(Auth::user()->name, 0, 1))); ?>
+
+                                    </div>
+                                <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+                            </div>
+                            <i class="fi fi-rr-angle-small-down text-xs text-gray-600 dark:text-gray-400 hidden sm:block"></i>
+                        </button>
+                        
+                        <!-- Dropdown Menu -->
+                        <div 
+                            x-show="open"
+                            x-transition:enter="transition ease-out duration-100"
+                            x-transition:enter-start="transform opacity-0 scale-95"
+                            x-transition:enter-end="transform opacity-100 scale-100"
+                            x-transition:leave="transition ease-in duration-75"
+                            x-transition:leave-start="transform opacity-100 scale-100"
+                            x-transition:leave-end="transform opacity-0 scale-95"
+                            x-cloak
+                            class="fixed right-4 top-16 w-56 bg-white dark:bg-gray-800 rounded-md shadow-lg border border-gray-200 dark:border-gray-700 py-1 z-50">
+                            <div class="px-4 py-3 border-b border-gray-200 dark:border-gray-700">
+                                <p class="text-sm font-medium text-gray-900 dark:text-gray-100"><?php echo e(Auth::user()->name); ?></p>
+                                <p class="text-xs text-gray-500 dark:text-gray-400 truncate"><?php echo e(Auth::user()->email); ?></p>
+                            </div>
+                            <a 
+                                href="<?php echo e(route('profile.edit')); ?>" 
+                                class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+                                <i class="fi fi-rr-user-pen mr-2"></i>
+                                Perfil
+                            </a>
+                            <form method="POST" action="<?php echo e(route('logout')); ?>">
+                                <?php echo csrf_field(); ?>
+                                <button 
+                                    type="submit" 
+                                    class="w-full text-left px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors">
+                                    <i class="fi fi-rr-sign-out-alt mr-2"></i>
+                                    <?php echo e(__('Sair')); ?>
+
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <!-- Sidebar -->
@@ -230,7 +369,7 @@
                 </div>
                 <nav class="flex-1 overflow-y-auto sidebar-scroll p-4 space-y-1" x-data="{ 
                     estoqueOpen: <?php echo e(request()->routeIs('products.*') || request()->routeIs('equipment.*') || request()->routeIs('material-requests.*') || request()->routeIs('equipment-requests.*') || request()->routeIs('suppliers.*') ? 'true' : 'false'); ?>,
-                    gestaoOpen: <?php echo e(request()->routeIs('employees.*') || request()->routeIs('attendance.manage') || request()->routeIs('budgets.*') || (request()->routeIs('projects.*') && !request()->routeIs('client.projects.*')) || request()->routeIs('services.*') || request()->routeIs('labor-types.*') || request()->routeIs('service-categories.*') || request()->routeIs('map.*') || request()->routeIs('clients.*') || request()->routeIs('contracts.*') || request()->routeIs('inspections.*') || request()->routeIs('technical-inspections.*') ? 'true' : 'false'); ?>,
+                    gestaoOpen: <?php echo e(request()->routeIs('employees.*') || request()->routeIs('attendance.manage') || request()->routeIs('budgets.*') || request()->routeIs('inspections.*') || (request()->routeIs('projects.*') && !request()->routeIs('client.projects.*')) || request()->routeIs('services.*') || request()->routeIs('labor-types.*') || request()->routeIs('service-categories.*') || request()->routeIs('map.*') || request()->routeIs('clients.*') || request()->routeIs('contracts.*') ? 'true' : 'false'); ?>,
                     financeiroOpen: <?php echo e(request()->routeIs('financial.*') ? 'true' : 'false'); ?>,
                     adminOpen: <?php echo e(request()->routeIs('admin.permissions.*') || request()->routeIs('admin.email.*') ? 'true' : 'false'); ?>
 
@@ -300,7 +439,7 @@
                     <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
 
                     <!-- Dropdown Gestão -->
-                    <?php if(auth()->user()->can('view employees') || auth()->user()->can('manage attendance') || auth()->user()->can('view budgets') || auth()->user()->can('view projects') || auth()->user()->can('manage services') || auth()->user()->can('view clients') || auth()->user()->can('view inspections') || auth()->user()->can('view service-orders') || auth()->user()->hasAnyRole(['admin', 'manager'])): ?>
+                    <?php if(auth()->user()->can('view employees') || auth()->user()->can('manage attendance') || auth()->user()->can('view budgets') || auth()->user()->can('view projects') || auth()->user()->can('manage services') || auth()->user()->can('view clients') || auth()->user()->can('view service-orders') || auth()->user()->hasAnyRole(['admin', 'manager'])): ?>
                     <div>
                         <button @click="gestaoOpen = !gestaoOpen" class="w-full flex items-center justify-between px-3 py-2 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
                             <div class="flex items-center">
@@ -368,6 +507,11 @@
 
                             </a>
                             <?php endif; ?>
+                            <a href="<?php echo e(route('inspections.index')); ?>" class="flex items-center px-3 py-2 rounded-md text-sm font-medium <?php echo e(request()->routeIs('inspections.*') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 -ml-3 pl-5' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'); ?>">
+                                <i class="fi fi-rr-clipboard-check mr-3 text-base"></i>
+                                <?php echo e(__('Vistorias')); ?>
+
+                            </a>
                             <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('view projects')): ?>
                             <a href="<?php echo e(route('projects.index')); ?>" class="flex items-center px-3 py-2 rounded-md text-sm font-medium <?php echo e(request()->routeIs('projects.*') && !request()->routeIs('client.projects.*') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 -ml-3 pl-5' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'); ?>">
                                 <i class="fi fi-rr-building mr-3 text-base"></i>
@@ -379,20 +523,6 @@
                             <a href="<?php echo e(route('map.index')); ?>" class="flex items-center px-3 py-2 rounded-md text-sm font-medium <?php echo e(request()->routeIs('map.*') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 -ml-3 pl-5' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'); ?>">
                                 <i class="fi fi-rr-map mr-3 text-base"></i>
                                 <?php echo e(__('Mapa')); ?>
-
-                            </a>
-                            <?php endif; ?>
-                            <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('view inspections')): ?>
-                            <a href="<?php echo e(route('inspections.index')); ?>" class="flex items-center px-3 py-2 rounded-md text-sm font-medium <?php echo e(request()->routeIs('inspections.*') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 -ml-3 pl-5' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'); ?>">
-                                <i class="fi fi-rr-clipboard-check mr-3 text-base"></i>
-                                <?php echo e(__('Vistorias')); ?>
-
-                            </a>
-                            <?php endif; ?>
-                            <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('view service-orders')): ?>
-                            <a href="<?php echo e(route('technical-inspections.index')); ?>" class="flex items-center px-3 py-2 rounded-md text-sm font-medium <?php echo e(request()->routeIs('technical-inspections.*') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 -ml-3 pl-5' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'); ?>">
-                                <i class="fi fi-rr-clipboard-list mr-3 text-base"></i>
-                                <?php echo e(__('Vistorias Técnicas')); ?>
 
                             </a>
                             <?php endif; ?>
@@ -585,7 +715,7 @@
                                 @click="open = !open; if (open && notifications.length === 0) loadNotifications()"
                                 class="relative p-2 rounded-md text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                                 aria-label="Notificações">
-                                <i class="fi fi-rr-bell text-lg"></i>
+                                <i class="fi fi-rr-bell text-lg mt-1"></i>
                                 <span x-show="unreadCount > 0" 
                                       x-text="unreadCount > 99 ? '99+' : unreadCount"
                                       class="absolute -top-1 -right-1 h-5 w-5 bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center"
