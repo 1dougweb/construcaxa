@@ -204,7 +204,22 @@
                 user: @json(auth()->user()),
                 @endauth
                 csrfToken: '{{ csrf_token() }}',
-                appUrl: '{{ config('app.url') }}'
+                appUrl: '{{ config('app.url') }}',
+                reverb: {
+                    @if(config('reverb.apps.apps.main.key'))
+                    key: '{{ config('reverb.apps.apps.main.key') }}',
+                    @endif
+                    @if(config('reverb.servers.reverb.host'))
+                    host: '{{ config('reverb.servers.reverb.host') }}',
+                    @endif
+                    @if(config('reverb.servers.reverb.port'))
+                    port: {{ config('reverb.servers.reverb.port') }},
+                    @endif
+                    @if(config('reverb.servers.reverb.options.scheme'))
+                    scheme: '{{ config('reverb.servers.reverb.options.scheme') }}',
+                    @endif
+                    appUrl: '{{ config('app.url') }}'
+                }
             };
         </script>
         

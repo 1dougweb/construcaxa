@@ -65,9 +65,14 @@ class SupplierForm extends Component
         'contact_person.max' => 'A pessoa de contato deve ter no máximo 255 caracteres',
     ];
 
-    public function mount($supplier = null)
+    public function mount($supplier = null, $supplierId = null)
     {
         $this->supplierCategories = \App\Models\SupplierCategory::orderBy('name')->get();
+        
+        // Se receber supplierId, carregar o fornecedor
+        if ($supplierId && !$supplier) {
+            $supplier = Supplier::find($supplierId);
+        }
         
         if ($supplier) {
             $this->supplier = $supplier;
@@ -84,6 +89,31 @@ class SupplierForm extends Component
             $this->contact_person = $supplier->contact_person;
             $this->supplier_category_id = $supplier->supplier_category_id;
         }
+    }
+
+    public function loadSupplier($id)
+    {
+        $supplier = Supplier::find($id);
+        if ($supplier) {
+            $this->mount($supplier);
+        }
+    }
+
+    public function resetForm()
+    {
+        $this->supplier = null;
+        $this->cnpj = '';
+        $this->company_name = '';
+        $this->trading_name = '';
+        $this->address = '';
+        $this->city = '';
+        $this->state = '';
+        $this->zip_code = '';
+        $this->phone = '';
+        $this->whatsapp = '';
+        $this->email = '';
+        $this->contact_person = '';
+        $this->supplier_category_id = null;
     }
 
     public function save()
@@ -117,14 +147,9 @@ class SupplierForm extends Component
             // Usar session flash para a mensagem
             session()->flash('success', $message);
             
-            // Despachar evento para notificação no frontend (mantendo para compatibilidade)
-            $this->dispatch('supplier-saved', [
-                'message' => $message,
-                'type' => 'success'
-            ]);
-            
-            // Redirecionar para a lista de fornecedores
-            return redirect()->route('suppliers.index');
+            // Emitir evento para fechar o offcanvas e atualizar a lista
+            $this->dispatch('supplierSaved');
+            $this->resetForm();
         } catch (\Exception $e) {
             // Usar session flash para o erro
             session()->flash('error', 'Erro ao salvar o fornecedor: ' . $e->getMessage());

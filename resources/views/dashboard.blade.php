@@ -758,7 +758,10 @@
                         <h2 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Ações Rápidas</h2>
                         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                             @can('create service-orders')
-                            <a href="{{ route('material-requests.create') }}" class="flex items-center p-4 bg-indigo-50 dark:bg-indigo-900/30 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 rounded-lg transition-all">
+                            <button 
+                                onclick="openOffcanvas('material-request-offcanvas')"
+                                class="w-full flex items-center p-4 bg-indigo-50 dark:bg-indigo-900/30 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 rounded-lg transition-all text-left"
+                            >
                                 <div class="p-3 bg-indigo-100 dark:bg-indigo-800 rounded-full mr-4">
                                     <svg class="w-6 h-6 text-indigo-600 dark:text-indigo-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 13h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
@@ -800,7 +803,10 @@
                             @endcan
 
                             @can('create service-orders')
-                            <a href="{{ route('equipment-requests.create') }}" class="flex items-center p-4 bg-amber-100 dark:bg-amber-900/30 hover:bg-orange-100 dark:hover:bg-orange-900/50 rounded-lg transition-all">
+                            <button 
+                                onclick="openOffcanvas('equipment-request-offcanvas')"
+                                class="w-full flex items-center p-4 bg-amber-100 dark:bg-amber-900/30 hover:bg-orange-100 dark:hover:bg-orange-900/50 rounded-lg transition-all text-left"
+                            >
                                 <div class="p-3 bg-orange-100 dark:bg-orange-800 rounded-full mr-4">
                                     <svg class="w-6 h-6 text-orange-600 dark:text-orange-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 13h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
@@ -810,7 +816,7 @@
                                     <h3 class="text-sm font-medium text-gray-900 dark:text-gray-100">Requisição de Equipamento</h3>
                                     <p class="text-xs text-gray-500 dark:text-gray-400">Solicitar empréstimo/devolução</p>
                                 </div>
-                            </a>
+                            </button>
                             @endcan
 
                             @can('manage stock')
@@ -1076,4 +1082,99 @@
             </div>
         </div>
     </div>
+
+    <!-- Offcanvas para Produtos -->
+    <x-offcanvas id="product-offcanvas" title="Novo Produto" width="w-full md:w-[600px]">
+        @livewire('product-form', ['product' => null], key('product-form'))
+    </x-offcanvas>
+
+    <!-- Offcanvas para Equipamentos -->
+    <x-offcanvas id="equipment-offcanvas" title="Novo Equipamento" width="w-full md:w-[700px]">
+        @livewire('equipment-form', ['equipment' => null], key('equipment-form'))
+    </x-offcanvas>
+
+    <!-- Offcanvas para Requisições de Material -->
+    <x-offcanvas id="material-request-offcanvas" title="Nova Requisição de Material" width="w-full md:w-[900px]">
+        @livewire('material-request-form', ['materialRequest' => null], key('material-request-form'))
+    </x-offcanvas>
+
+    <!-- Offcanvas para Requisições de Equipamento -->
+    <x-offcanvas id="equipment-request-offcanvas" title="Nova Requisição de Equipamento" width="w-full md:w-[800px]">
+        @livewire('equipment-request-form', ['equipmentRequest' => null], key('equipment-request-form'))
+    </x-offcanvas>
 </x-app-layout>
+
+@push('scripts')
+<script>
+    document.addEventListener('livewire:init', () => {
+        Livewire.on('productSaved', () => {
+            closeOffcanvas('product-offcanvas');
+            Livewire.dispatch('refresh');
+        });
+        Livewire.on('equipmentSaved', () => {
+            closeOffcanvas('equipment-offcanvas');
+            window.location.reload();
+        });
+        Livewire.on('materialRequestSaved', () => {
+            closeOffcanvas('material-request-offcanvas');
+            window.location.reload();
+        });
+        Livewire.on('equipmentRequestSaved', () => {
+            closeOffcanvas('equipment-request-offcanvas');
+            window.location.reload();
+        });
+    });
+
+    // Eventos de edição para produtos
+    window.addEventListener('edit-product', (event) => {
+        const productId = event.detail.id;
+        const offcanvas = document.getElementById('product-offcanvas');
+        const title = offcanvas.querySelector('h2');
+        if (title) title.textContent = 'Editar Produto';
+        const livewireComponent = document.querySelector('[wire\\:id]');
+        if (livewireComponent) {
+            const componentId = livewireComponent.getAttribute('wire:id');
+            Livewire.find(componentId).call('loadProduct', productId);
+        }
+    });
+
+    // Eventos de edição para equipamentos
+    window.addEventListener('edit-equipment', (event) => {
+        const equipmentId = event.detail.id;
+        const offcanvas = document.getElementById('equipment-offcanvas');
+        const title = offcanvas.querySelector('h2');
+        if (title) title.textContent = 'Editar Equipamento';
+        const livewireComponent = document.querySelector('[wire\\:id]');
+        if (livewireComponent) {
+            const componentId = livewireComponent.getAttribute('wire:id');
+            Livewire.find(componentId).call('loadEquipment', equipmentId);
+        }
+    });
+
+    // Eventos de edição para requisições de material
+    window.addEventListener('edit-material-request', (event) => {
+        const requestId = event.detail.id;
+        const offcanvas = document.getElementById('material-request-offcanvas');
+        const title = offcanvas.querySelector('h2');
+        if (title) title.textContent = 'Editar Requisição de Material';
+        const livewireComponent = document.querySelector('[wire\\:id]');
+        if (livewireComponent) {
+            const componentId = livewireComponent.getAttribute('wire:id');
+            Livewire.find(componentId).call('loadMaterialRequest', requestId);
+        }
+    });
+
+    // Eventos de edição para requisições de equipamento
+    window.addEventListener('edit-equipment-request', (event) => {
+        const requestId = event.detail.id;
+        const offcanvas = document.getElementById('equipment-request-offcanvas');
+        const title = offcanvas.querySelector('h2');
+        if (title) title.textContent = 'Editar Requisição de Equipamento';
+        const livewireComponent = document.querySelector('[wire\\:id]');
+        if (livewireComponent) {
+            const componentId = livewireComponent.getAttribute('wire:id');
+            Livewire.find(componentId).call('loadEquipmentRequest', requestId);
+        }
+    });
+</script>
+@endpush

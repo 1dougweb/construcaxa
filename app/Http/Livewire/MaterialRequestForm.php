@@ -79,11 +79,16 @@ class MaterialRequestForm extends Component
         'selectedProducts.*.price.numeric' => 'O preço deve ser um número.',
     ];
 
-    public function mount($materialRequest = null)
+    public function mount($materialRequest = null, $materialRequestId = null)
     {
         $this->employees = Employee::orderByName()->get();
         $this->projects = Project::where('status', 'in_progress')->orderBy('start_date', 'desc')->get();
         $this->serviceOrders = ServiceOrder::whereIn('status', ['pending', 'in_progress'])->orderBy('created_at', 'desc')->get();
+        
+        // Se receber materialRequestId, carregar a requisição
+        if ($materialRequestId && !$materialRequest) {
+            $materialRequest = MaterialRequest::find($materialRequestId);
+        }
         
         if ($materialRequest) {
             $this->materialRequest = $materialRequest;
@@ -351,13 +356,44 @@ class MaterialRequestForm extends Component
             $this->notify($successMessage, 'success');
             
             // Redirecionar de volta para a requisição
-            return redirect()->route('material-requests.show', $materialRequest);
+            // Emitir evento para fechar o offcanvas e atualizar a lista
+            $this->dispatch('materialRequestSaved');
+            $this->resetForm();
                 
         } catch (\Exception $e) {
             DB::rollBack();
             $this->notify($e->getMessage(), 'error');
             return null;
         }
+    }
+
+    public function loadMaterialRequest($id)
+    {
+        $materialRequest = MaterialRequest::find($id);
+        if ($materialRequest) {
+            $this->mount($materialRequest);
+        }
+    }
+
+    public function resetForm()
+    {
+        $this->materialRequest = null;
+        $this->number = '';
+        $this->employee_id = null;
+        $this->project_id = null;
+        $this->service_order_id = null;
+        $this->notes = '';
+        $this->take_from_stock = false;
+        $this->return_to_stock = false;
+        $this->selectedProducts = [];
+        $this->search = '';
+        $this->searchResults = [];
+        $this->osSearch = '';
+        $this->osSearchResults = [];
+        $this->projectSearch = '';
+        $this->projectSearchResults = [];
+        $this->selectedServiceOrder = null;
+        $this->selectedProject = null;
     }
 
     public function render()

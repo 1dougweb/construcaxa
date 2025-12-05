@@ -355,6 +355,13 @@ class NotificationSystem {
             return;
         }
 
+        // Verificar se o Echo foi marcado como indisponível
+        if (window.EchoUnavailable) {
+            // Echo não está configurado (REVERB_APP_KEY não encontrado)
+            // Parar tentativas
+            return;
+        }
+
         // Aguardar Echo estar disponível
         if (window.Echo) {
             this.echo = window.Echo;
@@ -375,13 +382,19 @@ class NotificationSystem {
             
             this.subscribeToNotifications();
         } else {
-            // Tentar novamente após delay
+            // Tentar novamente após delay (com limite menor)
             if (!this.retryCount) this.retryCount = 0;
-            if (this.retryCount < 50) {
+            // Reduzir tentativas de 50 para 10 (1 segundo de tentativas)
+            if (this.retryCount < 10) {
                 this.retryCount++;
                 setTimeout(() => this.setupEcho(), 100);
             } else {
-                console.error('Echo não disponível após 50 tentativas');
+                // Se chegou aqui, o Echo não está disponível
+                // Verificar se foi marcado como indisponível para não mostrar erro repetido
+                if (!window.EchoUnavailable && !window.EchoUnavailableWarningShown) {
+                    console.warn('Echo não disponível após 10 tentativas. Verifique se o Reverb está configurado.');
+                    window.EchoUnavailableWarningShown = true;
+                }
             }
         }
     }

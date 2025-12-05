@@ -25,13 +25,16 @@
                 </a>
                 <?php endif; ?>
                 <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('create products')): ?>
-                <a href="<?php echo e(route('products.create')); ?>" class="inline-flex items-center px-4 py-2 bg-indigo-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-indigo-700 focus:bg-indigo-700 active:bg-indigo-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition ease-in-out duration-150">
+                <button 
+                    onclick="openOffcanvas('product-offcanvas')"
+                    class="inline-flex items-center px-4 py-2 bg-indigo-600 dark:bg-indigo-700 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-indigo-700 dark:hover:bg-indigo-600 focus:bg-indigo-700 active:bg-indigo-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition ease-in-out duration-150"
+                >
                     <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
                     </svg>
                     <?php echo e(__('Novo Produto')); ?>
 
-                </a>
+                </button>
                 <?php endif; ?>
             </div>
         </div>
@@ -65,6 +68,48 @@ if (isset($__slots)) unset($__slots);
             </div>
         </div>
     </div>
+
+    <!-- Offcanvas para Novo/Editar Produto -->
+    <?php if (isset($component)) { $__componentOriginal5fd361cc9f4aafccfd6aee776cbb14bc = $component; } ?>
+<?php if (isset($attributes)) { $__attributesOriginal5fd361cc9f4aafccfd6aee776cbb14bc = $attributes; } ?>
+<?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.offcanvas','data' => ['id' => 'product-offcanvas','title' => 'Novo Produto','width' => 'w-full md:w-[600px]']] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
+<?php $component->withName('offcanvas'); ?>
+<?php if ($component->shouldRender()): ?>
+<?php $__env->startComponent($component->resolveView(), $component->data()); ?>
+<?php if (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag): ?>
+<?php $attributes = $attributes->except(\Illuminate\View\AnonymousComponent::ignoredParameterNames()); ?>
+<?php endif; ?>
+<?php $component->withAttributes(['id' => 'product-offcanvas','title' => 'Novo Produto','width' => 'w-full md:w-[600px]']); ?>
+        <?php
+$__split = function ($name, $params = []) {
+    return [$name, $params];
+};
+[$__name, $__params] = $__split('product-form', ['product' => null]);
+
+$key = 'product-form';
+
+$key ??= \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::generateKey('lw-531600022-1', 'product-form');
+
+$__html = app('livewire')->mount($__name, $__params, $key);
+
+echo $__html;
+
+unset($__html);
+unset($__name);
+unset($__params);
+unset($__split);
+if (isset($__slots)) unset($__slots);
+?>
+     <?php echo $__env->renderComponent(); ?>
+<?php endif; ?>
+<?php if (isset($__attributesOriginal5fd361cc9f4aafccfd6aee776cbb14bc)): ?>
+<?php $attributes = $__attributesOriginal5fd361cc9f4aafccfd6aee776cbb14bc; ?>
+<?php unset($__attributesOriginal5fd361cc9f4aafccfd6aee776cbb14bc); ?>
+<?php endif; ?>
+<?php if (isset($__componentOriginal5fd361cc9f4aafccfd6aee776cbb14bc)): ?>
+<?php $component = $__componentOriginal5fd361cc9f4aafccfd6aee776cbb14bc; ?>
+<?php unset($__componentOriginal5fd361cc9f4aafccfd6aee776cbb14bc); ?>
+<?php endif; ?>
  <?php echo $__env->renderComponent(); ?>
 <?php endif; ?>
 <?php if (isset($__attributesOriginal4619374cef299e94fd7263111d0abc69)): ?>
@@ -75,4 +120,49 @@ if (isset($__slots)) unset($__slots);
 <?php $component = $__componentOriginal4619374cef299e94fd7263111d0abc69; ?>
 <?php unset($__componentOriginal4619374cef299e94fd7263111d0abc69); ?>
 <?php endif; ?>
+
+<?php $__env->startPush('scripts'); ?>
+<script>
+    document.addEventListener('livewire:init', () => {
+        Livewire.on('productSaved', () => {
+            closeOffcanvas('product-offcanvas');
+            // Recarregar a lista de produtos
+            Livewire.dispatch('refresh');
+        });
+    });
+
+    // Escutar evento de edição
+    window.addEventListener('edit-product', (event) => {
+        const productId = event.detail.id;
+        const offcanvas = document.getElementById('product-offcanvas');
+        const title = offcanvas.querySelector('h2');
+        if (title) {
+            title.textContent = 'Editar Produto';
+        }
+        // Encontrar o componente Livewire e carregar o produto
+        const livewireComponent = document.querySelector('[wire\\:id]');
+        if (livewireComponent) {
+            const componentId = livewireComponent.getAttribute('wire:id');
+            Livewire.find(componentId).call('loadProduct', productId);
+        }
+    });
+
+    // Resetar título quando abrir para novo
+    document.addEventListener('click', (e) => {
+        if (e.target.closest('[onclick*="product-offcanvas"]') && !e.target.closest('[onclick*="edit-product"]')) {
+            const offcanvas = document.getElementById('product-offcanvas');
+            const title = offcanvas.querySelector('h2');
+            if (title) {
+                title.textContent = 'Novo Produto';
+            }
+            // Resetar o formulário
+            const livewireComponent = document.querySelector('[wire\\:id]');
+            if (livewireComponent) {
+                const componentId = livewireComponent.getAttribute('wire:id');
+                Livewire.find(componentId).call('resetForm');
+            }
+        }
+    });
+</script>
+<?php $__env->stopPush(); ?>
 <?php /**PATH C:\Users\Douglas\Documents\Projetos\stock-master\resources\views/products/index.blade.php ENDPATH**/ ?>

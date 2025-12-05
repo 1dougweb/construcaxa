@@ -59,7 +59,22 @@
                 user: @json(auth()->user()),
                 @endauth
                 csrfToken: '{{ csrf_token() }}',
-                appUrl: '{{ config('app.url') }}'
+                appUrl: '{{ config('app.url') }}',
+                reverb: {
+                    @if(config('reverb.apps.apps.main.key'))
+                    key: '{{ config('reverb.apps.apps.main.key') }}',
+                    @endif
+                    @if(config('reverb.servers.reverb.host'))
+                    host: '{{ config('reverb.servers.reverb.host') }}',
+                    @endif
+                    @if(config('reverb.servers.reverb.port'))
+                    port: {{ config('reverb.servers.reverb.port') }},
+                    @endif
+                    @if(config('reverb.servers.reverb.options.scheme'))
+                    scheme: '{{ config('reverb.servers.reverb.options.scheme') }}',
+                    @endif
+                    appUrl: '{{ config('app.url') }}'
+                }
             };
         </script>
 
@@ -1130,6 +1145,66 @@
         @livewireScripts
         <script src="https://unpkg.com/imask"></script>
         <script src="{{ asset('js/pwa.js') }}"></script>
+        
+        <!-- Offcanvas Functions -->
+        <script>
+            function openOffcanvas(id) {
+                const offcanvas = document.getElementById(id);
+                const backdrop = document.getElementById(id + '-backdrop');
+                
+                if (offcanvas && backdrop) {
+                    backdrop.style.display = 'block';
+                    offcanvas.style.display = 'block';
+                    
+                    // Trigger reflow
+                    offcanvas.offsetHeight;
+                    backdrop.offsetHeight;
+                    
+                    // Add classes for animation (right side)
+                    setTimeout(() => {
+                        offcanvas.classList.remove('translate-x-full');
+                        offcanvas.classList.add('translate-x-0');
+                        backdrop.classList.remove('opacity-0', 'pointer-events-none');
+                        backdrop.classList.add('opacity-100');
+                    }, 10);
+                    
+                    // Prevent body scroll
+                    document.body.style.overflow = 'hidden';
+                }
+            }
+
+            function closeOffcanvas(id) {
+                const offcanvas = document.getElementById(id);
+                const backdrop = document.getElementById(id + '-backdrop');
+                
+                if (offcanvas && backdrop) {
+                    // Remove classes for animation (right side)
+                    offcanvas.classList.remove('translate-x-0');
+                    offcanvas.classList.add('translate-x-full');
+                    backdrop.classList.remove('opacity-100');
+                    backdrop.classList.add('opacity-0', 'pointer-events-none');
+                    
+                    // Hide after animation
+                    setTimeout(() => {
+                        offcanvas.style.display = 'none';
+                        backdrop.style.display = 'none';
+                        document.body.style.overflow = '';
+                    }, 300);
+                }
+            }
+
+            // Close on Escape key
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape') {
+                    const openOffcanvas = document.querySelector('[id$="-offcanvas"]:not(.translate-x-full)');
+                    if (openOffcanvas && openOffcanvas.classList.contains('translate-x-0')) {
+                        const id = openOffcanvas.id;
+                        closeOffcanvas(id);
+                    }
+                }
+            });
+        </script>
+        
         @stack('scripts')
         
         <!-- Modal de Upload de Arquivos (Global) -->

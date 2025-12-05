@@ -59,7 +59,22 @@
                 user: <?php echo json_encode(auth()->user(), 15, 512) ?>,
                 <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                 csrfToken: '<?php echo e(csrf_token()); ?>',
-                appUrl: '<?php echo e(config('app.url')); ?>'
+                appUrl: '<?php echo e(config('app.url')); ?>',
+                reverb: {
+                    <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(config('reverb.apps.apps.main.key')): ?>
+                    key: '<?php echo e(config('reverb.apps.apps.main.key')); ?>',
+                    <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+                    <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(config('reverb.servers.reverb.host')): ?>
+                    host: '<?php echo e(config('reverb.servers.reverb.host')); ?>',
+                    <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+                    <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(config('reverb.servers.reverb.port')): ?>
+                    port: <?php echo e(config('reverb.servers.reverb.port')); ?>,
+                    <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+                    <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(config('reverb.servers.reverb.options.scheme')): ?>
+                    scheme: '<?php echo e(config('reverb.servers.reverb.options.scheme')); ?>',
+                    <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+                    appUrl: '<?php echo e(config('app.url')); ?>'
+                }
             };
         </script>
 
@@ -1170,6 +1185,66 @@
 
         <script src="https://unpkg.com/imask"></script>
         <script src="<?php echo e(asset('js/pwa.js')); ?>"></script>
+        
+        <!-- Offcanvas Functions -->
+        <script>
+            function openOffcanvas(id) {
+                const offcanvas = document.getElementById(id);
+                const backdrop = document.getElementById(id + '-backdrop');
+                
+                if (offcanvas && backdrop) {
+                    backdrop.style.display = 'block';
+                    offcanvas.style.display = 'block';
+                    
+                    // Trigger reflow
+                    offcanvas.offsetHeight;
+                    backdrop.offsetHeight;
+                    
+                    // Add classes for animation (right side)
+                    setTimeout(() => {
+                        offcanvas.classList.remove('translate-x-full');
+                        offcanvas.classList.add('translate-x-0');
+                        backdrop.classList.remove('opacity-0', 'pointer-events-none');
+                        backdrop.classList.add('opacity-100');
+                    }, 10);
+                    
+                    // Prevent body scroll
+                    document.body.style.overflow = 'hidden';
+                }
+            }
+
+            function closeOffcanvas(id) {
+                const offcanvas = document.getElementById(id);
+                const backdrop = document.getElementById(id + '-backdrop');
+                
+                if (offcanvas && backdrop) {
+                    // Remove classes for animation (right side)
+                    offcanvas.classList.remove('translate-x-0');
+                    offcanvas.classList.add('translate-x-full');
+                    backdrop.classList.remove('opacity-100');
+                    backdrop.classList.add('opacity-0', 'pointer-events-none');
+                    
+                    // Hide after animation
+                    setTimeout(() => {
+                        offcanvas.style.display = 'none';
+                        backdrop.style.display = 'none';
+                        document.body.style.overflow = '';
+                    }, 300);
+                }
+            }
+
+            // Close on Escape key
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape') {
+                    const openOffcanvas = document.querySelector('[id$="-offcanvas"]:not(.translate-x-full)');
+                    if (openOffcanvas && openOffcanvas.classList.contains('translate-x-0')) {
+                        const id = openOffcanvas.id;
+                        closeOffcanvas(id);
+                    }
+                }
+            });
+        </script>
+        
         <?php echo $__env->yieldPushContent('scripts'); ?>
         
         <!-- Modal de Upload de Arquivos (Global) -->

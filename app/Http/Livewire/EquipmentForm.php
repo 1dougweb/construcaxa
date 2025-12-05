@@ -64,9 +64,14 @@ class EquipmentForm extends Component
         'featured_photo.max' => 'A imagem deve ter no máximo 2MB.',
     ];
 
-    public function mount($equipment = null)
+    public function mount($equipment = null, $equipmentId = null)
     {
         $this->equipmentCategories = EquipmentCategory::orderBy('name')->get();
+        
+        // Se receber equipmentId, carregar o equipamento
+        if ($equipmentId && !$equipment) {
+            $equipment = Equipment::find($equipmentId);
+        }
         
         if ($equipment) {
             $this->equipment = $equipment;
@@ -84,6 +89,30 @@ class EquipmentForm extends Component
                 $this->featured_photo_path = $equipment->photos[0];
             }
         }
+    }
+
+    public function loadEquipment($id)
+    {
+        $equipment = Equipment::find($id);
+        if ($equipment) {
+            $this->mount($equipment);
+        }
+    }
+
+    public function resetForm()
+    {
+        $this->equipment = null;
+        $this->name = '';
+        $this->serial_number = '';
+        $this->description = '';
+        $this->equipment_category_id = null;
+        $this->purchase_price = null;
+        $this->purchase_date = null;
+        $this->notes = '';
+        $this->status = 'available';
+        $this->featured_photo = null;
+        $this->featured_photo_path = null;
+        $this->showDeleteModal = false;
     }
 
     public function updatedFeaturedPhoto()
@@ -193,7 +222,9 @@ class EquipmentForm extends Component
                 session()->flash('success', 'Equipamento criado com sucesso.');
             }
 
-            return redirect()->route('equipment.index');
+            // Emitir evento para fechar o offcanvas e atualizar a lista
+            $this->dispatch('equipmentSaved');
+            $this->resetForm();
                 
         } catch (\Exception $e) {
             session()->flash('error', 'Erro ao salvar equipamento: ' . $e->getMessage());

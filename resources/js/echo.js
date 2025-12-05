@@ -4,32 +4,60 @@ import Pusher from 'pusher-js';
 window.Pusher = Pusher;
 
 // Só inicializar o Echo se as variáveis de ambiente estiverem configuradas
-const reverbKey = import.meta.env.VITE_REVERB_APP_KEY || import.meta.env.REVERB_APP_KEY;
+// Prioridade: window.Laravel.reverb (do backend) > VITE_REVERB_APP_KEY > REVERB_APP_KEY
+const getReverbKey = () => {
+    // Primeiro tentar do window.Laravel (sempre disponível em produção)
+    if (window.Laravel?.reverb?.key) {
+        return window.Laravel.reverb.key;
+    }
+    // Depois tentar variáveis do Vite (só disponíveis em desenvolvimento ou se compiladas)
+    return import.meta.env.VITE_REVERB_APP_KEY || import.meta.env.REVERB_APP_KEY;
+};
+const reverbKey = getReverbKey();
 
 // Detectar host e porta baseado no APP_URL ou variáveis de ambiente
 let reverbHost, reverbPort, reverbScheme;
 
-// Tentar pegar do window.Laravel.appUrl (definido no layout) ou variáveis de ambiente
-const appUrl = window.Laravel?.appUrl || import.meta.env.VITE_APP_URL || import.meta.env.APP_URL;
+// Tentar pegar do window.Laravel (definido no layout) ou variáveis de ambiente
+const getAppUrl = () => {
+    return window.Laravel?.appUrl || 
+           window.Laravel?.reverb?.appUrl ||
+           import.meta.env.VITE_APP_URL || 
+           import.meta.env.APP_URL;
+};
+const appUrl = getAppUrl();
+
+// Função para obter configurações do Reverb (prioridade: window.Laravel > variáveis de ambiente)
+const getReverbConfig = () => {
+    // Priorizar configurações do window.Laravel (sempre disponível em produção)
+    const config = window.Laravel?.reverb || {};
+    return {
+        host: config.host || import.meta.env.VITE_REVERB_HOST || import.meta.env.REVERB_HOST || '127.0.0.1',
+        port: config.port || import.meta.env.VITE_REVERB_PORT || import.meta.env.REVERB_PORT || 8080,
+        scheme: config.scheme || import.meta.env.VITE_REVERB_SCHEME || import.meta.env.REVERB_SCHEME || 'http',
+    };
+};
+
+const reverbConfig = getReverbConfig();
 
 if (appUrl && !appUrl.includes('127.0.0.1') && !appUrl.includes('localhost')) {
     // Produção: usar APP_URL
     try {
         const url = new URL(appUrl);
-        reverbHost = url.hostname;
-        reverbScheme = url.protocol.replace(':', '');
+        reverbHost = reverbConfig.host || url.hostname;
+        reverbScheme = reverbConfig.scheme || url.protocol.replace(':', '');
         // Em produção, o Reverb geralmente roda na mesma porta ou porta específica
-        reverbPort = import.meta.env.VITE_REVERB_PORT ?? import.meta.env.REVERB_PORT ?? (reverbScheme === 'https' ? 443 : 80);
+        reverbPort = reverbConfig.port ?? (reverbScheme === 'https' ? 443 : 80);
     } catch (e) {
-        reverbHost = import.meta.env.VITE_REVERB_HOST || import.meta.env.REVERB_HOST || '127.0.0.1';
-        reverbPort = import.meta.env.VITE_REVERB_PORT ?? import.meta.env.REVERB_PORT ?? 8080;
-        reverbScheme = import.meta.env.VITE_REVERB_SCHEME ?? import.meta.env.REVERB_SCHEME ?? 'http';
+        reverbHost = reverbConfig.host || '127.0.0.1';
+        reverbPort = reverbConfig.port || 8080;
+        reverbScheme = reverbConfig.scheme || 'http';
     }
 } else {
     // Desenvolvimento: usar valores das variáveis de ambiente ou padrões
-    reverbHost = import.meta.env.VITE_REVERB_HOST || import.meta.env.REVERB_HOST || '127.0.0.1';
-    reverbPort = import.meta.env.VITE_REVERB_PORT ?? import.meta.env.REVERB_PORT ?? 8080;
-    reverbScheme = import.meta.env.VITE_REVERB_SCHEME ?? import.meta.env.REVERB_SCHEME ?? 'http';
+    reverbHost = reverbConfig.host || '127.0.0.1';
+    reverbPort = reverbConfig.port || 8080;
+    reverbScheme = reverbConfig.scheme || 'http';
     
     // Sempre usar 127.0.0.1 em vez de localhost para compatibilidade com Windows
     if (reverbHost === 'localhost') {
@@ -50,11 +78,20 @@ const isAuthPage = () => {
     return authPaths.some(path => pathname.includes(path));
 };
 
+// Flag para indicar se o Echo foi inicializado ou se está indisponível
+window.EchoUnavailable = false;
+
 // Função para inicializar o Echo
 const initializeEcho = () => {
     // Não inicializar se não houver reverbKey
     if (!reverbKey) {
-        console.warn('Echo: REVERB_APP_KEY não encontrado');
+        // Definir flag para indicar que o Echo não está disponível
+        window.EchoUnavailable = true;
+        // Não mostrar warning repetidamente - apenas uma vez no console
+        if (!window.EchoWarningShown) {
+            console.warn('Echo: REVERB_APP_KEY não encontrado. WebSocket notifications desabilitadas.');
+            window.EchoWarningShown = true;
+        }
         return;
     }
     

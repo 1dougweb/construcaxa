@@ -21,6 +21,8 @@ class SupplierList extends Component
         'categoryFilter' => ['except' => ''],
     ];
 
+    protected $listeners = ['refresh' => '$refresh'];
+
     public function confirmDelete($supplierId)
     {
         $this->supplierToDelete = Supplier::find($supplierId);

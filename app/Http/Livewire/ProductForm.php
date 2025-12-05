@@ -49,8 +49,15 @@ class ProductForm extends Component
         'featured_photo.max' => 'A imagem deve ter no máximo 2MB.',
     ];
 
-    public function mount($product = null)
+    public $productId = null;
+
+    public function mount($product = null, $productId = null)
     {
+        // Se receber productId, carregar o produto
+        if ($productId && !$product) {
+            $product = Product::find($productId);
+        }
+        
         $this->product = $product;
         
         if ($product) {
@@ -75,6 +82,14 @@ class ProductForm extends Component
         $this->categories = Category::orderBy('name')->get();
         $this->suppliers = Supplier::orderBy('company_name')->get();
         $this->unitTypes = Product::UNIT_TYPES;
+    }
+
+    public function loadProduct($id)
+    {
+        $product = Product::find($id);
+        if ($product) {
+            $this->mount($product);
+        }
     }
 
     public function updatedMeasurementUnit($value)
@@ -126,6 +141,23 @@ class ProductForm extends Component
         
         $this->featured_photo_path = null;
         $this->featured_photo = null;
+        $this->showDeleteModal = false;
+    }
+
+    public function resetForm()
+    {
+        $this->name = '';
+        $this->description = '';
+        $this->price = 0;
+        $this->stock = 0;
+        $this->min_stock = 0;
+        $this->category_id = null;
+        $this->supplier_id = null;
+        $this->measurement_unit = 'unit';
+        $this->unit_label = Product::UNIT_TYPES['unit']['unit'];
+        $this->featured_photo = null;
+        $this->featured_photo_path = null;
+        $this->product = null;
         $this->showDeleteModal = false;
     }
 
@@ -205,7 +237,9 @@ class ProductForm extends Component
             session()->flash('success', 'Produto criado com sucesso.');
         }
         
-        return redirect()->route('products.index');
+        // Emitir evento para fechar o offcanvas e atualizar a lista
+        $this->dispatch('productSaved');
+        $this->resetForm();
     }
 
     public function render()

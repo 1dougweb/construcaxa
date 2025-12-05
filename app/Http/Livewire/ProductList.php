@@ -32,6 +32,8 @@ class ProductList extends Component
         'sortDirection' => ['except' => 'asc'],
     ];
 
+    protected $listeners = ['refresh' => '$refresh'];
+
     public function mount()
     {
         $this->resetPage();
@@ -111,9 +113,12 @@ class ProductList extends Component
         session()->flash('success', 'Produto excluído com sucesso.');
     }
 
+    public $editingProductId = null;
+
     public function edit($productId)
     {
-        return redirect()->route('products.edit', $productId);
+        $this->editingProductId = $productId;
+        $this->dispatch('open-product-offcanvas');
     }
 
     public function clearSearch()

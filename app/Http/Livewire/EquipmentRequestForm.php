@@ -70,10 +70,15 @@ class EquipmentRequestForm extends Component
         'selectedEquipment.*.quantity.min' => 'A quantidade deve ser maior que zero.',
     ];
 
-    public function mount($equipmentRequest = null)
+    public function mount($equipmentRequest = null, $equipmentRequestId = null)
     {
         $this->employees = Employee::orderByName()->get();
         $this->serviceOrders = ServiceOrder::whereIn('status', ['pending', 'in_progress'])->orderBy('created_at', 'desc')->get();
+        
+        // Se receber equipmentRequestId, carregar a requisição
+        if ($equipmentRequestId && !$equipmentRequest) {
+            $equipmentRequest = EquipmentRequest::find($equipmentRequestId);
+        }
         
         if ($equipmentRequest) {
             $this->equipmentRequest = $equipmentRequest;
@@ -300,13 +305,41 @@ class EquipmentRequestForm extends Component
             
             $this->notify($successMessage, 'success');
             
-            return redirect()->route('equipment-requests.show', $equipmentRequest);
+            // Emitir evento para fechar o offcanvas e atualizar a lista
+            $this->dispatch('equipmentRequestSaved');
+            $this->resetForm();
                 
         } catch (\Exception $e) {
             DB::rollBack();
             $this->notify($e->getMessage(), 'error');
             return null;
         }
+    }
+
+    public function loadEquipmentRequest($id)
+    {
+        $equipmentRequest = EquipmentRequest::find($id);
+        if ($equipmentRequest) {
+            $this->mount($equipmentRequest);
+        }
+    }
+
+    public function resetForm()
+    {
+        $this->equipmentRequest = null;
+        $this->number = '';
+        $this->employee_id = null;
+        $this->service_order_id = null;
+        $this->type = 'loan';
+        $this->purpose = '';
+        $this->notes = '';
+        $this->expected_return_date = null;
+        $this->selectedEquipment = [];
+        $this->search = '';
+        $this->searchResults = [];
+        $this->osSearch = '';
+        $this->osSearchResults = [];
+        $this->selectedServiceOrder = null;
     }
 
     public function render()
