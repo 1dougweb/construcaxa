@@ -1,4 +1,199 @@
 <x-app-layout>
+    <script>
+        // Define functions immediately so they're available for onclick handlers
+        window.loadServiceForm = async function(serviceId) {
+            const form = document.getElementById('serviceForm');
+            const offcanvasTitle = document.querySelector('#service-offcanvas h2');
+            const methodInput = document.getElementById('service_method');
+            
+            if (!form || !offcanvasTitle || !methodInput) return;
+            
+            form.reset();
+            if (window.clearServiceErrors) window.clearServiceErrors();
+            
+            if (serviceId) {
+                offcanvasTitle.textContent = 'Editar Serviço';
+                methodInput.value = 'PUT';
+                form.action = `/services/${serviceId}`;
+                
+                try {
+                    const response = await fetch(`/services/${serviceId}/edit`, {
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'Accept': 'application/json'
+                        }
+                    });
+                    
+                    if (response.ok) {
+                        const data = await response.json();
+                        const service = data.service;
+                        
+                        if (service.name) document.getElementById('service_name').value = service.name;
+                        if (service.category_id) document.getElementById('service_category_id').value = service.category_id;
+                        if (service.unit_type) {
+                            document.getElementById('service_unit_type').value = service.unit_type;
+                            if (window.updateServicePriceLabel) window.updateServicePriceLabel();
+                        }
+                        if (service.default_price) document.getElementById('service_default_price').value = service.default_price;
+                        if (service.minimum_price) document.getElementById('service_minimum_price').value = service.minimum_price;
+                        if (service.maximum_price) document.getElementById('service_maximum_price').value = service.maximum_price;
+                        if (service.description) document.getElementById('service_description').value = service.description;
+                        document.getElementById('service_is_active').checked = service.is_active;
+                    } else {
+                        window.location.href = `/services/${serviceId}/edit`;
+                        return;
+                    }
+                } catch (error) {
+                    console.error('Erro ao carregar serviço:', error);
+                    window.location.href = `/services/${serviceId}/edit`;
+                    return;
+                }
+            } else {
+                offcanvasTitle.textContent = 'Novo Serviço';
+                methodInput.value = 'POST';
+                form.action = '{{ route("services.store") }}';
+                if (window.updateServicePriceLabel) window.updateServicePriceLabel();
+            }
+            
+            if (window.openOffcanvas) {
+                window.openOffcanvas('service-offcanvas');
+            }
+        };
+        
+        window.updateServicePriceLabel = function() {
+            const unitTypeSelect = document.getElementById('service_unit_type');
+            const label = document.getElementById('service_price_label');
+            
+            if (!unitTypeSelect || !label) return;
+            
+            const unitType = unitTypeSelect.value;
+            switch(unitType) {
+                case 'hour':
+                    label.textContent = 'Preço por Hora (R$) *';
+                    break;
+                case 'fixed':
+                    label.textContent = 'Preço Fixo (R$) *';
+                    break;
+                case 'per_unit':
+                    label.textContent = 'Preço por Unidade (R$) *';
+                    break;
+                default:
+                    label.textContent = 'Preço Padrão (R$) *';
+            }
+        };
+        
+        window.loadServiceView = async function(serviceId) {
+            const contentDiv = document.getElementById('service-view-content');
+            const offcanvasTitle = document.querySelector('#service-view-offcanvas h2');
+            
+            if (!contentDiv || !offcanvasTitle) return;
+            
+            // Show loading
+            contentDiv.innerHTML = '<div class="flex justify-center items-center py-12"><div class="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div></div>';
+            
+            if (window.openOffcanvas) window.openOffcanvas('service-view-offcanvas');
+            
+            try {
+                const response = await fetch(`/services/${serviceId}`, {
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Accept': 'application/json'
+                    }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    const service = data.service;
+                    
+                    // Build HTML content
+                    let html = `
+                        <div class="space-y-6">
+                            <!-- Header -->
+                            <div class="flex items-start justify-between pb-4 border-b border-gray-200 dark:border-gray-700">
+                                <div class="flex-1">
+                                    <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">${service.name}</h3>
+                                    <div class="flex items-center space-x-2">
+                                        <span class="inline-block w-3 h-3 rounded-full" style="background-color: ${service.category.color}"></span>
+                                        <span class="text-sm text-gray-600 dark:text-gray-400">${service.category.name}</span>
+                                    </div>
+                                </div>
+                                <span class="px-3 py-1 text-sm rounded-full ${service.is_active ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300' : 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300'}">
+                                    ${service.is_active ? 'Ativo' : 'Inativo'}
+                                </span>
+                            </div>
+                            
+                            <!-- Description -->
+                            ${service.description ? `
+                            <div>
+                                <h4 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Descrição</h4>
+                                <p class="text-sm text-gray-600 dark:text-gray-400 whitespace-pre-wrap">${service.description}</p>
+                            </div>
+                            ` : ''}
+                            
+                            <!-- Pricing Info -->
+                            <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-4 space-y-3">
+                                <h4 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">Informações de Preço</h4>
+                                <div class="space-y-2">
+                                    <div class="flex justify-between items-center">
+                                        <span class="text-sm text-gray-600 dark:text-gray-400">Tipo de Cobrança:</span>
+                                        <span class="font-medium text-indigo-600 dark:text-indigo-400">${service.unit_type_label}</span>
+                                    </div>
+                                    <div class="flex justify-between items-center">
+                                        <span class="text-sm text-gray-600 dark:text-gray-400">Preço Padrão:</span>
+                                        <span class="text-lg font-bold text-gray-900 dark:text-gray-100">${service.formatted_price}</span>
+                                    </div>
+                                    ${service.minimum_price ? `
+                                    <div class="flex justify-between items-center">
+                                        <span class="text-sm text-gray-600 dark:text-gray-400">Preço Mínimo:</span>
+                                        <span class="font-medium text-gray-900 dark:text-gray-100">R$ ${parseFloat(service.minimum_price).toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
+                                    </div>
+                                    ` : ''}
+                                    ${service.maximum_price ? `
+                                    <div class="flex justify-between items-center">
+                                        <span class="text-sm text-gray-600 dark:text-gray-400">Preço Máximo:</span>
+                                        <span class="font-medium text-gray-900 dark:text-gray-100">R$ ${parseFloat(service.maximum_price).toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
+                                    </div>
+                                    ` : ''}
+                                </div>
+                            </div>
+                            
+                            <!-- Additional Info -->
+                            <div class="grid grid-cols-2 gap-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+                                <div>
+                                    <h4 class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase mb-1">Usado em Orçamentos</h4>
+                                    <p class="text-sm font-medium text-gray-900 dark:text-gray-100">${service.budget_items_count || 0}</p>
+                                </div>
+                                <div>
+                                    <h4 class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase mb-1">Criado em</h4>
+                                    <p class="text-sm text-gray-600 dark:text-gray-400">${service.created_at}</p>
+                                </div>
+                            </div>
+                            
+                            <!-- Actions -->
+                            <div class="flex justify-end gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
+                                <button onclick="loadServiceForm(${service.id})" 
+                                   class="px-4 py-2 bg-indigo-600 dark:bg-indigo-700 text-white rounded-md hover:bg-indigo-700 dark:hover:bg-indigo-600 transition-colors">
+                                    Editar
+                                </button>
+                                <button onclick="closeOffcanvas('service-view-offcanvas')" 
+                                   class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                                    Fechar
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                    
+                    contentDiv.innerHTML = html;
+                } else {
+                    contentDiv.innerHTML = '<div class="text-center py-12"><p class="text-red-500 dark:text-red-400">Erro ao carregar serviço</p></div>';
+                }
+            } catch (error) {
+                console.error('Erro ao carregar serviço:', error);
+                contentDiv.innerHTML = '<div class="text-center py-12"><p class="text-red-500 dark:text-red-400">Erro ao carregar serviço</p></div>';
+            }
+        };
+    </script>
+    
     <x-slot name="header">
         <div class="flex justify-between items-center">
             <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
@@ -99,10 +294,10 @@
                                    class="flex-1 text-center px-3 py-2 text-sm bg-indigo-600 dark:bg-indigo-700 text-white rounded-md hover:bg-indigo-700 dark:hover:bg-indigo-600 transition-colors">
                                     Editar
                                 </button>
-                                <a href="{{ route('services.show', $service) }}" 
+                                <button onclick="loadServiceView({{ $service->id }})" 
                                    class="px-3 py-2 text-sm bg-gray-600 dark:bg-gray-700 text-white rounded-md hover:bg-gray-700 dark:hover:bg-gray-600 transition-colors">
                                     Ver
-                                </a>
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -240,17 +435,37 @@
             </div>
         </form>
     </x-offcanvas>
+
+    <!-- Offcanvas para Visualizar Serviço -->
+    <x-offcanvas id="service-view-offcanvas" title="Detalhes do Serviço" width="w-full md:w-[700px]">
+        <div id="service-view-content">
+            <div class="flex justify-center items-center py-12">
+                <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
+            </div>
+        </div>
+    </x-offcanvas>
 </x-app-layout>
 
 @push('scripts')
 <script>
-    async function loadServiceForm(serviceId) {
+    window.clearServiceErrors = function() {
+        document.querySelectorAll('[id$="_error"]').forEach(el => {
+            el.classList.add('hidden');
+            const p = el.querySelector('p');
+            if (p) p.textContent = '';
+        });
+    };
+    
+    // Update the functions with full implementation including error clearing
+    window.loadServiceForm = async function(serviceId) {
         const form = document.getElementById('serviceForm');
         const offcanvasTitle = document.querySelector('#service-offcanvas h2');
         const methodInput = document.getElementById('service_method');
         
+        if (!form || !offcanvasTitle || !methodInput) return;
+        
         form.reset();
-        clearServiceErrors();
+        window.clearServiceErrors();
         
         if (serviceId) {
             offcanvasTitle.textContent = 'Editar Serviço';
@@ -273,7 +488,7 @@
                     if (service.category_id) document.getElementById('service_category_id').value = service.category_id;
                     if (service.unit_type) {
                         document.getElementById('service_unit_type').value = service.unit_type;
-                        updateServicePriceLabel();
+                        window.updateServicePriceLabel();
                     }
                     if (service.default_price) document.getElementById('service_default_price').value = service.default_price;
                     if (service.minimum_price) document.getElementById('service_minimum_price').value = service.minimum_price;
@@ -293,99 +508,80 @@
             offcanvasTitle.textContent = 'Novo Serviço';
             methodInput.value = 'POST';
             form.action = '{{ route("services.store") }}';
-            updateServicePriceLabel();
+            window.updateServicePriceLabel();
         }
         
-        openOffcanvas('service-offcanvas');
-    }
-    
-    function updateServicePriceLabel() {
-        const unitType = document.getElementById('service_unit_type').value;
-        const label = document.getElementById('service_price_label');
-        
-        switch(unitType) {
-            case 'hour':
-                label.textContent = 'Preço por Hora (R$) *';
-                break;
-            case 'fixed':
-                label.textContent = 'Preço Fixo (R$) *';
-                break;
-            case 'per_unit':
-                label.textContent = 'Preço por Unidade (R$) *';
-                break;
-            default:
-                label.textContent = 'Preço Padrão (R$) *';
+        if (window.openOffcanvas) {
+            window.openOffcanvas('service-offcanvas');
         }
-    }
+    };
     
-    function clearServiceErrors() {
-        document.querySelectorAll('[id$="_error"]').forEach(el => {
-            el.classList.add('hidden');
-            const p = el.querySelector('p');
-            if (p) p.textContent = '';
-        });
-    }
-    
-    document.getElementById('serviceForm').addEventListener('submit', async function(e) {
-        e.preventDefault();
+    // Form submit handler
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.getElementById('serviceForm');
+        if (!form) return;
         
-        const form = e.target;
-        const formData = new FormData(form);
-        const method = document.getElementById('service_method').value;
-        const submitButton = form.querySelector('button[type="submit"]');
-        const originalText = submitButton.innerHTML;
-        
-        submitButton.disabled = true;
-        submitButton.innerHTML = 'Salvando...';
-        
-        let url = form.action;
-        if (method === 'PUT') {
-            formData.append('_method', 'PUT');
-        }
-        
-        try {
-            const response = await fetch(url, {
-                method: 'POST',
-                body: formData,
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest',
-                    'Accept': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-                }
-            });
+        form.addEventListener('submit', async function(e) {
+            e.preventDefault();
             
-            const data = await response.json();
+            const formData = new FormData(form);
+            const method = document.getElementById('service_method').value;
+            const submitButton = form.querySelector('button[type="submit"]');
+            const originalText = submitButton.innerHTML;
             
-            if (response.ok && data.success) {
-                if (data.redirect) {
-                    window.location.href = data.redirect;
-                } else {
-                    window.location.reload();
-                }
-            } else if (response.status === 422) {
-                clearServiceErrors();
-                
-                Object.keys(data.errors || {}).forEach(field => {
-                    const errorDiv = document.getElementById(`${field}_error`);
-                    if (errorDiv) {
-                        errorDiv.classList.remove('hidden');
-                        errorDiv.querySelector('p').textContent = data.errors[field][0];
+            submitButton.disabled = true;
+            submitButton.innerHTML = 'Salvando...';
+            
+            let url = form.action;
+            if (method === 'PUT') {
+                formData.append('_method', 'PUT');
+            }
+            
+            try {
+                const response = await fetch(url, {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
                     }
                 });
                 
-                submitButton.disabled = false;
-                submitButton.innerHTML = originalText;
-            } else {
-                alert(data.message || 'Erro ao salvar serviço');
+                const data = await response.json();
+                
+                if (response.ok && data.success) {
+                    if (data.redirect) {
+                        window.location.href = data.redirect;
+                    } else {
+                        window.location.reload();
+                    }
+                } else if (response.status === 422) {
+                    window.clearServiceErrors();
+                    
+                    Object.keys(data.errors || {}).forEach(field => {
+                        const errorDiv = document.getElementById(`${field}_error`);
+                        if (errorDiv) {
+                            errorDiv.classList.remove('hidden');
+                            const p = errorDiv.querySelector('p');
+                            if (p) p.textContent = data.errors[field][0];
+                        }
+                    });
+                    
+                    submitButton.disabled = false;
+                    submitButton.innerHTML = originalText;
+                } else {
+                    alert(data.message || 'Erro ao salvar serviço');
+                    submitButton.disabled = false;
+                    submitButton.innerHTML = originalText;
+                }
+            } catch (error) {
+                console.error('Erro:', error);
+                alert('Erro ao salvar serviço');
                 submitButton.disabled = false;
                 submitButton.innerHTML = originalText;
             }
-        } catch (error) {
-            console.error('Erro:', error);
-            alert('Erro ao salvar serviço');
-            submitButton.disabled = false;
-            submitButton.innerHTML = originalText;
-        }
+        });
     });
 </script>
 @endpush

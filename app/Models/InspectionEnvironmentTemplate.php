@@ -12,6 +12,7 @@ class InspectionEnvironmentTemplate extends Model
 
     protected $fillable = [
         'name',
+        'icon',
         'description',
         'default_elements',
         'is_active',

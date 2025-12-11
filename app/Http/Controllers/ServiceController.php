@@ -94,6 +94,31 @@ class ServiceController extends Controller
     {
         $service->load(['category', 'budgetItems.budget.project']);
 
+        if (request()->wantsJson() || request()->ajax()) {
+            return response()->json([
+                'service' => [
+                    'id' => $service->id,
+                    'name' => $service->name,
+                    'description' => $service->description,
+                    'category' => [
+                        'id' => $service->category->id,
+                        'name' => $service->category->name,
+                        'color' => $service->category->color,
+                    ],
+                    'unit_type' => $service->unit_type,
+                    'unit_type_label' => $service->unit_type_label,
+                    'default_price' => $service->default_price,
+                    'formatted_price' => $service->formatted_price,
+                    'minimum_price' => $service->minimum_price,
+                    'maximum_price' => $service->maximum_price,
+                    'is_active' => $service->is_active,
+                    'created_at' => $service->created_at->format('d/m/Y H:i'),
+                    'updated_at' => $service->updated_at->format('d/m/Y H:i'),
+                    'budget_items_count' => $service->budgetItems->count(),
+                ]
+            ]);
+        }
+
         return view('services.show', compact('service'));
     }
 

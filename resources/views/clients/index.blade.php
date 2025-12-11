@@ -1,4 +1,358 @@
 <x-app-layout>
+    <script>
+        // Define function immediately so it's available for onclick handlers
+        window.loadClientForm = async function(clientId) {
+            const form = document.getElementById('clientForm');
+            const offcanvasTitle = document.querySelector('#client-offcanvas h2');
+            const methodInput = document.getElementById('client_method');
+            
+            if (!form || !offcanvasTitle || !methodInput) {
+                console.error('Elementos do formulário não encontrados');
+                return;
+            }
+            
+            form.reset();
+            if (window.clearErrors) window.clearErrors();
+            
+            if (clientId) {
+                offcanvasTitle.textContent = 'Editar Cliente';
+                methodInput.value = 'PUT';
+                form.action = `/clients/${clientId}`;
+                
+                try {
+                    const response = await fetch(`/clients/${clientId}/edit`, {
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'Accept': 'application/json'
+                        }
+                    });
+                    
+                    if (response.ok) {
+                        const data = await response.json();
+                        const client = data.client;
+                        
+                        if (client.type === 'individual') {
+                            document.getElementById('type_individual').checked = true;
+                        } else {
+                            document.getElementById('type_company').checked = true;
+                        }
+                        
+                        // Preencher campos com formatação
+                        if (client.cpf) {
+                            const cpfInput = document.getElementById('cpf');
+                            if (cpfInput) cpfInput.value = window.formatCPF ? window.formatCPF(client.cpf) : client.cpf;
+                        }
+                        if (client.cnpj) {
+                            const cnpjInput = document.getElementById('cnpj');
+                            if (cnpjInput) cnpjInput.value = window.formatCNPJ ? window.formatCNPJ(client.cnpj) : client.cnpj;
+                        }
+                        if (client.name) document.getElementById('name').value = client.name;
+                        if (client.trading_name) document.getElementById('trading_name').value = client.trading_name;
+                        if (client.email) document.getElementById('email').value = client.email;
+                        if (client.phone) {
+                            const phoneInput = document.getElementById('phone');
+                            if (phoneInput) phoneInput.value = window.formatPhone ? window.formatPhone(client.phone) : client.phone;
+                        }
+                        if (client.address) document.getElementById('address').value = client.address;
+                        if (client.address_number) document.getElementById('address_number').value = client.address_number;
+                        if (client.address_complement) document.getElementById('address_complement').value = client.address_complement;
+                        if (client.neighborhood) document.getElementById('neighborhood').value = client.neighborhood;
+                        if (client.city) document.getElementById('city').value = client.city;
+                        if (client.state) document.getElementById('state').value = client.state;
+                        if (client.zip_code) {
+                            const zipCodeInput = document.getElementById('zip_code');
+                            if (zipCodeInput) zipCodeInput.value = window.formatCEP ? window.formatCEP(client.zip_code) : client.zip_code;
+                        }
+                        if (client.notes) document.getElementById('notes').value = client.notes;
+                        document.getElementById('is_active').checked = client.is_active;
+                        
+                        // Atualizar tipo de cliente e campos
+                        if (window.toggleClientType) {
+                            window.toggleClientType();
+                        }
+                    } else {
+                        window.location.href = `/clients/${clientId}/edit`;
+                        return;
+                    }
+                } catch (error) {
+                    console.error('Erro ao carregar cliente:', error);
+                    window.location.href = `/clients/${clientId}/edit`;
+                    return;
+                }
+            } else {
+                offcanvasTitle.textContent = 'Novo Cliente';
+                methodInput.value = 'POST';
+                form.action = '{{ route("clients.store") }}';
+                // Inicializar tipo de cliente (Pessoa Física por padrão)
+                if (window.toggleClientType) {
+                    // Garantir que Pessoa Física está selecionada
+                    const typeIndividual = document.getElementById('type_individual');
+                    const typeCompany = document.getElementById('type_company');
+                    if (typeIndividual && typeCompany) {
+                        typeIndividual.checked = true;
+                        typeCompany.checked = false;
+                    }
+                    window.toggleClientType();
+                }
+            }
+            
+            if (window.openOffcanvas) {
+                window.openOffcanvas('client-offcanvas');
+                // Garantir que toggleClientType e máscaras sejam aplicados após o offcanvas abrir completamente
+                setTimeout(() => {
+                    if (window.toggleClientType) {
+                        window.toggleClientType();
+                    }
+                    if (window.applyClientMasks) {
+                        window.applyClientMasks();
+                    }
+                }, 300);
+            }
+        };
+        
+        // Função toggleClientType - garantir que está disponível imediatamente
+        window.toggleClientType = function() {
+            const typeIndividual = document.getElementById('type_individual');
+            const typeCompany = document.getElementById('type_company');
+            const cpfField = document.getElementById('cpf_field');
+            const cnpjField = document.getElementById('cnpj_field');
+            const tradingNameField = document.getElementById('trading_name_field');
+            const nameLabel = document.getElementById('name_label');
+            const cpfInput = document.getElementById('cpf');
+            const cnpjInput = document.getElementById('cnpj');
+            
+            if (!typeIndividual || !typeCompany) {
+                console.warn('Radio buttons não encontrados');
+                return;
+            }
+            
+            if (!cpfField || !cnpjField || !tradingNameField || !nameLabel) {
+                console.warn('Campos do formulário não encontrados');
+                return;
+            }
+            
+            const isIndividual = typeIndividual.checked;
+            
+            if (isIndividual) {
+                // Pessoa Física
+                cpfField.classList.remove('hidden');
+                cnpjField.classList.add('hidden');
+                tradingNameField.classList.add('hidden');
+                nameLabel.textContent = 'Nome Completo *';
+                if (cpfInput) {
+                    cpfInput.required = true;
+                }
+                if (cnpjInput) {
+                    cnpjInput.required = false;
+                    if (!cnpjInput.value) {
+                        cnpjInput.value = '';
+                    }
+                }
+            } else {
+                // Pessoa Jurídica
+                cpfField.classList.add('hidden');
+                cnpjField.classList.remove('hidden');
+                tradingNameField.classList.remove('hidden');
+                nameLabel.textContent = 'Razão Social *';
+                if (cpfInput) {
+                    cpfInput.required = false;
+                    if (!cpfInput.value) {
+                        cpfInput.value = '';
+                    }
+                }
+                if (cnpjInput) {
+                    cnpjInput.required = true;
+                }
+            }
+        };
+        
+        // Funções de formatação - garantir que estão disponíveis imediatamente
+        window.formatCPF = function(value) {
+            value = value.replace(/\D/g, '');
+            if (value.length <= 11) {
+                value = value.replace(/(\d{3})(\d)/, '$1.$2');
+                value = value.replace(/(\d{3})(\d)/, '$1.$2');
+                value = value.replace(/(\d{3})(\d{1,2})$/, '$1-$2');
+            }
+            return value;
+        };
+        
+        window.formatCNPJ = function(value) {
+            value = value.replace(/\D/g, '');
+            if (value.length <= 14) {
+                value = value.replace(/(\d{2})(\d)/, '$1.$2');
+                value = value.replace(/(\d{3})(\d)/, '$1.$2');
+                value = value.replace(/(\d{3})(\d)/, '$1/$2');
+                value = value.replace(/(\d{4})(\d{1,2})$/, '$1-$2');
+            }
+            return value;
+        };
+        
+        window.formatCEP = function(value) {
+            value = value.replace(/\D/g, '');
+            if (value.length <= 8) {
+                value = value.replace(/(\d{5})(\d)/, '$1-$2');
+            }
+            return value;
+        };
+        
+        window.formatPhone = function(value) {
+            value = value.replace(/\D/g, '');
+            if (value.length <= 11) {
+                if (value.length <= 10) {
+                    value = value.replace(/(\d{2})(\d)/, '($1) $2');
+                    value = value.replace(/(\d{4})(\d)/, '$1-$2');
+                } else {
+                    value = value.replace(/(\d{2})(\d)/, '($1) $2');
+                    value = value.replace(/(\d{5})(\d)/, '$1-$2');
+                }
+            }
+            return value;
+        };
+        
+        // Função para aplicar máscaras aos campos
+        window.applyClientMasks = function() {
+            const cpfInput = document.getElementById('cpf');
+            const cnpjInput = document.getElementById('cnpj');
+            const zipCodeInput = document.getElementById('zip_code');
+            const phoneInput = document.getElementById('phone');
+            
+            if (cpfInput) {
+                // Remover listeners antigos se existirem
+                const newCpfInput = cpfInput.cloneNode(true);
+                cpfInput.parentNode.replaceChild(newCpfInput, cpfInput);
+                newCpfInput.addEventListener('input', function(e) {
+                    e.target.value = window.formatCPF(e.target.value);
+                });
+            }
+            
+            if (cnpjInput) {
+                const newCnpjInput = cnpjInput.cloneNode(true);
+                cnpjInput.parentNode.replaceChild(newCnpjInput, cnpjInput);
+                newCnpjInput.addEventListener('input', function(e) {
+                    e.target.value = window.formatCNPJ(e.target.value);
+                });
+                // Buscar CNPJ ao pressionar Enter
+                newCnpjInput.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        if (window.searchCNPJ) {
+                            window.searchCNPJ();
+                        }
+                    }
+                });
+            }
+            
+            if (zipCodeInput) {
+                const newZipCodeInput = zipCodeInput.cloneNode(true);
+                zipCodeInput.parentNode.replaceChild(newZipCodeInput, zipCodeInput);
+                newZipCodeInput.addEventListener('input', function(e) {
+                    e.target.value = window.formatCEP(e.target.value);
+                });
+            }
+            
+            if (phoneInput) {
+                const newPhoneInput = phoneInput.cloneNode(true);
+                phoneInput.parentNode.replaceChild(newPhoneInput, phoneInput);
+                newPhoneInput.addEventListener('input', function(e) {
+                    e.target.value = window.formatPhone(e.target.value);
+                });
+            }
+        };
+        
+        // Função searchCNPJ - garantir que está disponível imediatamente
+        window.searchCNPJ = async function() {
+            const cnpjInput = document.getElementById('cnpj');
+            if (!cnpjInput) {
+                console.error('Campo CNPJ não encontrado');
+                return;
+            }
+            
+            const cnpj = cnpjInput.value.replace(/\D/g, '');
+            const loadingDiv = document.getElementById('cnpj_loading');
+            const searchBtn = document.getElementById('search_cnpj_btn');
+            
+            if (cnpj.length !== 14) {
+                alert('CNPJ deve ter 14 dígitos');
+                return;
+            }
+            
+            if (loadingDiv) loadingDiv.classList.remove('hidden');
+            if (searchBtn) {
+                searchBtn.disabled = true;
+                searchBtn.innerHTML = '<i class="bi bi-hourglass-split mr-2"></i>Buscando...';
+            }
+            
+            try {
+                const response = await fetch(`/api/clients/fetch-cnpj?cnpj=${cnpj}`, {
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                        'Accept': 'application/json'
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    // Funções de formatação (podem estar no client-form.js)
+                    const formatCEP = window.formatCEP || function(value) {
+                        value = value.replace(/\D/g, '');
+                        if (value.length <= 8) {
+                            value = value.replace(/(\d{5})(\d)/, '$1-$2');
+                        }
+                        return value;
+                    };
+                    
+                    const formatPhone = window.formatPhone || function(value) {
+                        value = value.replace(/\D/g, '');
+                        if (value.length <= 11) {
+                            if (value.length <= 10) {
+                                value = value.replace(/(\d{2})(\d)/, '($1) $2');
+                                value = value.replace(/(\d{4})(\d)/, '$1-$2');
+                            } else {
+                                value = value.replace(/(\d{2})(\d)/, '($1) $2');
+                                value = value.replace(/(\d{5})(\d)/, '$1-$2');
+                            }
+                        }
+                        return value;
+                    };
+                    
+                    // Preencher campos
+                    const nameInput = document.getElementById('name');
+                    const tradingNameInput = document.getElementById('trading_name');
+                    const addressInput = document.getElementById('address');
+                    const neighborhoodInput = document.getElementById('neighborhood');
+                    const cityInput = document.getElementById('city');
+                    const stateInput = document.getElementById('state');
+                    const zipCodeInput = document.getElementById('zip_code');
+                    const phoneInput = document.getElementById('phone');
+                    const emailInput = document.getElementById('email');
+                    
+                    if (nameInput) nameInput.value = data.data.name || '';
+                    if (tradingNameInput) tradingNameInput.value = data.data.trading_name || '';
+                    if (addressInput) addressInput.value = data.data.address || '';
+                    if (neighborhoodInput) neighborhoodInput.value = data.data.neighborhood || '';
+                    if (cityInput) cityInput.value = data.data.city || '';
+                    if (stateInput) stateInput.value = data.data.state || '';
+                    if (zipCodeInput) zipCodeInput.value = formatCEP(data.data.zip_code || '');
+                    if (phoneInput) phoneInput.value = formatPhone(data.data.phone || '');
+                    if (emailInput) emailInput.value = data.data.email || '';
+                } else {
+                    alert('Erro ao buscar CNPJ: ' + (data.message || 'Erro desconhecido'));
+                }
+            } catch (error) {
+                console.error('Erro ao buscar CNPJ:', error);
+                alert('Erro ao buscar CNPJ: ' + error.message);
+            } finally {
+                if (loadingDiv) loadingDiv.classList.add('hidden');
+                if (searchBtn) {
+                    searchBtn.disabled = false;
+                    searchBtn.innerHTML = '<i class="bi bi-search mr-2"></i>Buscar';
+                }
+            }
+        };
+    </script>
+    
     <x-slot name="header">
         <div class="flex justify-between items-center">
             <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
@@ -304,10 +658,26 @@
 @push('scripts')
 <script src="{{ asset('js/client-form.js') }}"></script>
 <script>
-    async function loadClientForm(clientId) {
+(function() {
+    'use strict';
+    
+    function clearErrors() {
+        document.querySelectorAll('[id$="_error"]').forEach(el => {
+            el.classList.add('hidden');
+            const p = el.querySelector('p');
+            if (p) p.textContent = '';
+        });
+    }
+    
+    window.loadClientForm = async function(clientId) {
         const form = document.getElementById('clientForm');
         const offcanvasTitle = document.querySelector('#client-offcanvas h2');
         const methodInput = document.getElementById('client_method');
+        
+        if (!form || !offcanvasTitle || !methodInput) {
+            console.error('Elementos do formulário não encontrados');
+            return;
+        }
         
         // Limpar formulário
         form.reset();
@@ -338,32 +708,47 @@
                         document.getElementById('type_company').checked = true;
                     }
                     
-                    if (client.cpf) document.getElementById('cpf').value = client.cpf;
-                    if (client.cnpj) document.getElementById('cnpj').value = client.cnpj;
+                    // Preencher campos com formatação
+                    if (client.cpf) {
+                        const cpfInput = document.getElementById('cpf');
+                        if (cpfInput) cpfInput.value = window.formatCPF ? window.formatCPF(client.cpf) : client.cpf;
+                    }
+                    if (client.cnpj) {
+                        const cnpjInput = document.getElementById('cnpj');
+                        if (cnpjInput) cnpjInput.value = window.formatCNPJ ? window.formatCNPJ(client.cnpj) : client.cnpj;
+                    }
                     if (client.name) document.getElementById('name').value = client.name;
                     if (client.trading_name) document.getElementById('trading_name').value = client.trading_name;
                     if (client.email) document.getElementById('email').value = client.email;
-                    if (client.phone) document.getElementById('phone').value = client.phone;
+                    if (client.phone) {
+                        const phoneInput = document.getElementById('phone');
+                        if (phoneInput) phoneInput.value = window.formatPhone ? window.formatPhone(client.phone) : client.phone;
+                    }
                     if (client.address) document.getElementById('address').value = client.address;
                     if (client.address_number) document.getElementById('address_number').value = client.address_number;
                     if (client.address_complement) document.getElementById('address_complement').value = client.address_complement;
                     if (client.neighborhood) document.getElementById('neighborhood').value = client.neighborhood;
                     if (client.city) document.getElementById('city').value = client.city;
                     if (client.state) document.getElementById('state').value = client.state;
-                    if (client.zip_code) document.getElementById('zip_code').value = client.zip_code;
+                    if (client.zip_code) {
+                        const zipCodeInput = document.getElementById('zip_code');
+                        if (zipCodeInput) zipCodeInput.value = window.formatCEP ? window.formatCEP(client.zip_code) : client.zip_code;
+                    }
                     if (client.notes) document.getElementById('notes').value = client.notes;
                     document.getElementById('is_active').checked = client.is_active;
                     
-                    // Atualizar tipo de cliente
-                    toggleClientType();
+                    // Atualizar tipo de cliente - chamar após um pequeno delay para garantir que o DOM está pronto
+                    setTimeout(() => {
+                        if (window.toggleClientType) {
+                            window.toggleClientType();
+                        }
+                    }, 50);
                 } else {
-                    // Fallback: redirecionar para página de edição
                     window.location.href = `/clients/${clientId}/edit`;
                     return;
                 }
             } catch (error) {
                 console.error('Erro ao carregar cliente:', error);
-                // Fallback: redirecionar para página de edição
                 window.location.href = `/clients/${clientId}/edit`;
                 return;
             }
@@ -372,34 +757,63 @@
             offcanvasTitle.textContent = 'Novo Cliente';
             methodInput.value = 'POST';
             form.action = '{{ route("clients.store") }}';
-            toggleClientType();
+            // Garantir que Pessoa Física está selecionada
+            const typeIndividual = document.getElementById('type_individual');
+            const typeCompany = document.getElementById('type_company');
+            if (typeIndividual && typeCompany) {
+                typeIndividual.checked = true;
+                typeCompany.checked = false;
+            }
         }
         
-        openOffcanvas('client-offcanvas');
-    }
+        if (window.openOffcanvas) {
+            window.openOffcanvas('client-offcanvas');
+            // Garantir que toggleClientType e máscaras sejam aplicados após o offcanvas abrir completamente
+            setTimeout(() => {
+                if (window.toggleClientType) {
+                    window.toggleClientType();
+                }
+                if (window.applyClientMasks) {
+                    window.applyClientMasks();
+                }
+                // Anexar handler de submit após o offcanvas abrir
+                attachClientFormSubmitHandler();
+            }, 300);
+        }
+    };
     
-    function clearErrors() {
+    // Função para fazer submit do formulário via AJAX
+    async function submitClientForm(form, submitButton) {
+        const formData = new FormData(form);
+        const methodInput = document.getElementById('client_method');
+        const method = methodInput ? methodInput.value : 'POST';
+        
+        if (!submitButton) {
+            console.error('Botão de submit não encontrado');
+            alert('Erro: Botão de submit não encontrado');
+            return;
+        }
+        
+        // Salvar o texto original do botão
+        const buttonText = submitButton.querySelector('.button-text');
+        const originalText = buttonText ? buttonText.textContent : submitButton.innerHTML;
+        
+        submitButton.disabled = true;
+        // Atualizar texto do botão
+        if (buttonText) {
+            buttonText.textContent = 'Salvando...';
+        } else {
+            submitButton.innerHTML = '<i class="bi bi-hourglass-split mr-2"></i>Salvando...';
+        }
+        
+        // Limpar erros anteriores
         document.querySelectorAll('[id$="_error"]').forEach(el => {
             el.classList.add('hidden');
-            el.querySelector('p').textContent = '';
+            const p = el.querySelector('p');
+            if (p) p.textContent = '';
         });
-    }
-    
-    // Interceptar submissão do formulário
-    document.getElementById('clientForm').addEventListener('submit', async function(e) {
-        e.preventDefault();
         
-        const form = e.target;
-        const formData = new FormData(form);
-        const method = document.getElementById('client_method').value;
-        const submitButton = form.querySelector('button[type="submit"]');
-        const originalText = submitButton.innerHTML;
-        
-        // Desabilitar botão
-        submitButton.disabled = true;
-        submitButton.innerHTML = '<i class="bi bi-hourglass-split mr-2"></i>Salvando...';
-        
-        let url = form.action;
+        let url = form.action || '{{ route("clients.store") }}';
         if (method === 'PUT') {
             formData.append('_method', 'PUT');
         }
@@ -415,44 +829,137 @@
                 }
             });
             
-            const data = await response.json();
+            let data;
+            try {
+                const responseText = await response.text();
+                data = JSON.parse(responseText);
+            } catch (jsonError) {
+                console.error('Erro ao parsear JSON:', jsonError);
+                alert('Erro ao processar resposta do servidor. Verifique o console para mais detalhes.');
+                submitButton.disabled = false;
+                const btnText = submitButton.querySelector('.button-text');
+                if (btnText) {
+                    btnText.textContent = originalText;
+                } else {
+                    submitButton.innerHTML = originalText;
+                }
+                return;
+            }
             
             if (response.ok && data.success) {
-                // Sucesso
+                // Cliente salvo com sucesso
+                alert(data.message || 'Cliente salvo com sucesso!');
                 if (data.redirect) {
                     window.location.href = data.redirect;
                 } else {
                     window.location.reload();
                 }
             } else if (response.status === 422) {
-                // Erros de validação
-                clearErrors();
+                // Limpar erros anteriores
+                document.querySelectorAll('[id$="_error"]').forEach(el => {
+                    el.classList.add('hidden');
+                    const p = el.querySelector('p');
+                    if (p) p.textContent = '';
+                });
                 
+                // Mostrar novos erros
                 Object.keys(data.errors || {}).forEach(field => {
                     const errorDiv = document.getElementById(`${field}_error`);
                     if (errorDiv) {
                         errorDiv.classList.remove('hidden');
-                        errorDiv.querySelector('p').textContent = data.errors[field][0];
+                        const p = errorDiv.querySelector('p');
+                        if (p) p.textContent = data.errors[field][0];
                     }
                 });
                 
-                // Reabilitar botão
                 submitButton.disabled = false;
-                submitButton.innerHTML = originalText;
+                if (buttonText) {
+                    buttonText.textContent = originalText;
+                } else {
+                    submitButton.innerHTML = originalText;
+                }
             } else {
-                alert(data.message || 'Erro ao salvar cliente');
+                const errorMessage = data.message || data.error || 'Erro ao salvar cliente';
+                alert(errorMessage);
                 submitButton.disabled = false;
-                submitButton.innerHTML = originalText;
+                if (buttonText) {
+                    buttonText.textContent = originalText;
+                } else {
+                    submitButton.innerHTML = originalText;
+                }
             }
         } catch (error) {
-            console.error('Erro:', error);
-            alert('Erro ao salvar cliente');
+            console.error('Erro ao salvar cliente:', error);
+            alert('Erro ao salvar cliente: ' + error.message);
             submitButton.disabled = false;
-            submitButton.innerHTML = originalText;
+            if (buttonText) {
+                buttonText.textContent = originalText;
+            } else {
+                submitButton.innerHTML = originalText;
+            }
         }
+    }
+    
+    // Função para anexar handler de submit do formulário de cliente
+    function attachClientFormSubmitHandler() {
+        const form = document.getElementById('clientForm');
+        if (!form) {
+            console.error('Formulário clientForm não encontrado');
+            return;
+        }
+        
+        const submitButton = form.querySelector('[data-loading-button]') || form.querySelector('button[type="submit"]');
+        if (!submitButton) {
+            console.error('Botão de submit não encontrado');
+            return;
+        }
+        
+        // Remover qualquer listener antigo do form
+        if (form._clientFormSubmitHandler) {
+            form.removeEventListener('submit', form._clientFormSubmitHandler, { capture: true });
+        }
+        
+        // Remover qualquer listener antigo do botão
+        if (submitButton._clientFormClickHandler) {
+            submitButton.removeEventListener('click', submitButton._clientFormClickHandler, { capture: true });
+        }
+        
+        // Marcar que já tem handler customizado
+        form.setAttribute('data-submit-handler-attached', 'true');
+        form.setAttribute('data-custom-submit-handler', 'true');
+        
+        // Criar handler de submit do formulário
+        const submitHandler = async function(e) {
+            e.preventDefault();
+            e.stopImmediatePropagation();
+            e.stopPropagation();
+            
+            await submitClientForm(form, submitButton);
+        };
+        
+        // Salvar referência do handler
+        form._clientFormSubmitHandler = submitHandler;
+        
+        // Adicionar handler com capture: true para executar antes de outros handlers
+        form.addEventListener('submit', submitHandler, { capture: true });
+        
+        // Também interceptar o clique no botão diretamente como backup
+        const clickHandler = async function(e) {
+            e.preventDefault();
+            e.stopImmediatePropagation();
+            e.stopPropagation();
+            
+            await submitClientForm(form, submitButton);
+        };
+        
+        submitButton._clientFormClickHandler = clickHandler;
+        submitButton.addEventListener('click', clickHandler, { capture: true });
+    }
+    
+    // Anexar handler do formulário de cliente quando o DOM estiver pronto
+    document.addEventListener('DOMContentLoaded', function() {
+        // O formulário está dentro do offcanvas, então será anexado quando o offcanvas abrir
     });
+})();
 </script>
 @endpush
-
-
-

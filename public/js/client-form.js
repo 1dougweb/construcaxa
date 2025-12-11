@@ -46,7 +46,7 @@ function formatPhone(value) {
 }
 
 // Toggle entre Pessoa Física e Jurídica
-function toggleClientType() {
+window.toggleClientType = function() {
     const isIndividual = document.getElementById('type_individual').checked;
     const cpfField = document.getElementById('cpf_field');
     const cnpjField = document.getElementById('cnpj_field');
@@ -72,10 +72,10 @@ function toggleClientType() {
         document.getElementById('cpf').value = '';
         document.getElementById('cnpj').value = '';
     }
-}
+};
 
 // Buscar CNPJ via API
-async function searchCNPJ() {
+window.searchCNPJ = async function() {
     const cnpjInput = document.getElementById('cnpj');
     const cnpj = cnpjInput.value.replace(/\D/g, '');
     const loadingDiv = document.getElementById('cnpj_loading');
@@ -121,7 +121,7 @@ async function searchCNPJ() {
         searchBtn.disabled = false;
         searchBtn.innerHTML = '<i class="bi bi-search mr-2"></i>Buscar';
     }
-}
+};
 
 // Inicialização quando o DOM estiver pronto
 document.addEventListener('DOMContentLoaded', function() {

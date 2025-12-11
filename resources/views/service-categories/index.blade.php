@@ -1,4 +1,60 @@
 <x-app-layout>
+    <script>
+        // Define functions immediately so they're available for onclick handlers
+        window.loadServiceCategoryForm = async function(categoryId) {
+            const form = document.getElementById('serviceCategoryForm');
+            const offcanvasTitle = document.querySelector('#service-category-offcanvas h2');
+            const methodInput = document.getElementById('service_category_method');
+            
+            if (!form || !offcanvasTitle || !methodInput) return;
+            
+            form.reset();
+            if (window.clearServiceCategoryErrors) window.clearServiceCategoryErrors();
+            
+            if (categoryId) {
+                offcanvasTitle.textContent = 'Editar Categoria de Serviço';
+                methodInput.value = 'PUT';
+                form.action = `/service-categories/${categoryId}`;
+                
+                try {
+                    const response = await fetch(`/service-categories/${categoryId}/edit`, {
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'Accept': 'application/json'
+                        }
+                    });
+                    
+                    if (response.ok) {
+                        const data = await response.json();
+                        const category = data.serviceCategory;
+                        
+                        if (category.name) document.getElementById('service_category_name').value = category.name;
+                        if (category.description) document.getElementById('service_category_description').value = category.description;
+                        if (category.color) {
+                            document.getElementById('service_category_color').value = category.color;
+                            document.getElementById('service_category_color_text').value = category.color;
+                        }
+                        document.getElementById('service_category_is_active').checked = category.is_active;
+                    } else {
+                        window.location.href = `/service-categories/${categoryId}/edit`;
+                        return;
+                    }
+                } catch (error) {
+                    console.error('Erro ao carregar categoria:', error);
+                    window.location.href = `/service-categories/${categoryId}/edit`;
+                    return;
+                }
+            } else {
+                offcanvasTitle.textContent = 'Nova Categoria de Serviço';
+                methodInput.value = 'POST';
+                form.action = '{{ route("service-categories.store") }}';
+            }
+            
+            if (window.syncColorPicker) window.syncColorPicker();
+            if (window.openOffcanvas) window.openOffcanvas('service-category-offcanvas');
+        };
+    </script>
+    
     <x-slot name="header">
         <div class="flex items-center justify-between">
             <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
@@ -174,13 +230,47 @@
 
 @push('scripts')
 <script>
-    async function loadServiceCategoryForm(categoryId) {
+    window.clearServiceCategoryErrors = function() {
+        document.querySelectorAll('[id$="_error"]').forEach(el => {
+            el.classList.add('hidden');
+            const p = el.querySelector('p');
+            if (p) p.textContent = '';
+        });
+    };
+    
+    window.syncColorPicker = function() {
+        const colorPicker = document.getElementById('service_category_color');
+        const colorText = document.getElementById('service_category_color_text');
+        
+        if (colorPicker && colorText) {
+            // Remove existing listeners to avoid duplicates
+            const newColorPicker = colorPicker.cloneNode(true);
+            colorPicker.parentNode.replaceChild(newColorPicker, colorPicker);
+            const newColorText = colorText.cloneNode(true);
+            colorText.parentNode.replaceChild(newColorText, colorText);
+            
+            newColorPicker.addEventListener('input', function(e) {
+                newColorText.value = e.target.value;
+            });
+            
+            newColorText.addEventListener('input', function(e) {
+                if (/^#[0-9A-Fa-f]{6}$/.test(e.target.value)) {
+                    newColorPicker.value = e.target.value;
+                }
+            });
+        }
+    };
+    
+    // Update the function with full implementation
+    window.loadServiceCategoryForm = async function(categoryId) {
         const form = document.getElementById('serviceCategoryForm');
         const offcanvasTitle = document.querySelector('#service-category-offcanvas h2');
         const methodInput = document.getElementById('service_category_method');
         
+        if (!form || !offcanvasTitle || !methodInput) return;
+        
         form.reset();
-        clearServiceCategoryErrors();
+        window.clearServiceCategoryErrors();
         
         if (categoryId) {
             offcanvasTitle.textContent = 'Editar Categoria de Serviço';
@@ -221,97 +311,79 @@
             form.action = '{{ route("service-categories.store") }}';
         }
         
-        // Sincronizar color picker
-        syncColorPicker();
-        
-        openOffcanvas('service-category-offcanvas');
-    }
+        window.syncColorPicker();
+        if (window.openOffcanvas) window.openOffcanvas('service-category-offcanvas');
+    };
     
-    function syncColorPicker() {
-        const colorPicker = document.getElementById('service_category_color');
-        const colorText = document.getElementById('service_category_color_text');
+    // Form submit handler
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.getElementById('serviceCategoryForm');
+        if (!form) return;
         
-        if (colorPicker && colorText) {
-            colorPicker.addEventListener('input', function(e) {
-                colorText.value = e.target.value;
-            });
+        form.addEventListener('submit', async function(e) {
+            e.preventDefault();
             
-            colorText.addEventListener('input', function(e) {
-                if (/^#[0-9A-Fa-f]{6}$/.test(e.target.value)) {
-                    colorPicker.value = e.target.value;
-                }
-            });
-        }
-    }
-    
-    function clearServiceCategoryErrors() {
-        document.querySelectorAll('[id$="_error"]').forEach(el => {
-            el.classList.add('hidden');
-            const p = el.querySelector('p');
-            if (p) p.textContent = '';
-        });
-    }
-    
-    document.getElementById('serviceCategoryForm').addEventListener('submit', async function(e) {
-        e.preventDefault();
-        
-        const form = e.target;
-        const formData = new FormData(form);
-        const method = document.getElementById('service_category_method').value;
-        const submitButton = form.querySelector('button[type="submit"]');
-        const originalText = submitButton.innerHTML;
-        
-        submitButton.disabled = true;
-        submitButton.innerHTML = 'Salvando...';
-        
-        let url = form.action;
-        if (method === 'PUT') {
-            formData.append('_method', 'PUT');
-        }
-        
-        try {
-            const response = await fetch(url, {
-                method: 'POST',
-                body: formData,
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest',
-                    'Accept': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-                }
-            });
+            const formData = new FormData(form);
+            const method = document.getElementById('service_category_method').value;
+            const submitButton = form.querySelector('button[type="submit"]');
+            const originalText = submitButton.innerHTML;
             
-            const data = await response.json();
+            submitButton.disabled = true;
+            submitButton.innerHTML = 'Salvando...';
             
-            if (response.ok && data.success) {
-                if (data.redirect) {
-                    window.location.href = data.redirect;
-                } else {
-                    window.location.reload();
-                }
-            } else if (response.status === 422) {
-                clearServiceCategoryErrors();
-                
-                Object.keys(data.errors || {}).forEach(field => {
-                    const errorDiv = document.getElementById(`${field}_error`);
-                    if (errorDiv) {
-                        errorDiv.classList.remove('hidden');
-                        errorDiv.querySelector('p').textContent = data.errors[field][0];
+            let url = form.action;
+            if (method === 'PUT') {
+                formData.append('_method', 'PUT');
+            }
+            
+            try {
+                const response = await fetch(url, {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
                     }
                 });
                 
-                submitButton.disabled = false;
-                submitButton.innerHTML = originalText;
-            } else {
-                alert(data.message || 'Erro ao salvar categoria');
+                const data = await response.json();
+                
+                if (response.ok && data.success) {
+                    if (data.redirect) {
+                        window.location.href = data.redirect;
+                    } else {
+                        window.location.reload();
+                    }
+                } else if (response.status === 422) {
+                    window.clearServiceCategoryErrors();
+                    
+                    Object.keys(data.errors || {}).forEach(field => {
+                        const errorDiv = document.getElementById(`${field}_error`);
+                        if (errorDiv) {
+                            errorDiv.classList.remove('hidden');
+                            const p = errorDiv.querySelector('p');
+                            if (p) p.textContent = data.errors[field][0];
+                        }
+                    });
+                    
+                    submitButton.disabled = false;
+                    submitButton.innerHTML = originalText;
+                } else {
+                    alert(data.message || 'Erro ao salvar categoria');
+                    submitButton.disabled = false;
+                    submitButton.innerHTML = originalText;
+                }
+            } catch (error) {
+                console.error('Erro:', error);
+                alert('Erro ao salvar categoria');
                 submitButton.disabled = false;
                 submitButton.innerHTML = originalText;
             }
-        } catch (error) {
-            console.error('Erro:', error);
-            alert('Erro ao salvar categoria');
-            submitButton.disabled = false;
-            submitButton.innerHTML = originalText;
-        }
+        });
+        
+        // Initialize color picker sync
+        window.syncColorPicker();
     });
 </script>
 @endpush

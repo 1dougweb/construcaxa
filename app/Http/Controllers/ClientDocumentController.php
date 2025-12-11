@@ -35,6 +35,20 @@ class ClientDocumentController extends Controller
                 'uploaded_by' => auth()->id(),
             ]);
 
+            if (request()->wantsJson() || request()->ajax()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Documento anexado com sucesso!',
+                    'document' => [
+                        'id' => $document->id,
+                        'name' => $document->name,
+                        'document_type' => $document->document_type,
+                        'file_path' => $document->file_path,
+                        'created_at' => $document->created_at->format('d/m/Y H:i'),
+                    ]
+                ]);
+            }
+
             return back()->with('success', 'Documento anexado com sucesso!');
         } catch (\Exception $e) {
             return back()->with('error', 'Erro ao anexar documento: ' . $e->getMessage());
@@ -53,6 +67,13 @@ class ClientDocumentController extends Controller
             }
 
             $clientDocument->delete();
+
+            if (request()->wantsJson() || request()->ajax()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Documento removido com sucesso!'
+                ]);
+            }
 
             return back()->with('success', 'Documento removido com sucesso!');
         } catch (\Exception $e) {

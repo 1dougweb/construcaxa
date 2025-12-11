@@ -1,4 +1,58 @@
 <x-app-layout>
+    <script>
+        // Define functions immediately so they're available for onclick handlers
+        window.loadLaborTypeForm = async function(laborTypeId) {
+            const form = document.getElementById('laborTypeForm');
+            const offcanvasTitle = document.querySelector('#labor-type-offcanvas h2');
+            const methodInput = document.getElementById('labor_type_method');
+            
+            if (!form || !offcanvasTitle || !methodInput) return;
+            
+            form.reset();
+            if (window.clearLaborTypeErrors) window.clearLaborTypeErrors();
+            
+            if (laborTypeId) {
+                offcanvasTitle.textContent = 'Editar Tipo de Mão de Obra';
+                methodInput.value = 'PUT';
+                form.action = `/labor-types/${laborTypeId}`;
+                
+                try {
+                    const response = await fetch(`/labor-types/${laborTypeId}/edit`, {
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'Accept': 'application/json'
+                        }
+                    });
+                    
+                    if (response.ok) {
+                        const data = await response.json();
+                        const laborType = data.laborType;
+                        
+                        if (laborType.name) document.getElementById('labor_type_name').value = laborType.name;
+                        if (laborType.skill_level) document.getElementById('labor_type_skill_level').value = laborType.skill_level;
+                        if (laborType.hourly_rate) document.getElementById('labor_type_hourly_rate').value = laborType.hourly_rate;
+                        if (laborType.overtime_rate) document.getElementById('labor_type_overtime_rate').value = laborType.overtime_rate;
+                        if (laborType.description) document.getElementById('labor_type_description').value = laborType.description;
+                        document.getElementById('labor_type_is_active').checked = laborType.is_active;
+                    } else {
+                        window.location.href = `/labor-types/${laborTypeId}/edit`;
+                        return;
+                    }
+                } catch (error) {
+                    console.error('Erro ao carregar tipo de mão de obra:', error);
+                    window.location.href = `/labor-types/${laborTypeId}/edit`;
+                    return;
+                }
+            } else {
+                offcanvasTitle.textContent = 'Novo Tipo de Mão de Obra';
+                methodInput.value = 'POST';
+                form.action = '{{ route("labor-types.store") }}';
+            }
+            
+            if (window.openOffcanvas) window.openOffcanvas('labor-type-offcanvas');
+        };
+    </script>
+    
     <x-slot name="header">
         <div class="flex justify-between items-center">
             <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
@@ -215,13 +269,24 @@
 
 @push('scripts')
 <script>
-    async function loadLaborTypeForm(laborTypeId) {
+    window.clearLaborTypeErrors = function() {
+        document.querySelectorAll('[id$="_error"]').forEach(el => {
+            el.classList.add('hidden');
+            const p = el.querySelector('p');
+            if (p) p.textContent = '';
+        });
+    };
+    
+    // Update the function with full implementation
+    window.loadLaborTypeForm = async function(laborTypeId) {
         const form = document.getElementById('laborTypeForm');
         const offcanvasTitle = document.querySelector('#labor-type-offcanvas h2');
         const methodInput = document.getElementById('labor_type_method');
         
+        if (!form || !offcanvasTitle || !methodInput) return;
+        
         form.reset();
-        clearLaborTypeErrors();
+        window.clearLaborTypeErrors();
         
         if (laborTypeId) {
             offcanvasTitle.textContent = 'Editar Tipo de Mão de Obra';
@@ -261,77 +326,75 @@
             form.action = '{{ route("labor-types.store") }}';
         }
         
-        openOffcanvas('labor-type-offcanvas');
-    }
+        if (window.openOffcanvas) window.openOffcanvas('labor-type-offcanvas');
+    };
     
-    function clearLaborTypeErrors() {
-        document.querySelectorAll('[id$="_error"]').forEach(el => {
-            el.classList.add('hidden');
-            const p = el.querySelector('p');
-            if (p) p.textContent = '';
-        });
-    }
-    
-    document.getElementById('laborTypeForm').addEventListener('submit', async function(e) {
-        e.preventDefault();
+    // Form submit handler
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.getElementById('laborTypeForm');
+        if (!form) return;
         
-        const form = e.target;
-        const formData = new FormData(form);
-        const method = document.getElementById('labor_type_method').value;
-        const submitButton = form.querySelector('button[type="submit"]');
-        const originalText = submitButton.innerHTML;
-        
-        submitButton.disabled = true;
-        submitButton.innerHTML = 'Salvando...';
-        
-        let url = form.action;
-        if (method === 'PUT') {
-            formData.append('_method', 'PUT');
-        }
-        
-        try {
-            const response = await fetch(url, {
-                method: 'POST',
-                body: formData,
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest',
-                    'Accept': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-                }
-            });
+        form.addEventListener('submit', async function(e) {
+            e.preventDefault();
             
-            const data = await response.json();
+            const formData = new FormData(form);
+            const method = document.getElementById('labor_type_method').value;
+            const submitButton = form.querySelector('button[type="submit"]');
+            const originalText = submitButton.innerHTML;
             
-            if (response.ok && data.success) {
-                if (data.redirect) {
-                    window.location.href = data.redirect;
-                } else {
-                    window.location.reload();
-                }
-            } else if (response.status === 422) {
-                clearLaborTypeErrors();
-                
-                Object.keys(data.errors || {}).forEach(field => {
-                    const errorDiv = document.getElementById(`${field}_error`);
-                    if (errorDiv) {
-                        errorDiv.classList.remove('hidden');
-                        errorDiv.querySelector('p').textContent = data.errors[field][0];
+            submitButton.disabled = true;
+            submitButton.innerHTML = 'Salvando...';
+            
+            let url = form.action;
+            if (method === 'PUT') {
+                formData.append('_method', 'PUT');
+            }
+            
+            try {
+                const response = await fetch(url, {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
                     }
                 });
                 
-                submitButton.disabled = false;
-                submitButton.innerHTML = originalText;
-            } else {
-                alert(data.message || 'Erro ao salvar tipo de mão de obra');
+                const data = await response.json();
+                
+                if (response.ok && data.success) {
+                    if (data.redirect) {
+                        window.location.href = data.redirect;
+                    } else {
+                        window.location.reload();
+                    }
+                } else if (response.status === 422) {
+                    window.clearLaborTypeErrors();
+                    
+                    Object.keys(data.errors || {}).forEach(field => {
+                        const errorDiv = document.getElementById(`${field}_error`);
+                        if (errorDiv) {
+                            errorDiv.classList.remove('hidden');
+                            const p = errorDiv.querySelector('p');
+                            if (p) p.textContent = data.errors[field][0];
+                        }
+                    });
+                    
+                    submitButton.disabled = false;
+                    submitButton.innerHTML = originalText;
+                } else {
+                    alert(data.message || 'Erro ao salvar tipo de mão de obra');
+                    submitButton.disabled = false;
+                    submitButton.innerHTML = originalText;
+                }
+            } catch (error) {
+                console.error('Erro:', error);
+                alert('Erro ao salvar tipo de mão de obra');
                 submitButton.disabled = false;
                 submitButton.innerHTML = originalText;
             }
-        } catch (error) {
-            console.error('Erro:', error);
-            alert('Erro ao salvar tipo de mão de obra');
-            submitButton.disabled = false;
-            submitButton.innerHTML = originalText;
-        }
+        });
     });
 </script>
 @endpush

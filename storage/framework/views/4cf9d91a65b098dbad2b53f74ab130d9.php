@@ -888,30 +888,8 @@ if (isset($__slots)) unset($__slots);
             }
         });
     });
-</script>
-    <?php $__env->stopPush(); ?>
- <?php echo $__env->renderComponent(); ?>
-<?php endif; ?>
-<?php if (isset($__attributesOriginal4619374cef299e94fd7263111d0abc69)): ?>
-<?php $attributes = $__attributesOriginal4619374cef299e94fd7263111d0abc69; ?>
-<?php unset($__attributesOriginal4619374cef299e94fd7263111d0abc69); ?>
-<?php endif; ?>
-<?php if (isset($__componentOriginal4619374cef299e94fd7263111d0abc69)): ?>
-<?php $component = $__componentOriginal4619374cef299e94fd7263111d0abc69; ?>
-<?php unset($__componentOriginal4619374cef299e94fd7263111d0abc69); ?>
-<?php endif; ?>
-
-<?php $__env->startPush('scripts'); ?>
-<script>
-    // Event listeners e inicialização - executar após DOM estar pronto
-    // Garantir que as funções estejam disponíveis após renderização do Livewire
-    if (typeof Livewire !== 'undefined') {
-        Livewire.hook('mounted', () => {
-            // Funções já estão disponíveis no window
-        });
-    }
     
-    // Adicionar primeiro item ao abrir e event listeners
+    // Event listeners para proposta - executar após DOM estar pronto
     document.addEventListener('DOMContentLoaded', function() {
         const proposalOffcanvas = document.getElementById('proposal-offcanvas');
         if (proposalOffcanvas) {
@@ -988,5 +966,15 @@ if (isset($__slots)) unset($__slots);
         }
     });
 </script>
-<?php $__env->stopPush(); ?>
+    <?php $__env->stopPush(); ?>
+ <?php echo $__env->renderComponent(); ?>
+<?php endif; ?>
+<?php if (isset($__attributesOriginal4619374cef299e94fd7263111d0abc69)): ?>
+<?php $attributes = $__attributesOriginal4619374cef299e94fd7263111d0abc69; ?>
+<?php unset($__attributesOriginal4619374cef299e94fd7263111d0abc69); ?>
+<?php endif; ?>
+<?php if (isset($__componentOriginal4619374cef299e94fd7263111d0abc69)): ?>
+<?php $component = $__componentOriginal4619374cef299e94fd7263111d0abc69; ?>
+<?php unset($__componentOriginal4619374cef299e94fd7263111d0abc69); ?>
+<?php endif; ?>
 <?php /**PATH C:\Users\Douglas\Documents\Projetos\stock-master\resources\views/employees/index.blade.php ENDPATH**/ ?>

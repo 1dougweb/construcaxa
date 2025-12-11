@@ -106,16 +106,24 @@
                 <!-- Seleção de Ambientes -->
                 <div>
                     <x-label value="Selecione os Ambientes *" />
-                    <div class="mt-2 grid grid-cols-2 md:grid-cols-3 gap-3">
+                    <div class="mt-2 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
                         @foreach($templates as $template)
-                            <label class="flex items-center p-3 border-2 rounded-lg cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors {{ in_array($template->id, $selectedEnvironments ?? []) ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-900/20' : 'border-gray-300 dark:border-gray-600' }}">
+                            <label class="flex flex-col items-center justify-center p-4 border-2 rounded-lg cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition-all {{ in_array($template->id, $selectedEnvironments ?? []) ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-900/20 shadow-md' : 'border-gray-300 dark:border-gray-600 hover:border-indigo-300 dark:hover:border-indigo-600' }}">
                                 <input 
                                     type="checkbox" 
                                     wire:click="toggleEnvironment({{ $template->id }})"
                                     {{ in_array($template->id, $selectedEnvironments ?? []) ? 'checked' : '' }}
-                                    class="form-checkbox h-5 w-5 text-indigo-600"
+                                    class="form-checkbox h-5 w-5 text-indigo-600 mb-2"
                                 >
-                                <span class="ml-2 text-sm font-medium text-gray-900 dark:text-gray-100">{{ $template->name }}</span>
+                                @if($template->icon)
+                                    <i class="{{ $template->icon }} text-3xl mb-2 {{ in_array($template->id, $selectedEnvironments ?? []) ? 'text-indigo-600 dark:text-indigo-400' : 'text-gray-600 dark:text-gray-400' }}"></i>
+                                @else
+                                    <i class="fi fi-rr-room text-3xl mb-2 {{ in_array($template->id, $selectedEnvironments ?? []) ? 'text-indigo-600 dark:text-indigo-400' : 'text-gray-600 dark:text-gray-400' }}"></i>
+                                @endif
+                                <span class="text-sm font-medium text-center text-gray-900 dark:text-gray-100">{{ $template->name }}</span>
+                                @if($template->description)
+                                    <span class="text-xs text-gray-500 dark:text-gray-400 text-center mt-1">{{ $template->description }}</span>
+                                @endif
                             </label>
                         @endforeach
                     </div>

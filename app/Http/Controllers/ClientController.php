@@ -92,11 +92,12 @@ class ClientController extends Controller
         }
 
         try {
-            Client::create($validated);
+            $client = Client::create($validated);
             if (request()->wantsJson() || request()->ajax()) {
                 return response()->json([
                     'success' => true,
                     'message' => 'Cliente criado com sucesso!',
+                    'client_id' => $client->id,
                     'redirect' => route('clients.index')
                 ]);
             }
@@ -136,6 +137,7 @@ class ClientController extends Controller
     public function edit(Client $client)
     {
         if (request()->wantsJson() || request()->ajax()) {
+            $client->load('documents');
             return response()->json([
                 'client' => [
                     'id' => $client->id,
@@ -155,6 +157,15 @@ class ClientController extends Controller
                     'zip_code' => $client->zip_code,
                     'notes' => $client->notes,
                     'is_active' => $client->is_active,
+                    'documents' => $client->documents->map(function($doc) {
+                        return [
+                            'id' => $doc->id,
+                            'name' => $doc->name,
+                            'document_type' => $doc->document_type,
+                            'file_path' => $doc->file_path,
+                            'created_at' => $doc->created_at->format('d/m/Y H:i'),
+                        ];
+                    }),
                 ]
             ]);
         }
