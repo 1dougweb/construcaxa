@@ -150,6 +150,13 @@ RUN echo '[supervisord]' > /etc/supervisor/conf.d/supervisord.conf && \
 # Set permissions (as root)
 RUN chown -R www:www /var/www || true
 RUN chmod -R 775 /var/www/storage /var/www/bootstrap/cache || true
+# Ensure storage/app/public is accessible by web server
+# Make storage readable by web server (nginx runs as www-data or nginx user)
+RUN mkdir -p /var/www/storage/app/public && \
+    chown -R www:www /var/www/storage/app/public && \
+    chmod -R 755 /var/www/storage/app/public && \
+    # Ensure nginx can read files (add read permissions for others)
+    chmod -R o+r /var/www/storage/app/public || true
 
 # Create log directories
 RUN mkdir -p /var/log && chmod 777 /var/log
@@ -230,15 +237,22 @@ RUN echo '#!/bin/bash' > /usr/local/bin/docker-entrypoint.sh && \
     echo '    fi' >> /usr/local/bin/docker-entrypoint.sh && \
     echo 'fi' >> /usr/local/bin/docker-entrypoint.sh && \
     echo '' >> /usr/local/bin/docker-entrypoint.sh && \
+    echo '# Ensure storage directories exist and have correct permissions' >> /usr/local/bin/docker-entrypoint.sh && \
+    echo 'mkdir -p /var/www/storage/app/public/products/photos' >> /usr/local/bin/docker-entrypoint.sh && \
+    echo 'chown -R www:www /var/www/storage' >> /usr/local/bin/docker-entrypoint.sh && \
+    echo 'chmod -R 755 /var/www/storage/app/public' >> /usr/local/bin/docker-entrypoint.sh && \
+    echo 'chmod -R o+r /var/www/storage/app/public' >> /usr/local/bin/docker-entrypoint.sh && \
+    echo '' >> /usr/local/bin/docker-entrypoint.sh && \
     echo '# Create storage symlink if it does not exist' >> /usr/local/bin/docker-entrypoint.sh && \
     echo 'if [ ! -L /var/www/public/storage ]; then' >> /usr/local/bin/docker-entrypoint.sh && \
     echo '    echo "Creating storage symlink..."' >> /usr/local/bin/docker-entrypoint.sh && \
     echo '    cd /var/www' >> /usr/local/bin/docker-entrypoint.sh && \
     echo '    php artisan storage:link 2>&1 || echo "Storage link already exists or failed"' >> /usr/local/bin/docker-entrypoint.sh && \
     echo '    chown -R www:www /var/www/public/storage || true' >> /usr/local/bin/docker-entrypoint.sh && \
+    echo '    chmod -R 755 /var/www/public/storage || true' >> /usr/local/bin/docker-entrypoint.sh && \
     echo 'fi' >> /usr/local/bin/docker-entrypoint.sh && \
     echo '' >> /usr/local/bin/docker-entrypoint.sh && \
-    echo '# Wait for Laravel to be ready before starting Reverb' >> /usr/local/bin/docker-entrypoint.sh && \
+        echo '# Wait for Laravel to be ready before starting Reverb' >> /usr/local/bin/docker-entrypoint.sh && \
     echo 'echo "Waiting for Laravel to be ready..."' >> /usr/local/bin/docker-entrypoint.sh && \
     echo 'cd /var/www' >> /usr/local/bin/docker-entrypoint.sh && \
     echo 'for i in {1..30}; do' >> /usr/local/bin/docker-entrypoint.sh && \
