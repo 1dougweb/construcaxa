@@ -55,6 +55,13 @@ class ContractController extends Controller
         
         $selectedClient = $request->get('client_id') ? Client::find($request->get('client_id')) : null;
 
+        if (request()->wantsJson() || request()->ajax()) {
+            return response()->json([
+                'projects' => $projects->map(fn($p) => ['id' => $p->id, 'name' => $p->name]),
+                'budgets' => $budgets->map(fn($b) => ['id' => $b->id, 'client_name' => $b->client->name ?? 'N/A'])
+            ]);
+        }
+
         return view('contracts.create', compact('clients', 'projects', 'budgets', 'selectedClient'));
     }
 
@@ -90,8 +97,30 @@ class ContractController extends Controller
 
         try {
             Contract::create($validated);
+            if (request()->wantsJson() || request()->ajax()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Contrato criado com sucesso!',
+                    'redirect' => route('contracts.index')
+                ]);
+            }
             return redirect()->route('contracts.index')->with('success', 'Contrato criado com sucesso!');
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            if (request()->wantsJson() || request()->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Erro de validação',
+                    'errors' => $e->errors()
+                ], 422);
+            }
+            throw $e;
         } catch (\Exception $e) {
+            if (request()->wantsJson() || request()->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Erro ao criar contrato: ' . $e->getMessage()
+                ], 500);
+            }
             return back()->withInput()->with('error', 'Erro ao criar contrato: ' . $e->getMessage());
         }
     }
@@ -110,6 +139,26 @@ class ContractController extends Controller
      */
     public function edit(Contract $contract)
     {
+        if (request()->wantsJson() || request()->ajax()) {
+            return response()->json([
+                'contract' => [
+                    'id' => $contract->id,
+                    'client_id' => $contract->client_id,
+                    'project_id' => $contract->project_id,
+                    'budget_id' => $contract->budget_id,
+                    'title' => $contract->title,
+                    'description' => $contract->description,
+                    'start_date' => $contract->start_date?->format('Y-m-d'),
+                    'end_date' => $contract->end_date?->format('Y-m-d'),
+                    'value' => $contract->value,
+                    'status' => $contract->status,
+                    'signed_at' => $contract->signed_at?->format('Y-m-d\TH:i'),
+                    'notes' => $contract->notes,
+                    'file_path' => $contract->file_path,
+                ]
+            ]);
+        }
+        
         $clients = Client::active()->orderBy('name')->get();
         $projects = Project::orderBy('name')->get();
         $budgets = ProjectBudget::where('status', 'approved')->orderBy('created_at', 'desc')->get();
@@ -151,8 +200,30 @@ class ContractController extends Controller
 
         try {
             $contract->update($validated);
+            if (request()->wantsJson() || request()->ajax()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Contrato atualizado com sucesso!',
+                    'redirect' => route('contracts.index')
+                ]);
+            }
             return redirect()->route('contracts.show', $contract)->with('success', 'Contrato atualizado com sucesso!');
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            if (request()->wantsJson() || request()->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Erro de validação',
+                    'errors' => $e->errors()
+                ], 422);
+            }
+            throw $e;
         } catch (\Exception $e) {
+            if (request()->wantsJson() || request()->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Erro ao atualizar contrato: ' . $e->getMessage()
+                ], 500);
+            }
             return back()->withInput()->with('error', 'Erro ao atualizar contrato: ' . $e->getMessage());
         }
     }

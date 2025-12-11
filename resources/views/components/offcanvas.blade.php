@@ -9,7 +9,7 @@
     id="{{ $id }}-backdrop"
     class="fixed inset-0 bg-gray-900 dark:bg-black bg-opacity-50 dark:bg-opacity-70 backdrop-blur-sm z-40 transition-opacity duration-300 opacity-0 pointer-events-none"
     style="display: none;"
-    onclick="closeOffcanvas('{{ $id }}')"
+    onclick="if(typeof window.closeOffcanvas === 'function') { window.closeOffcanvas('{{ $id }}'); } else if(typeof closeOffcanvas === 'function') { closeOffcanvas('{{ $id }}'); }"
 ></div>
 
 <!-- Offcanvas -->
@@ -24,7 +24,7 @@
             {{ $title }}
         </h2>
         <button 
-            onclick="closeOffcanvas('{{ $id }}')"
+            onclick="if(typeof window.closeOffcanvas === 'function') { window.closeOffcanvas('{{ $id }}'); } else if(typeof closeOffcanvas === 'function') { closeOffcanvas('{{ $id }}'); }"
             class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 focus:outline-none focus:text-gray-600 dark:focus:text-gray-300 transition-colors"
             aria-label="Fechar"
         >

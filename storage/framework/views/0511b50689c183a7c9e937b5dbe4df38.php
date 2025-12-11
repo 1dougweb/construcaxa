@@ -225,4 +225,5 @@ unset($__errorArgs, $__bag); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendB
         </div>
     </form>
 </div>
+
 <?php /**PATH C:\Users\Douglas\Documents\Projetos\stock-master\resources\views/livewire/category-form.blade.php ENDPATH**/ ?>

@@ -45,6 +45,18 @@ class EmployeeProposalController extends Controller
         $services = Service::active()->with('category')->orderBy('name')->get();
         $serviceCategories = ServiceCategory::active()->orderBy('name')->get();
 
+        if (request()->wantsJson() || request()->ajax()) {
+            return response()->json([
+                'employee' => [
+                    'id' => $employee->id,
+                    'name' => $employee->user->name,
+                ],
+                'projects' => $projects->map(fn($p) => ['id' => $p->id, 'name' => $p->name]),
+                'laborTypes' => $laborTypes->map(fn($lt) => ['id' => $lt->id, 'name' => $lt->name]),
+                'services' => $services->map(fn($s) => ['id' => $s->id, 'name' => $s->name]),
+            ]);
+        }
+
         return view('employees.proposals.create', compact(
             'employee',
             'projects',
@@ -113,10 +125,35 @@ class EmployeeProposalController extends Controller
             }
 
             DB::commit();
+            
+            if (request()->wantsJson() || request()->ajax()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Proposta criada e enviada por email com sucesso!',
+                    'redirect' => route('employees.proposals.index', $employee)
+                ]);
+            }
+            
             return redirect()->route('employees.proposals.index', $employee)
                 ->with('success', 'Proposta criada e enviada por email com sucesso!');
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            DB::rollBack();
+            if (request()->wantsJson() || request()->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Erro de validação',
+                    'errors' => $e->errors()
+                ], 422);
+            }
+            throw $e;
         } catch (\Exception $e) {
             DB::rollBack();
+            if (request()->wantsJson() || request()->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Erro ao criar proposta: ' . $e->getMessage()
+                ], 500);
+            }
             throw ValidationException::withMessages(['error' => 'Erro ao criar proposta. ' . $e->getMessage()]);
         }
     }

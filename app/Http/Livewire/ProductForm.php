@@ -5,6 +5,7 @@ namespace App\Http\Livewire;
 use App\Models\Product;
 use App\Models\Category;
 use App\Models\Supplier;
+use App\Events\ProductChanged;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 use Illuminate\Support\Facades\Storage;
@@ -30,6 +31,11 @@ class ProductForm extends Component
     public $categories;
     public $suppliers;
     public $unitTypes;
+
+    protected $listeners = [
+        'edit-product' => 'loadProduct',
+        'reset-product-form' => 'resetForm',
+    ];
 
     protected $rules = [
         'name' => 'required|max:255',
@@ -225,20 +231,60 @@ class ProductForm extends Component
             $validatedData['photos'] = array_values($photos);
         }
         
+        $message = '';
+        $action = $this->product ? 'updated' : 'created';
+        $productName = $this->product ? $this->product->name : $validatedData['name'];
+
         if ($this->product) {
             // Atualização
             $this->product->update($validatedData);
-            session()->flash('success', 'Produto atualizado com sucesso.');
+            $message = 'Produto atualizado com sucesso.';
+            session()->flash('success', $message);
         } else {
             // Criação
             // Gera o SKU automaticamente apenas para novos produtos
             $validatedData['sku'] = $this->generateSKU($validatedData['name']);
-            Product::create($validatedData);
-            session()->flash('success', 'Produto criado com sucesso.');
+            $this->product = Product::create($validatedData);
+            $productName = $this->product->name;
+            $message = 'Produto criado com sucesso.';
+            session()->flash('success', $message);
         }
         
-        // Emitir evento para fechar o offcanvas e atualizar a lista
-        $this->dispatch('productSaved');
+        if ($this->product && $this->product->id) {
+            // Disparar evento de broadcast de forma síncrona
+            broadcast(new ProductChanged(
+                $this->product->id,
+                $action,
+                $message,
+                $productName
+            ))->toOthers();
+        }
+
+        // Atualizar lista em tempo real via Livewire
+        $this->dispatch('refresh-products')->to(ProductList::class);
+
+        // Executar JavaScript diretamente para garantir fechamento e notificação
+        $escapedMessage = addslashes($message);
+        $this->js("
+            (function() {
+                if (typeof closeOffcanvas === 'function') {
+                    closeOffcanvas('product-offcanvas');
+                }
+                if (typeof window.showNotification === 'function') {
+                    window.showNotification('{$escapedMessage}', 'success', 4000);
+                }
+                if (typeof window.Livewire !== 'undefined') {
+                    window.Livewire.dispatch('refresh-products');
+                }
+            })();
+        ");
+
+        // Emitir evento para outros listeners (fallback)
+        $this->dispatch('product-saved', [
+            'message' => $message,
+            'type' => 'success'
+        ]);
+
         $this->resetForm();
     }
 

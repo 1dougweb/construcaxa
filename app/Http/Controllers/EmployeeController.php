@@ -91,9 +91,34 @@ class EmployeeController extends Controller
             ]);
 
             DB::commit();
+            
+            if (request()->wantsJson() || request()->ajax()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Funcionário cadastrado com sucesso!',
+                    'redirect' => route('employees.index')
+                ]);
+            }
+            
             return redirect()->route('employees.index')->with('success', 'Funcionário cadastrado com sucesso!');
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            DB::rollBack();
+            if (request()->wantsJson() || request()->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Erro de validação',
+                    'errors' => $e->errors()
+                ], 422);
+            }
+            throw $e;
         } catch (\Exception $e) {
             DB::rollBack();
+            if (request()->wantsJson() || request()->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Erro ao cadastrar funcionário: ' . $e->getMessage()
+                ], 500);
+            }
             throw ValidationException::withMessages(['error' => 'Erro ao cadastrar funcionário. ' . $e->getMessage()]);
         }
     }
@@ -146,6 +171,29 @@ class EmployeeController extends Controller
 
     public function edit(Employee $employee)
     {
+        if (request()->wantsJson() || request()->ajax()) {
+            return response()->json([
+                'employee' => [
+                    'id' => $employee->id,
+                    'name' => $employee->user->name,
+                    'email' => $employee->user->email,
+                    'position' => $employee->position,
+                    'department' => $employee->department,
+                    'hire_date' => $employee->hire_date?->format('Y-m-d'),
+                    'birth_date' => $employee->birth_date?->format('Y-m-d'),
+                    'cpf' => $employee->cpf,
+                    'rg' => $employee->rg,
+                    'cnpj' => $employee->cnpj,
+                    'phone' => $employee->phone,
+                    'cellphone' => $employee->cellphone,
+                    'address' => $employee->address,
+                    'emergency_contact' => $employee->emergency_contact,
+                    'notes' => $employee->notes,
+                    'profile_photo_path' => $employee->profile_photo_path,
+                ]
+            ]);
+        }
+        
         return view('employees.edit', compact('employee'));
     }
 
@@ -211,9 +259,25 @@ class EmployeeController extends Controller
             $employee->update($data);
 
             DB::commit();
+            
+            if (request()->wantsJson() || request()->ajax()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Funcionário atualizado com sucesso!',
+                    'redirect' => route('employees.index')
+                ]);
+            }
+            
             return redirect()->route('employees.index')->with('success', 'Funcionário atualizado com sucesso!');
         } catch (\Illuminate\Validation\ValidationException $e) {
             DB::rollBack();
+            if (request()->wantsJson() || request()->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Erro de validação',
+                    'errors' => $e->errors()
+                ], 422);
+            }
             return back()->withErrors($e->errors())->withInput();
         } catch (\Exception $e) {
             DB::rollBack();
@@ -222,6 +286,14 @@ class EmployeeController extends Controller
                 'request_data' => $request->all(),
                 'trace' => $e->getTraceAsString()
             ]);
+            
+            if (request()->wantsJson() || request()->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Erro ao atualizar funcionário: ' . $e->getMessage()
+                ], 500);
+            }
+            
             return back()->withErrors(['error' => 'Erro ao atualizar funcionário: ' . $e->getMessage()])->withInput();
         }
     }

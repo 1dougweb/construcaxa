@@ -770,7 +770,10 @@
                         <h2 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Ações Rápidas</h2>
                         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                             <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('create service-orders')): ?>
-                            <a href="<?php echo e(route('material-requests.create')); ?>" class="flex items-center p-4 bg-indigo-50 dark:bg-indigo-900/30 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 rounded-lg transition-all">
+                            <button 
+                                onclick="openOffcanvas('material-request-offcanvas')"
+                                class="w-full flex items-center p-4 bg-indigo-50 dark:bg-indigo-900/30 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 rounded-lg transition-all text-left"
+                            >
                                 <div class="p-3 bg-indigo-100 dark:bg-indigo-800 rounded-full mr-4">
                                     <svg class="w-6 h-6 text-indigo-600 dark:text-indigo-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 13h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
@@ -812,7 +815,10 @@
                             <?php endif; ?>
 
                             <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('create service-orders')): ?>
-                            <a href="<?php echo e(route('equipment-requests.create')); ?>" class="flex items-center p-4 bg-amber-100 dark:bg-amber-900/30 hover:bg-orange-100 dark:hover:bg-orange-900/50 rounded-lg transition-all">
+                            <button 
+                                onclick="openOffcanvas('equipment-request-offcanvas')"
+                                class="w-full flex items-center p-4 bg-amber-100 dark:bg-amber-900/30 hover:bg-orange-100 dark:hover:bg-orange-900/50 rounded-lg transition-all text-left"
+                            >
                                 <div class="p-3 bg-orange-100 dark:bg-orange-800 rounded-full mr-4">
                                     <svg class="w-6 h-6 text-orange-600 dark:text-orange-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 13h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
@@ -822,7 +828,7 @@
                                     <h3 class="text-sm font-medium text-gray-900 dark:text-gray-100">Requisição de Equipamento</h3>
                                     <p class="text-xs text-gray-500 dark:text-gray-400">Solicitar empréstimo/devolução</p>
                                 </div>
-                            </a>
+                            </button>
                             <?php endif; ?>
 
                             <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('manage stock')): ?>
@@ -1096,6 +1102,174 @@
             </div>
         </div>
     </div>
+
+    <!-- Offcanvas para Produtos -->
+    <?php if (isset($component)) { $__componentOriginal5fd361cc9f4aafccfd6aee776cbb14bc = $component; } ?>
+<?php if (isset($attributes)) { $__attributesOriginal5fd361cc9f4aafccfd6aee776cbb14bc = $attributes; } ?>
+<?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.offcanvas','data' => ['id' => 'product-offcanvas','title' => 'Novo Produto','width' => 'w-full md:w-[600px]']] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
+<?php $component->withName('offcanvas'); ?>
+<?php if ($component->shouldRender()): ?>
+<?php $__env->startComponent($component->resolveView(), $component->data()); ?>
+<?php if (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag): ?>
+<?php $attributes = $attributes->except(\Illuminate\View\AnonymousComponent::ignoredParameterNames()); ?>
+<?php endif; ?>
+<?php $component->withAttributes(['id' => 'product-offcanvas','title' => 'Novo Produto','width' => 'w-full md:w-[600px]']); ?>
+        <?php
+$__split = function ($name, $params = []) {
+    return [$name, $params];
+};
+[$__name, $__params] = $__split('product-form', ['product' => null]);
+
+$key = 'product-form';
+
+$key ??= \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::generateKey('lw-3911580957-0', 'product-form');
+
+$__html = app('livewire')->mount($__name, $__params, $key);
+
+echo $__html;
+
+unset($__html);
+unset($__name);
+unset($__params);
+unset($__split);
+if (isset($__slots)) unset($__slots);
+?>
+     <?php echo $__env->renderComponent(); ?>
+<?php endif; ?>
+<?php if (isset($__attributesOriginal5fd361cc9f4aafccfd6aee776cbb14bc)): ?>
+<?php $attributes = $__attributesOriginal5fd361cc9f4aafccfd6aee776cbb14bc; ?>
+<?php unset($__attributesOriginal5fd361cc9f4aafccfd6aee776cbb14bc); ?>
+<?php endif; ?>
+<?php if (isset($__componentOriginal5fd361cc9f4aafccfd6aee776cbb14bc)): ?>
+<?php $component = $__componentOriginal5fd361cc9f4aafccfd6aee776cbb14bc; ?>
+<?php unset($__componentOriginal5fd361cc9f4aafccfd6aee776cbb14bc); ?>
+<?php endif; ?>
+
+    <!-- Offcanvas para Equipamentos -->
+    <?php if (isset($component)) { $__componentOriginal5fd361cc9f4aafccfd6aee776cbb14bc = $component; } ?>
+<?php if (isset($attributes)) { $__attributesOriginal5fd361cc9f4aafccfd6aee776cbb14bc = $attributes; } ?>
+<?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.offcanvas','data' => ['id' => 'equipment-offcanvas','title' => 'Novo Equipamento','width' => 'w-full md:w-[700px]']] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
+<?php $component->withName('offcanvas'); ?>
+<?php if ($component->shouldRender()): ?>
+<?php $__env->startComponent($component->resolveView(), $component->data()); ?>
+<?php if (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag): ?>
+<?php $attributes = $attributes->except(\Illuminate\View\AnonymousComponent::ignoredParameterNames()); ?>
+<?php endif; ?>
+<?php $component->withAttributes(['id' => 'equipment-offcanvas','title' => 'Novo Equipamento','width' => 'w-full md:w-[700px]']); ?>
+        <?php
+$__split = function ($name, $params = []) {
+    return [$name, $params];
+};
+[$__name, $__params] = $__split('equipment-form', ['equipment' => null]);
+
+$key = 'equipment-form';
+
+$key ??= \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::generateKey('lw-3911580957-1', 'equipment-form');
+
+$__html = app('livewire')->mount($__name, $__params, $key);
+
+echo $__html;
+
+unset($__html);
+unset($__name);
+unset($__params);
+unset($__split);
+if (isset($__slots)) unset($__slots);
+?>
+     <?php echo $__env->renderComponent(); ?>
+<?php endif; ?>
+<?php if (isset($__attributesOriginal5fd361cc9f4aafccfd6aee776cbb14bc)): ?>
+<?php $attributes = $__attributesOriginal5fd361cc9f4aafccfd6aee776cbb14bc; ?>
+<?php unset($__attributesOriginal5fd361cc9f4aafccfd6aee776cbb14bc); ?>
+<?php endif; ?>
+<?php if (isset($__componentOriginal5fd361cc9f4aafccfd6aee776cbb14bc)): ?>
+<?php $component = $__componentOriginal5fd361cc9f4aafccfd6aee776cbb14bc; ?>
+<?php unset($__componentOriginal5fd361cc9f4aafccfd6aee776cbb14bc); ?>
+<?php endif; ?>
+
+    <!-- Offcanvas para Requisições de Material -->
+    <?php if (isset($component)) { $__componentOriginal5fd361cc9f4aafccfd6aee776cbb14bc = $component; } ?>
+<?php if (isset($attributes)) { $__attributesOriginal5fd361cc9f4aafccfd6aee776cbb14bc = $attributes; } ?>
+<?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.offcanvas','data' => ['id' => 'material-request-offcanvas','title' => 'Nova Requisição de Material','width' => 'w-full md:w-[900px]']] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
+<?php $component->withName('offcanvas'); ?>
+<?php if ($component->shouldRender()): ?>
+<?php $__env->startComponent($component->resolveView(), $component->data()); ?>
+<?php if (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag): ?>
+<?php $attributes = $attributes->except(\Illuminate\View\AnonymousComponent::ignoredParameterNames()); ?>
+<?php endif; ?>
+<?php $component->withAttributes(['id' => 'material-request-offcanvas','title' => 'Nova Requisição de Material','width' => 'w-full md:w-[900px]']); ?>
+        <?php
+$__split = function ($name, $params = []) {
+    return [$name, $params];
+};
+[$__name, $__params] = $__split('material-request-form', ['materialRequest' => null]);
+
+$key = 'material-request-form';
+
+$key ??= \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::generateKey('lw-3911580957-2', 'material-request-form');
+
+$__html = app('livewire')->mount($__name, $__params, $key);
+
+echo $__html;
+
+unset($__html);
+unset($__name);
+unset($__params);
+unset($__split);
+if (isset($__slots)) unset($__slots);
+?>
+     <?php echo $__env->renderComponent(); ?>
+<?php endif; ?>
+<?php if (isset($__attributesOriginal5fd361cc9f4aafccfd6aee776cbb14bc)): ?>
+<?php $attributes = $__attributesOriginal5fd361cc9f4aafccfd6aee776cbb14bc; ?>
+<?php unset($__attributesOriginal5fd361cc9f4aafccfd6aee776cbb14bc); ?>
+<?php endif; ?>
+<?php if (isset($__componentOriginal5fd361cc9f4aafccfd6aee776cbb14bc)): ?>
+<?php $component = $__componentOriginal5fd361cc9f4aafccfd6aee776cbb14bc; ?>
+<?php unset($__componentOriginal5fd361cc9f4aafccfd6aee776cbb14bc); ?>
+<?php endif; ?>
+
+    <!-- Offcanvas para Requisições de Equipamento -->
+    <?php if (isset($component)) { $__componentOriginal5fd361cc9f4aafccfd6aee776cbb14bc = $component; } ?>
+<?php if (isset($attributes)) { $__attributesOriginal5fd361cc9f4aafccfd6aee776cbb14bc = $attributes; } ?>
+<?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.offcanvas','data' => ['id' => 'equipment-request-offcanvas','title' => 'Nova Requisição de Equipamento','width' => 'w-full md:w-[800px]']] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
+<?php $component->withName('offcanvas'); ?>
+<?php if ($component->shouldRender()): ?>
+<?php $__env->startComponent($component->resolveView(), $component->data()); ?>
+<?php if (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag): ?>
+<?php $attributes = $attributes->except(\Illuminate\View\AnonymousComponent::ignoredParameterNames()); ?>
+<?php endif; ?>
+<?php $component->withAttributes(['id' => 'equipment-request-offcanvas','title' => 'Nova Requisição de Equipamento','width' => 'w-full md:w-[800px]']); ?>
+        <?php
+$__split = function ($name, $params = []) {
+    return [$name, $params];
+};
+[$__name, $__params] = $__split('equipment-request-form', ['equipmentRequest' => null]);
+
+$key = 'equipment-request-form';
+
+$key ??= \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::generateKey('lw-3911580957-3', 'equipment-request-form');
+
+$__html = app('livewire')->mount($__name, $__params, $key);
+
+echo $__html;
+
+unset($__html);
+unset($__name);
+unset($__params);
+unset($__split);
+if (isset($__slots)) unset($__slots);
+?>
+     <?php echo $__env->renderComponent(); ?>
+<?php endif; ?>
+<?php if (isset($__attributesOriginal5fd361cc9f4aafccfd6aee776cbb14bc)): ?>
+<?php $attributes = $__attributesOriginal5fd361cc9f4aafccfd6aee776cbb14bc; ?>
+<?php unset($__attributesOriginal5fd361cc9f4aafccfd6aee776cbb14bc); ?>
+<?php endif; ?>
+<?php if (isset($__componentOriginal5fd361cc9f4aafccfd6aee776cbb14bc)): ?>
+<?php $component = $__componentOriginal5fd361cc9f4aafccfd6aee776cbb14bc; ?>
+<?php unset($__componentOriginal5fd361cc9f4aafccfd6aee776cbb14bc); ?>
+<?php endif; ?>
  <?php echo $__env->renderComponent(); ?>
 <?php endif; ?>
 <?php if (isset($__attributesOriginal4619374cef299e94fd7263111d0abc69)): ?>
@@ -1106,4 +1280,79 @@
 <?php $component = $__componentOriginal4619374cef299e94fd7263111d0abc69; ?>
 <?php unset($__componentOriginal4619374cef299e94fd7263111d0abc69); ?>
 <?php endif; ?>
+
+<?php $__env->startPush('scripts'); ?>
+<script>
+    document.addEventListener('livewire:init', () => {
+        Livewire.on('productSaved', () => {
+            closeOffcanvas('product-offcanvas');
+            Livewire.dispatch('refresh');
+        });
+        Livewire.on('equipmentSaved', () => {
+            closeOffcanvas('equipment-offcanvas');
+            window.location.reload();
+        });
+        Livewire.on('materialRequestSaved', () => {
+            closeOffcanvas('material-request-offcanvas');
+            window.location.reload();
+        });
+        Livewire.on('equipmentRequestSaved', () => {
+            closeOffcanvas('equipment-request-offcanvas');
+            window.location.reload();
+        });
+    });
+
+    // Eventos de edição para produtos
+    window.addEventListener('edit-product', (event) => {
+        const productId = event.detail.id;
+        const offcanvas = document.getElementById('product-offcanvas');
+        const title = offcanvas.querySelector('h2');
+        if (title) title.textContent = 'Editar Produto';
+        const livewireComponent = document.querySelector('[wire\\:id]');
+        if (livewireComponent) {
+            const componentId = livewireComponent.getAttribute('wire:id');
+            Livewire.find(componentId).call('loadProduct', productId);
+        }
+    });
+
+    // Eventos de edição para equipamentos
+    window.addEventListener('edit-equipment', (event) => {
+        const equipmentId = event.detail.id;
+        const offcanvas = document.getElementById('equipment-offcanvas');
+        const title = offcanvas.querySelector('h2');
+        if (title) title.textContent = 'Editar Equipamento';
+        const livewireComponent = document.querySelector('[wire\\:id]');
+        if (livewireComponent) {
+            const componentId = livewireComponent.getAttribute('wire:id');
+            Livewire.find(componentId).call('loadEquipment', equipmentId);
+        }
+    });
+
+    // Eventos de edição para requisições de material
+    window.addEventListener('edit-material-request', (event) => {
+        const requestId = event.detail.id;
+        const offcanvas = document.getElementById('material-request-offcanvas');
+        const title = offcanvas.querySelector('h2');
+        if (title) title.textContent = 'Editar Requisição de Material';
+        const livewireComponent = document.querySelector('[wire\\:id]');
+        if (livewireComponent) {
+            const componentId = livewireComponent.getAttribute('wire:id');
+            Livewire.find(componentId).call('loadMaterialRequest', requestId);
+        }
+    });
+
+    // Eventos de edição para requisições de equipamento
+    window.addEventListener('edit-equipment-request', (event) => {
+        const requestId = event.detail.id;
+        const offcanvas = document.getElementById('equipment-request-offcanvas');
+        const title = offcanvas.querySelector('h2');
+        if (title) title.textContent = 'Editar Requisição de Equipamento';
+        const livewireComponent = document.querySelector('[wire\\:id]');
+        if (livewireComponent) {
+            const componentId = livewireComponent.getAttribute('wire:id');
+            Livewire.find(componentId).call('loadEquipmentRequest', requestId);
+        }
+    });
+</script>
+<?php $__env->stopPush(); ?>
 <?php /**PATH C:\Users\Douglas\Documents\Projetos\stock-master\resources\views/dashboard.blade.php ENDPATH**/ ?>

@@ -32,7 +32,10 @@ class ProductList extends Component
         'sortDirection' => ['except' => 'asc'],
     ];
 
-    protected $listeners = ['refresh' => '$refresh'];
+    protected $listeners = [
+        'refresh' => '$refresh',
+        'refresh-products' => '$refresh',
+    ];
 
     public function mount()
     {

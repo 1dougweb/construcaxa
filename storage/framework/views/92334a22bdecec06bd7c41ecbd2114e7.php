@@ -37,7 +37,7 @@ unset($__defined_vars); ?>
     id="<?php echo e($id); ?>-backdrop"
     class="fixed inset-0 bg-gray-900 dark:bg-black bg-opacity-50 dark:bg-opacity-70 backdrop-blur-sm z-40 transition-opacity duration-300 opacity-0 pointer-events-none"
     style="display: none;"
-    onclick="closeOffcanvas('<?php echo e($id); ?>')"
+    onclick="if(typeof window.closeOffcanvas === 'function') { window.closeOffcanvas('<?php echo e($id); ?>'); } else if(typeof closeOffcanvas === 'function') { closeOffcanvas('<?php echo e($id); ?>'); }"
 ></div>
 
 <!-- Offcanvas -->
@@ -53,7 +53,7 @@ unset($__defined_vars); ?>
 
         </h2>
         <button 
-            onclick="closeOffcanvas('<?php echo e($id); ?>')"
+            onclick="if(typeof window.closeOffcanvas === 'function') { window.closeOffcanvas('<?php echo e($id); ?>'); } else if(typeof closeOffcanvas === 'function') { closeOffcanvas('<?php echo e($id); ?>'); }"
             class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 focus:outline-none focus:text-gray-600 dark:focus:text-gray-300 transition-colors"
             aria-label="Fechar"
         >

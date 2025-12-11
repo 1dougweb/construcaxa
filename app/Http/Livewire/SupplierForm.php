@@ -148,7 +148,10 @@ class SupplierForm extends Component
             session()->flash('success', $message);
             
             // Emitir evento para fechar o offcanvas e atualizar a lista
-            $this->dispatch('supplierSaved');
+            $this->dispatch('supplier-saved', [
+                'message' => $message,
+                'type' => 'success'
+            ]);
             $this->resetForm();
         } catch (\Exception $e) {
             // Usar session flash para o erro

@@ -1181,14 +1181,17 @@
                 };
             }
         </script>
+        <!-- Employee Functions - Definir antes do Livewire -->
+        <?php echo $__env->yieldPushContent('employee-functions'); ?>
+        
         <?php echo \Livewire\Mechanisms\FrontendAssets\FrontendAssets::scripts(); ?>
 
         <script src="https://unpkg.com/imask"></script>
         <script src="<?php echo e(asset('js/pwa.js')); ?>"></script>
         
-        <!-- Offcanvas Functions -->
+        <!-- Offcanvas Functions - Definir globalmente -->
         <script>
-            function openOffcanvas(id) {
+            window.openOffcanvas = function(id) {
                 const offcanvas = document.getElementById(id);
                 const backdrop = document.getElementById(id + '-backdrop');
                 
@@ -1210,10 +1213,12 @@
                     
                     // Prevent body scroll
                     document.body.style.overflow = 'hidden';
+                } else {
+                    console.error('Offcanvas ou backdrop não encontrado:', id);
                 }
-            }
+            };
 
-            function closeOffcanvas(id) {
+            window.closeOffcanvas = function(id) {
                 const offcanvas = document.getElementById(id);
                 const backdrop = document.getElementById(id + '-backdrop');
                 
@@ -1231,7 +1236,7 @@
                         document.body.style.overflow = '';
                     }, 300);
                 }
-            }
+            };
 
             // Close on Escape key
             document.addEventListener('keydown', function(e) {
@@ -1239,7 +1244,7 @@
                     const openOffcanvas = document.querySelector('[id$="-offcanvas"]:not(.translate-x-full)');
                     if (openOffcanvas && openOffcanvas.classList.contains('translate-x-0')) {
                         const id = openOffcanvas.id;
-                        closeOffcanvas(id);
+                        window.closeOffcanvas(id);
                     }
                 }
             });

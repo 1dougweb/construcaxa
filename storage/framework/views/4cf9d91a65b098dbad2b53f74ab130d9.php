@@ -1,5 +1,14 @@
-<x-app-layout>
-    @push('employee-functions')
+<?php if (isset($component)) { $__componentOriginal4619374cef299e94fd7263111d0abc69 = $component; } ?>
+<?php if (isset($attributes)) { $__attributesOriginal4619374cef299e94fd7263111d0abc69 = $attributes; } ?>
+<?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.app-layout','data' => []] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
+<?php $component->withName('app-layout'); ?>
+<?php if ($component->shouldRender()): ?>
+<?php $__env->startComponent($component->resolveView(), $component->data()); ?>
+<?php if (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag): ?>
+<?php $attributes = $attributes->except(\Illuminate\View\AnonymousComponent::ignoredParameterNames()); ?>
+<?php endif; ?>
+<?php $component->withAttributes([]); ?>
+    <?php $__env->startPush('employee-functions'); ?>
     <script>
         // Definir funções IMEDIATAMENTE - antes do Livewire renderizar
         (function() {
@@ -182,7 +191,7 @@
         } else {
             if (offcanvasTitle) offcanvasTitle.textContent = 'Novo Funcionário';
             if (methodInput) methodInput.value = 'POST';
-            form.action = '{{ route("employees.store") }}';
+            form.action = '<?php echo e(route("employees.store")); ?>';
             if (passwordField) passwordField.style.display = 'block';
             if (passwordConfirmationField) passwordConfirmationField.style.display = 'block';
             const pwd = document.getElementById('employee_password');
@@ -427,48 +436,92 @@
             };
         })();
     </script>
-    @endpush
+    <?php $__env->stopPush(); ?>
 
-    <x-slot name="header">
+     <?php $__env->slot('header', null, []); ?> 
         <div class="flex justify-between items-center">
             <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-                {{ __('Funcionários') }}
+                <?php echo e(__('Funcionários')); ?>
+
             </h2>
             <button onclick="loadEmployeeForm(null)" class="inline-flex items-center px-4 py-2 bg-indigo-600 dark:bg-indigo-700 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-indigo-700 dark:hover:bg-indigo-600 focus:bg-indigo-700 active:bg-indigo-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition ease-in-out duration-150">
                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
                 </svg>
-                {{ __('Novo Funcionário') }}
+                <?php echo e(__('Novo Funcionário')); ?>
+
             </button>
         </div>
-    </x-slot>
+     <?php $__env->endSlot(); ?>
 
     <div class="py-6">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-xl sm:rounded-lg">
                 <div class="p-6 lg:p-8 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
 
-                    <livewire:employee-list />
+                    <?php
+$__split = function ($name, $params = []) {
+    return [$name, $params];
+};
+[$__name, $__params] = $__split('employee-list', []);
+
+$key = null;
+
+$key ??= \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::generateKey('lw-4167232842-0', null);
+
+$__html = app('livewire')->mount($__name, $__params, $key);
+
+echo $__html;
+
+unset($__html);
+unset($__name);
+unset($__params);
+unset($__split);
+if (isset($__slots)) unset($__slots);
+?>
                 </div>
             </div>
         </div>
     </div>
 
     <!-- Offcanvas para Novo/Editar Funcionário -->
-    <x-offcanvas id="employee-offcanvas" title="Novo Funcionário" width="w-full md:w-[900px]">
-        <form action="{{ route('employees.store') }}" method="POST" enctype="multipart/form-data" id="employeeForm">
-            @csrf
+    <?php if (isset($component)) { $__componentOriginal5fd361cc9f4aafccfd6aee776cbb14bc = $component; } ?>
+<?php if (isset($attributes)) { $__attributesOriginal5fd361cc9f4aafccfd6aee776cbb14bc = $attributes; } ?>
+<?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.offcanvas','data' => ['id' => 'employee-offcanvas','title' => 'Novo Funcionário','width' => 'w-full md:w-[900px]']] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
+<?php $component->withName('offcanvas'); ?>
+<?php if ($component->shouldRender()): ?>
+<?php $__env->startComponent($component->resolveView(), $component->data()); ?>
+<?php if (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag): ?>
+<?php $attributes = $attributes->except(\Illuminate\View\AnonymousComponent::ignoredParameterNames()); ?>
+<?php endif; ?>
+<?php $component->withAttributes(['id' => 'employee-offcanvas','title' => 'Novo Funcionário','width' => 'w-full md:w-[900px]']); ?>
+        <form action="<?php echo e(route('employees.store')); ?>" method="POST" enctype="multipart/form-data" id="employeeForm">
+            <?php echo csrf_field(); ?>
             <input type="hidden" name="_method" id="employee_method" value="POST">
 
             <!-- Foto e Nome/Email -->
             <div class="flex gap-6 items-start mb-6">
                 <div class="flex-shrink-0" id="photo-upload-container">
-                    <x-photo-upload-simple 
-                        name="profile_photo"
-                        label="Foto de Perfil"
-                        :required="true"
-                        :existingPhotoPath="null"
-                    />
+                    <?php if (isset($component)) { $__componentOriginalf4bf6ae31c5a257db986ede2c7ab1be5 = $component; } ?>
+<?php if (isset($attributes)) { $__attributesOriginalf4bf6ae31c5a257db986ede2c7ab1be5 = $attributes; } ?>
+<?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.photo-upload-simple','data' => ['name' => 'profile_photo','label' => 'Foto de Perfil','required' => true,'existingPhotoPath' => null]] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
+<?php $component->withName('photo-upload-simple'); ?>
+<?php if ($component->shouldRender()): ?>
+<?php $__env->startComponent($component->resolveView(), $component->data()); ?>
+<?php if (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag): ?>
+<?php $attributes = $attributes->except(\Illuminate\View\AnonymousComponent::ignoredParameterNames()); ?>
+<?php endif; ?>
+<?php $component->withAttributes(['name' => 'profile_photo','label' => 'Foto de Perfil','required' => true,'existingPhotoPath' => \Illuminate\View\Compilers\BladeCompiler::sanitizeComponentAttribute(null)]); ?>
+<?php echo $__env->renderComponent(); ?>
+<?php endif; ?>
+<?php if (isset($__attributesOriginalf4bf6ae31c5a257db986ede2c7ab1be5)): ?>
+<?php $attributes = $__attributesOriginalf4bf6ae31c5a257db986ede2c7ab1be5; ?>
+<?php unset($__attributesOriginalf4bf6ae31c5a257db986ede2c7ab1be5); ?>
+<?php endif; ?>
+<?php if (isset($__componentOriginalf4bf6ae31c5a257db986ede2c7ab1be5)): ?>
+<?php $component = $__componentOriginalf4bf6ae31c5a257db986ede2c7ab1be5; ?>
+<?php unset($__componentOriginalf4bf6ae31c5a257db986ede2c7ab1be5); ?>
+<?php endif; ?>
                     <div id="profile_photo_error" class="hidden">
                         <p class="text-red-500 dark:text-red-400 text-xs mt-1"></p>
                     </div>
@@ -601,16 +654,52 @@
                        class="px-4 py-2 bg-gray-300 dark:bg-gray-600 text-gray-700 dark:text-gray-200 rounded-md hover:bg-gray-400 dark:hover:bg-gray-500 transition-colors">
                     Cancelar
                 </button>
-                <x-button-loading variant="primary" type="submit">
+                <?php if (isset($component)) { $__componentOriginal635944f67ec1864e436b88f435140e07 = $component; } ?>
+<?php if (isset($attributes)) { $__attributesOriginal635944f67ec1864e436b88f435140e07 = $attributes; } ?>
+<?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.button-loading','data' => ['variant' => 'primary','type' => 'submit']] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
+<?php $component->withName('button-loading'); ?>
+<?php if ($component->shouldRender()): ?>
+<?php $__env->startComponent($component->resolveView(), $component->data()); ?>
+<?php if (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag): ?>
+<?php $attributes = $attributes->except(\Illuminate\View\AnonymousComponent::ignoredParameterNames()); ?>
+<?php endif; ?>
+<?php $component->withAttributes(['variant' => 'primary','type' => 'submit']); ?>
                     Salvar Funcionário
-                </x-button-loading>
+                 <?php echo $__env->renderComponent(); ?>
+<?php endif; ?>
+<?php if (isset($__attributesOriginal635944f67ec1864e436b88f435140e07)): ?>
+<?php $attributes = $__attributesOriginal635944f67ec1864e436b88f435140e07; ?>
+<?php unset($__attributesOriginal635944f67ec1864e436b88f435140e07); ?>
+<?php endif; ?>
+<?php if (isset($__componentOriginal635944f67ec1864e436b88f435140e07)): ?>
+<?php $component = $__componentOriginal635944f67ec1864e436b88f435140e07; ?>
+<?php unset($__componentOriginal635944f67ec1864e436b88f435140e07); ?>
+<?php endif; ?>
             </div>
         </form>
-    </x-offcanvas>
+     <?php echo $__env->renderComponent(); ?>
+<?php endif; ?>
+<?php if (isset($__attributesOriginal5fd361cc9f4aafccfd6aee776cbb14bc)): ?>
+<?php $attributes = $__attributesOriginal5fd361cc9f4aafccfd6aee776cbb14bc; ?>
+<?php unset($__attributesOriginal5fd361cc9f4aafccfd6aee776cbb14bc); ?>
+<?php endif; ?>
+<?php if (isset($__componentOriginal5fd361cc9f4aafccfd6aee776cbb14bc)): ?>
+<?php $component = $__componentOriginal5fd361cc9f4aafccfd6aee776cbb14bc; ?>
+<?php unset($__componentOriginal5fd361cc9f4aafccfd6aee776cbb14bc); ?>
+<?php endif; ?>
     <!-- Offcanvas para Nova Proposta -->
-    <x-offcanvas id="proposal-offcanvas" title="Nova Proposta" width="w-full md:w-[900px]">
+    <?php if (isset($component)) { $__componentOriginal5fd361cc9f4aafccfd6aee776cbb14bc = $component; } ?>
+<?php if (isset($attributes)) { $__attributesOriginal5fd361cc9f4aafccfd6aee776cbb14bc = $attributes; } ?>
+<?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.offcanvas','data' => ['id' => 'proposal-offcanvas','title' => 'Nova Proposta','width' => 'w-full md:w-[900px]']] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
+<?php $component->withName('offcanvas'); ?>
+<?php if ($component->shouldRender()): ?>
+<?php $__env->startComponent($component->resolveView(), $component->data()); ?>
+<?php if (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag): ?>
+<?php $attributes = $attributes->except(\Illuminate\View\AnonymousComponent::ignoredParameterNames()); ?>
+<?php endif; ?>
+<?php $component->withAttributes(['id' => 'proposal-offcanvas','title' => 'Nova Proposta','width' => 'w-full md:w-[900px]']); ?>
         <form action="" method="POST" id="proposalForm">
-            @csrf
+            <?php echo csrf_field(); ?>
             <input type="hidden" name="employee_id" id="proposal_employee_id">
             
             <div class="mb-4">
@@ -693,14 +782,41 @@
                        class="px-4 py-2 bg-gray-300 dark:bg-gray-600 text-gray-700 dark:text-gray-200 rounded-md hover:bg-gray-400 dark:hover:bg-gray-500 transition-colors">
                     Cancelar
                 </button>
-                <x-button-loading variant="primary" type="submit">
+                <?php if (isset($component)) { $__componentOriginal635944f67ec1864e436b88f435140e07 = $component; } ?>
+<?php if (isset($attributes)) { $__attributesOriginal635944f67ec1864e436b88f435140e07 = $attributes; } ?>
+<?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.button-loading','data' => ['variant' => 'primary','type' => 'submit']] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
+<?php $component->withName('button-loading'); ?>
+<?php if ($component->shouldRender()): ?>
+<?php $__env->startComponent($component->resolveView(), $component->data()); ?>
+<?php if (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag): ?>
+<?php $attributes = $attributes->except(\Illuminate\View\AnonymousComponent::ignoredParameterNames()); ?>
+<?php endif; ?>
+<?php $component->withAttributes(['variant' => 'primary','type' => 'submit']); ?>
                     Criar Proposta e Enviar Email
-                </x-button-loading>
+                 <?php echo $__env->renderComponent(); ?>
+<?php endif; ?>
+<?php if (isset($__attributesOriginal635944f67ec1864e436b88f435140e07)): ?>
+<?php $attributes = $__attributesOriginal635944f67ec1864e436b88f435140e07; ?>
+<?php unset($__attributesOriginal635944f67ec1864e436b88f435140e07); ?>
+<?php endif; ?>
+<?php if (isset($__componentOriginal635944f67ec1864e436b88f435140e07)): ?>
+<?php $component = $__componentOriginal635944f67ec1864e436b88f435140e07; ?>
+<?php unset($__componentOriginal635944f67ec1864e436b88f435140e07); ?>
+<?php endif; ?>
             </div>
         </form>
-    </x-offcanvas>
+     <?php echo $__env->renderComponent(); ?>
+<?php endif; ?>
+<?php if (isset($__attributesOriginal5fd361cc9f4aafccfd6aee776cbb14bc)): ?>
+<?php $attributes = $__attributesOriginal5fd361cc9f4aafccfd6aee776cbb14bc; ?>
+<?php unset($__attributesOriginal5fd361cc9f4aafccfd6aee776cbb14bc); ?>
+<?php endif; ?>
+<?php if (isset($__componentOriginal5fd361cc9f4aafccfd6aee776cbb14bc)): ?>
+<?php $component = $__componentOriginal5fd361cc9f4aafccfd6aee776cbb14bc; ?>
+<?php unset($__componentOriginal5fd361cc9f4aafccfd6aee776cbb14bc); ?>
+<?php endif; ?>
 
-    @push('scripts')
+    <?php $__env->startPush('scripts'); ?>
 <script>
     // Event listeners - executar após DOM estar pronto
     document.addEventListener('DOMContentLoaded', function() {
@@ -772,8 +888,30 @@
             }
         });
     });
+</script>
+    <?php $__env->stopPush(); ?>
+ <?php echo $__env->renderComponent(); ?>
+<?php endif; ?>
+<?php if (isset($__attributesOriginal4619374cef299e94fd7263111d0abc69)): ?>
+<?php $attributes = $__attributesOriginal4619374cef299e94fd7263111d0abc69; ?>
+<?php unset($__attributesOriginal4619374cef299e94fd7263111d0abc69); ?>
+<?php endif; ?>
+<?php if (isset($__componentOriginal4619374cef299e94fd7263111d0abc69)): ?>
+<?php $component = $__componentOriginal4619374cef299e94fd7263111d0abc69; ?>
+<?php unset($__componentOriginal4619374cef299e94fd7263111d0abc69); ?>
+<?php endif; ?>
+
+<?php $__env->startPush('scripts'); ?>
+<script>
+    // Event listeners e inicialização - executar após DOM estar pronto
+    // Garantir que as funções estejam disponíveis após renderização do Livewire
+    if (typeof Livewire !== 'undefined') {
+        Livewire.hook('mounted', () => {
+            // Funções já estão disponíveis no window
+        });
+    }
     
-    // Event listeners para proposta - executar após DOM estar pronto
+    // Adicionar primeiro item ao abrir e event listeners
     document.addEventListener('DOMContentLoaded', function() {
         const proposalOffcanvas = document.getElementById('proposal-offcanvas');
         if (proposalOffcanvas) {
@@ -850,5 +988,5 @@
         }
     });
 </script>
-    @endpush
-</x-app-layout>
+<?php $__env->stopPush(); ?>
+<?php /**PATH C:\Users\Douglas\Documents\Projetos\stock-master\resources\views/employees/index.blade.php ENDPATH**/ ?>

@@ -86,9 +86,9 @@ $__split = function ($name, $params = []) {
 };
 [$__name, $__params] = $__split('product-form', ['product' => null]);
 
-$key = 'product-form';
+$key = null;
 
-$key ??= \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::generateKey('lw-531600022-1', 'product-form');
+$key ??= \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::generateKey('lw-531600022-1', null);
 
 $__html = app('livewire')->mount($__name, $__params, $key);
 
@@ -123,46 +123,124 @@ if (isset($__slots)) unset($__slots);
 
 <?php $__env->startPush('scripts'); ?>
 <script>
-    document.addEventListener('livewire:init', () => {
-        Livewire.on('productSaved', () => {
-            closeOffcanvas('product-offcanvas');
-            // Recarregar a lista de produtos
-            Livewire.dispatch('refresh');
-        });
-    });
+    (function() {
+        const ensureNotificationContainer = () => {
+            if (!document.getElementById('notifications')) {
+                const container = document.createElement('div');
+                container.id = 'notifications';
+                container.className = 'fixed bottom-0 right-0 m-6 z-50';
+                document.body.appendChild(container);
+            }
+        };
 
-    // Escutar evento de edição
-    window.addEventListener('edit-product', (event) => {
-        const productId = event.detail.id;
-        const offcanvas = document.getElementById('product-offcanvas');
-        const title = offcanvas.querySelector('h2');
-        if (title) {
-            title.textContent = 'Editar Produto';
-        }
-        // Encontrar o componente Livewire e carregar o produto
-        const livewireComponent = document.querySelector('[wire\\:id]');
-        if (livewireComponent) {
-            const componentId = livewireComponent.getAttribute('wire:id');
-            Livewire.find(componentId).call('loadProduct', productId);
-        }
-    });
+        const showNotification = (message, type = 'info', duration = 3000) => {
+            ensureNotificationContainer();
+            const container = document.getElementById('notifications');
+            const notification = document.createElement('div');
+            let bgColor = 'bg-blue-500';
+            if (type === 'success') bgColor = 'bg-green-500';
+            if (type === 'error') bgColor = 'bg-red-500';
+            if (type === 'warning') bgColor = 'bg-yellow-500';
 
-    // Resetar título quando abrir para novo
-    document.addEventListener('click', (e) => {
-        if (e.target.closest('[onclick*="product-offcanvas"]') && !e.target.closest('[onclick*="edit-product"]')) {
+            notification.className = `${bgColor} text-white px-6 py-4 rounded-lg shadow-lg mb-3 opacity-100 transition-opacity duration-500`;
+            notification.textContent = message || 'Operação concluída';
+
+            container.appendChild(notification);
+            setTimeout(() => {
+                notification.style.opacity = '0';
+                setTimeout(() => notification.remove(), 500);
+            }, duration);
+        };
+
+        const getProductFormComponent = () => {
             const offcanvas = document.getElementById('product-offcanvas');
-            const title = offcanvas.querySelector('h2');
-            if (title) {
-                title.textContent = 'Novo Produto';
+            if (!offcanvas) return null;
+            const componentEl = offcanvas.querySelector('[wire\\:id]');
+            return componentEl ? Livewire.find(componentEl.getAttribute('wire:id')) : null;
+        };
+
+        const onProductSaved = (detail = {}) => {
+            console.log('[products] product-saved recebido', detail);
+            closeOffcanvas('product-offcanvas');
+            
+            // Atualizar lista
+            if (window.Livewire) {
+                window.Livewire.dispatch('refresh-products');
             }
-            // Resetar o formulário
-            const livewireComponent = document.querySelector('[wire\\:id]');
-            if (livewireComponent) {
-                const componentId = livewireComponent.getAttribute('wire:id');
-                Livewire.find(componentId).call('resetForm');
+            
+            // Mostrar notificação
+            if (detail.message) {
+                if (window.showNotification) {
+                    window.showNotification(detail.message, detail.type || 'success', 4000);
+                } else {
+                    console.warn('[products] showNotification não disponível, mensagem:', detail.message);
+                }
             }
+        };
+
+        // Browser event (dispatch do Livewire 3)
+        window.addEventListener('product-saved', (event) => {
+            console.log('[products] Evento product-saved recebido (window)', event);
+            onProductSaved(event.detail || {});
+        });
+
+        // Fallback explícito do browser para evitar dependência de websockets
+        window.addEventListener('product-saved-browser', (event) => {
+            console.log('[products] Evento product-saved-browser recebido (window)', event);
+            onProductSaved(event.detail || {});
+        });
+
+        // Listener direto via Livewire.on (fallback)
+        if (window.Livewire) {
+            window.Livewire.on('product-saved', (detail = {}) => {
+                console.log('[products] Evento product-saved recebido (Livewire.on)', detail);
+                onProductSaved(detail);
+            });
+            window.Livewire.on('product-saved-browser', (detail = {}) => {
+                console.log('[products] Evento product-saved-browser recebido (Livewire.on)', detail);
+                onProductSaved(detail);
+            });
         }
-    });
+        
+        // Listener para eventos Livewire customizados
+        document.addEventListener('livewire:init', () => {
+            console.log('[products] Livewire inicializado, configurando listeners');
+        });
+
+        const handleEditProduct = (productId) => {
+            if (!productId) return;
+
+            const offcanvas = document.getElementById('product-offcanvas');
+            const title = offcanvas ? offcanvas.querySelector('h2') : null;
+            if (title) title.textContent = 'Editar Produto';
+
+            openOffcanvas('product-offcanvas');
+
+            // Aguardar o componente estar disponível
+            setTimeout(() => {
+                const component = getProductFormComponent();
+                if (component) component.call('loadProduct', productId);
+            }, 200);
+        };
+
+        Livewire.on('edit-product', ({ id }) => handleEditProduct(id));
+
+        window.addEventListener('edit-product', (event) => {
+            const productId = event.detail?.id;
+            if (productId) handleEditProduct(productId);
+        });
+
+        document.addEventListener('click', (e) => {
+            if (e.target.closest('[onclick*="product-offcanvas"]') && !e.target.closest('[onclick*="edit-product"]')) {
+                const offcanvas = document.getElementById('product-offcanvas');
+                const title = offcanvas ? offcanvas.querySelector('h2') : null;
+                if (title) title.textContent = 'Novo Produto';
+
+                const component = getProductFormComponent();
+                if (component) Livewire.dispatch('reset-product-form');
+            }
+        });
+    })();
 </script>
 <?php $__env->stopPush(); ?>
 <?php /**PATH C:\Users\Douglas\Documents\Projetos\stock-master\resources\views/products/index.blade.php ENDPATH**/ ?>

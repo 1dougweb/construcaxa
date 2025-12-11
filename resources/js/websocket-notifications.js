@@ -9,13 +9,18 @@ class WebSocketNotificationManager {
     }
 
     init() {
-        // Aguardar o DOM estar pronto e o Echo estar disponível
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', () => {
+        // Aguardar o DOM estar pronto e dar tempo para o echo.js inicializar
+        const startSetup = () => {
+            // Aguardar um pouco para garantir que o echo.js teve tempo de inicializar
+            setTimeout(() => {
                 this.setupEcho();
-            });
+            }, 300);
+        };
+        
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', startSetup);
         } else {
-            this.setupEcho();
+            startSetup();
         }
     }
 
@@ -30,6 +35,26 @@ class WebSocketNotificationManager {
         if (isAuthPage) {
             return;
         }
+        
+        // Verificar se o Echo foi marcado como indisponível
+        if (window.EchoUnavailable) {
+            // Echo não está disponível (provavelmente falta REVERB_APP_KEY)
+            return;
+        }
+        
+        // Aguardar window.Laravel estar disponível (necessário para o echo.js inicializar)
+        if (!window.Laravel) {
+            // Tentar novamente após um delay
+            if (!this.laravelRetryCount) this.laravelRetryCount = 0;
+            if (this.laravelRetryCount < 20) {
+                this.laravelRetryCount++;
+                setTimeout(() => this.setupEcho(), 200);
+            }
+            return;
+        }
+        
+        // Resetar contador do Laravel quando disponível
+        this.laravelRetryCount = 0;
         
         // Aguardar o Echo estar disponível
         if (window.Echo) {
@@ -67,6 +92,7 @@ class WebSocketNotificationManager {
                 this.retryCount++;
                 setTimeout(() => this.setupEcho(), 100);
             }
+            // Tentativas silenciosas
         }
     }
 
@@ -89,7 +115,7 @@ class WebSocketNotificationManager {
             });
 
             // Listener para erro de conexão
-            connection.bind('error', (error) => {
+            connection.bind('error', () => {
                 this.connected = false;
             });
             
@@ -118,6 +144,34 @@ class WebSocketNotificationManager {
                 .listen('.stock.low', (data) => {
                     this.handleStockLowAlert(data);
                 });
+
+            // Canal de produtos (criação/atualização em tempo real)
+            const productsChannel = this.echo.channel('products');
+            
+            // Verificar estado da conexão antes de inscrever
+            if (this.echo.connector && this.echo.connector.pusher) {
+                const connection = this.echo.connector.pusher.connection;
+                
+                if (connection.state !== 'connected' && connection.state !== 'connecting') {
+                    connection.connect();
+                }
+            }
+            
+            productsChannel
+                .listen('.product.changed', (data) => {
+                    this.handleProductChanged(data);
+                })
+                .error(() => {
+                    // Erro silencioso
+                });
+            
+            productsChannel.subscribed(() => {
+                // Canal inscrito com sucesso
+            });
+            
+            productsChannel.error(() => {
+                // Erro silencioso
+            });
 
             // Canal de requisições de material
             this.echo.channel('material-requests')
@@ -219,6 +273,19 @@ class WebSocketNotificationManager {
     handleUserNotification(data) {
         if (window.showNotification) {
             window.showNotification(data.message, data.type || 'info', data.duration || 6000);
+        }
+    }
+
+    handleProductChanged(data) {
+        if (window.showNotification) {
+            const type = data.action === 'created' ? 'success' : 'info';
+            const base = data.action === 'created' ? 'Produto criado' : 'Produto atualizado';
+            const message = data.message || `${base}: ${data.productName || ''}`.trim();
+            window.showNotification(message, type, 4000);
+        }
+
+        if (window.Livewire) {
+            window.Livewire.dispatch('refresh-products');
         }
     }
 }

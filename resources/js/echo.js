@@ -87,11 +87,6 @@ const initializeEcho = () => {
     if (!reverbKey) {
         // Definir flag para indicar que o Echo não está disponível
         window.EchoUnavailable = true;
-        // Não mostrar warning repetidamente - apenas uma vez no console
-        if (!window.EchoWarningShown) {
-            console.warn('Echo: REVERB_APP_KEY não encontrado. WebSocket notifications desabilitadas.');
-            window.EchoWarningShown = true;
-        }
         return;
     }
     
@@ -169,18 +164,17 @@ const initializeEcho = () => {
             }
         }, 100);
         
-        // Monitorar conexão e mostrar aviso se não conectar após alguns segundos
+        // Monitorar conexão silenciosamente
         setTimeout(() => {
             if (window.Echo && window.Echo.connector && window.Echo.connector.pusher) {
                 const connection = window.Echo.connector.pusher.connection;
                 if (connection.state !== 'connected') {
-                    console.warn('⚠️ Servidor Reverb não está disponível. Execute: php artisan reverb:start');
+                    // Servidor Reverb não está disponível - silencioso
                 }
             }
         }, 3000);
     } catch (error) {
         // Erro silencioso
-        console.warn('Echo initialization error:', error);
     }
 };
 

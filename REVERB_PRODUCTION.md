@@ -50,3 +50,5 @@ Isso criará as chaves necessárias. Depois, adicione-as ao `.env`.
 ## Nota Importante
 
 As variáveis `VITE_REVERB_*` só são necessárias em **desenvolvimento**. Em produção, as configurações vêm do Laravel via `window.Laravel.reverb`.
+
+

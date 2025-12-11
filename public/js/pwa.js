@@ -1,3 +1,16 @@
+// Suprimir avisos do PWA no console
+const originalWarn = console.warn;
+console.warn = function(...args) {
+  const message = args[0]?.toString() || '';
+  // Filtrar avisos relacionados ao beforeinstallprompt
+  if (message.includes('Banner not shown') || 
+      message.includes('beforeinstallprompt') ||
+      message.includes('preventDefault() called')) {
+    return; // Não exibir este aviso
+  }
+  originalWarn.apply(console, args);
+};
+
 // Registrar Service Worker
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {

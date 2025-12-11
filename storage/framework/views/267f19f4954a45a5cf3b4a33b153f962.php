@@ -126,7 +126,7 @@
                 </div>
                 <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('create products')): ?>
                 <button 
-                    onclick="openOffcanvas('product-offcanvas')"
+                    onclick="if (typeof openProductOffcanvasForCreate === 'function') { openProductOffcanvasForCreate(); } else { Livewire.dispatch('reset-product-form'); openOffcanvas('product-offcanvas'); }"
                     class="inline-flex items-center px-4 py-2 bg-indigo-600 dark:bg-indigo-700 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-indigo-700 dark:hover:bg-indigo-600 focus:bg-indigo-700 active:bg-indigo-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition ease-in-out duration-150"
                 >
                     <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -361,7 +361,7 @@
                                 <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                     <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('edit products')): ?>
                                     <button 
-                                        onclick="openOffcanvas('product-offcanvas'); window.dispatchEvent(new CustomEvent('edit-product', { detail: { id: <?php echo e($product->id); ?> } }));" 
+                                        onclick="if (typeof openProductOffcanvasForEdit === 'function') { openProductOffcanvasForEdit(<?php echo e($product->id); ?>); } else { openOffcanvas('product-offcanvas'); window.dispatchEvent(new CustomEvent('edit-product', { detail: { id: <?php echo e($product->id); ?> } })); }" 
                                         type="button" 
                                         class="text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-300"
                                     >

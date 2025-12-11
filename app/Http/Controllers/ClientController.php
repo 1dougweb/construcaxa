@@ -93,8 +93,30 @@ class ClientController extends Controller
 
         try {
             Client::create($validated);
+            if (request()->wantsJson() || request()->ajax()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Cliente criado com sucesso!',
+                    'redirect' => route('clients.index')
+                ]);
+            }
             return redirect()->route('clients.index')->with('success', 'Cliente criado com sucesso!');
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            if (request()->wantsJson() || request()->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Erro de validação',
+                    'errors' => $e->errors()
+                ], 422);
+            }
+            throw $e;
         } catch (\Exception $e) {
+            if (request()->wantsJson() || request()->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Erro ao criar cliente: ' . $e->getMessage()
+                ], 500);
+            }
             return back()->withInput()->with('error', 'Erro ao criar cliente: ' . $e->getMessage());
         }
     }
@@ -113,6 +135,29 @@ class ClientController extends Controller
      */
     public function edit(Client $client)
     {
+        if (request()->wantsJson() || request()->ajax()) {
+            return response()->json([
+                'client' => [
+                    'id' => $client->id,
+                    'type' => $client->type,
+                    'cpf' => $client->formatted_cpf,
+                    'cnpj' => $client->formatted_cnpj,
+                    'name' => $client->name,
+                    'trading_name' => $client->trading_name,
+                    'email' => $client->email,
+                    'phone' => $client->phone,
+                    'address' => $client->address,
+                    'address_number' => $client->address_number,
+                    'address_complement' => $client->address_complement,
+                    'neighborhood' => $client->neighborhood,
+                    'city' => $client->city,
+                    'state' => $client->state,
+                    'zip_code' => $client->zip_code,
+                    'notes' => $client->notes,
+                    'is_active' => $client->is_active,
+                ]
+            ]);
+        }
         return view('clients.edit', compact('client'));
     }
 
@@ -152,8 +197,30 @@ class ClientController extends Controller
 
         try {
             $client->update($validated);
+            if (request()->wantsJson() || request()->ajax()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Cliente atualizado com sucesso!',
+                    'redirect' => route('clients.index')
+                ]);
+            }
             return redirect()->route('clients.show', $client)->with('success', 'Cliente atualizado com sucesso!');
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            if (request()->wantsJson() || request()->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Erro de validação',
+                    'errors' => $e->errors()
+                ], 422);
+            }
+            throw $e;
         } catch (\Exception $e) {
+            if (request()->wantsJson() || request()->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Erro ao atualizar cliente: ' . $e->getMessage()
+                ], 500);
+            }
             return back()->withInput()->with('error', 'Erro ao atualizar cliente: ' . $e->getMessage());
         }
     }
@@ -251,6 +318,13 @@ class ClientController extends Controller
             $rules['trading_name'] = 'nullable|string|max:255';
         }
 
-        return $request->validate($rules);
+        try {
+            return $request->validate($rules);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            if (request()->wantsJson() || request()->ajax()) {
+                throw $e;
+            }
+            throw $e;
+        }
     }
 }

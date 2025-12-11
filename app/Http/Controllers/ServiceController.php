@@ -57,10 +57,37 @@ class ServiceController extends Controller
 
         $validated['is_active'] = $request->has('is_active');
 
-        Service::create($validated);
-
-        return redirect()->route('services.index')
-            ->with('success', 'Serviço criado com sucesso!');
+        try {
+            Service::create($validated);
+            
+            if (request()->wantsJson() || request()->ajax()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Serviço criado com sucesso!',
+                    'redirect' => route('services.index')
+                ]);
+            }
+            
+            return redirect()->route('services.index')
+                ->with('success', 'Serviço criado com sucesso!');
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            if (request()->wantsJson() || request()->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Erro de validação',
+                    'errors' => $e->errors()
+                ], 422);
+            }
+            throw $e;
+        } catch (\Exception $e) {
+            if (request()->wantsJson() || request()->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Erro ao criar serviço: ' . $e->getMessage()
+                ], 500);
+            }
+            return back()->withInput()->with('error', 'Erro ao criar serviço: ' . $e->getMessage());
+        }
     }
 
     public function show(Service $service)
@@ -72,6 +99,22 @@ class ServiceController extends Controller
 
     public function edit(Service $service)
     {
+        if (request()->wantsJson() || request()->ajax()) {
+            return response()->json([
+                'service' => [
+                    'id' => $service->id,
+                    'name' => $service->name,
+                    'description' => $service->description,
+                    'category_id' => $service->category_id,
+                    'unit_type' => $service->unit_type,
+                    'default_price' => $service->default_price,
+                    'minimum_price' => $service->minimum_price,
+                    'maximum_price' => $service->maximum_price,
+                    'is_active' => $service->is_active,
+                ]
+            ]);
+        }
+        
         $categories = ServiceCategory::active()->orderBy('name')->get();
         $unitTypes = Service::getUnitTypes();
 
@@ -93,10 +136,37 @@ class ServiceController extends Controller
 
         $validated['is_active'] = $request->has('is_active');
 
-        $service->update($validated);
-
-        return redirect()->route('services.index')
-            ->with('success', 'Serviço atualizado com sucesso!');
+        try {
+            $service->update($validated);
+            
+            if (request()->wantsJson() || request()->ajax()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Serviço atualizado com sucesso!',
+                    'redirect' => route('services.index')
+                ]);
+            }
+            
+            return redirect()->route('services.index')
+                ->with('success', 'Serviço atualizado com sucesso!');
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            if (request()->wantsJson() || request()->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Erro de validação',
+                    'errors' => $e->errors()
+                ], 422);
+            }
+            throw $e;
+        } catch (\Exception $e) {
+            if (request()->wantsJson() || request()->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Erro ao atualizar serviço: ' . $e->getMessage()
+                ], 500);
+            }
+            return back()->withInput()->with('error', 'Erro ao atualizar serviço: ' . $e->getMessage());
+        }
     }
 
     public function destroy(Service $service)

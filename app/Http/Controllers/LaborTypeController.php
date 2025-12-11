@@ -53,10 +53,37 @@ class LaborTypeController extends Controller
 
         $validated['is_active'] = $request->has('is_active');
 
-        LaborType::create($validated);
-
-        return redirect()->route('labor-types.index')
-            ->with('success', 'Tipo de mão de obra criado com sucesso!');
+        try {
+            LaborType::create($validated);
+            
+            if (request()->wantsJson() || request()->ajax()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Tipo de mão de obra criado com sucesso!',
+                    'redirect' => route('labor-types.index')
+                ]);
+            }
+            
+            return redirect()->route('labor-types.index')
+                ->with('success', 'Tipo de mão de obra criado com sucesso!');
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            if (request()->wantsJson() || request()->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Erro de validação',
+                    'errors' => $e->errors()
+                ], 422);
+            }
+            throw $e;
+        } catch (\Exception $e) {
+            if (request()->wantsJson() || request()->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Erro ao criar tipo de mão de obra: ' . $e->getMessage()
+                ], 500);
+            }
+            return back()->withInput()->with('error', 'Erro ao criar tipo de mão de obra: ' . $e->getMessage());
+        }
     }
 
     public function show(LaborType $laborType)
@@ -68,6 +95,20 @@ class LaborTypeController extends Controller
 
     public function edit(LaborType $laborType)
     {
+        if (request()->wantsJson() || request()->ajax()) {
+            return response()->json([
+                'laborType' => [
+                    'id' => $laborType->id,
+                    'name' => $laborType->name,
+                    'description' => $laborType->description,
+                    'skill_level' => $laborType->skill_level,
+                    'hourly_rate' => $laborType->hourly_rate,
+                    'overtime_rate' => $laborType->overtime_rate,
+                    'is_active' => $laborType->is_active,
+                ]
+            ]);
+        }
+        
         $skillLevels = LaborType::getSkillLevels();
 
         return view('labor-types.edit', compact('laborType', 'skillLevels'));
@@ -86,10 +127,37 @@ class LaborTypeController extends Controller
 
         $validated['is_active'] = $request->has('is_active');
 
-        $laborType->update($validated);
-
-        return redirect()->route('labor-types.index')
-            ->with('success', 'Tipo de mão de obra atualizado com sucesso!');
+        try {
+            $laborType->update($validated);
+            
+            if (request()->wantsJson() || request()->ajax()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Tipo de mão de obra atualizado com sucesso!',
+                    'redirect' => route('labor-types.index')
+                ]);
+            }
+            
+            return redirect()->route('labor-types.index')
+                ->with('success', 'Tipo de mão de obra atualizado com sucesso!');
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            if (request()->wantsJson() || request()->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Erro de validação',
+                    'errors' => $e->errors()
+                ], 422);
+            }
+            throw $e;
+        } catch (\Exception $e) {
+            if (request()->wantsJson() || request()->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Erro ao atualizar tipo de mão de obra: ' . $e->getMessage()
+                ], 500);
+            }
+            return back()->withInput()->with('error', 'Erro ao atualizar tipo de mão de obra: ' . $e->getMessage());
+        }
     }
 
     public function destroy(LaborType $laborType)

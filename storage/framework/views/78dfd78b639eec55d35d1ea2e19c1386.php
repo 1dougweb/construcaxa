@@ -44,7 +44,7 @@ if (isset($__slots)) unset($__slots);
         </div>
     </div>
 
-    <!-- Offcanvas para Nova Categoria -->
+    <!-- Offcanvas para Nova/Editar Categoria -->
     <?php if (isset($component)) { $__componentOriginal5fd361cc9f4aafccfd6aee776cbb14bc = $component; } ?>
 <?php if (isset($attributes)) { $__attributesOriginal5fd361cc9f4aafccfd6aee776cbb14bc = $attributes; } ?>
 <?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.offcanvas','data' => ['id' => 'category-offcanvas','title' => 'Nova Categoria','width' => 'w-full md:w-[500px]']] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
@@ -59,11 +59,11 @@ if (isset($__slots)) unset($__slots);
 $__split = function ($name, $params = []) {
     return [$name, $params];
 };
-[$__name, $__params] = $__split('category-form');
+[$__name, $__params] = $__split('category-form', ['category' => null]);
 
-$key = null;
+$key = 'category-form';
 
-$key ??= \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::generateKey('lw-626719076-1', null);
+$key ??= \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::generateKey('lw-626719076-1', 'category-form');
 
 $__html = app('livewire')->mount($__name, $__params, $key);
 
@@ -104,6 +104,39 @@ if (isset($__slots)) unset($__slots);
             // Recarregar a lista de categorias
             Livewire.dispatch('refresh');
         });
+    });
+
+    // Escutar evento de edição
+    window.addEventListener('edit-category', (event) => {
+        const categoryId = event.detail.id;
+        const offcanvas = document.getElementById('category-offcanvas');
+        const title = offcanvas.querySelector('h2');
+        if (title) {
+            title.textContent = 'Editar Categoria';
+        }
+        // Encontrar o componente Livewire e carregar a categoria
+        const livewireComponent = document.querySelector('[wire\\:id]');
+        if (livewireComponent) {
+            const componentId = livewireComponent.getAttribute('wire:id');
+            Livewire.find(componentId).call('loadCategory', categoryId);
+        }
+    });
+
+    // Resetar título quando abrir para novo
+    document.addEventListener('click', (e) => {
+        if (e.target.closest('[onclick*="category-offcanvas"]') && !e.target.closest('[onclick*="edit-category"]')) {
+            const offcanvas = document.getElementById('category-offcanvas');
+            const title = offcanvas.querySelector('h2');
+            if (title) {
+                title.textContent = 'Nova Categoria';
+            }
+            // Resetar o formulário
+            const livewireComponent = document.querySelector('[wire\\:id]');
+            if (livewireComponent) {
+                const componentId = livewireComponent.getAttribute('wire:id');
+                Livewire.find(componentId).call('resetForm');
+            }
+        }
     });
 </script>
 <?php $__env->stopPush(); ?>

@@ -36,16 +36,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 searchButton.disabled = true;
                 errorMessage.classList.add('hidden');
 
-                console.log('CNPJ:', cnpj); // Log para verificar o CNPJ formatado
-
                 const response = await fetch(`https://brasilapi.com.br/api/cnpj/v1/${cnpj}`);
-                console.log('Response Status:', response.status); // Log para verificar o status da resposta
-
                 const data = await response.json();
-                console.log('API Response:', data); // Log para verificar a resposta da API
 
                 if (!response.ok) {
-                    console.error('Erro na API:', data.message); // Log para erros da API
                     throw new Error(data.message || 'Erro ao buscar CNPJ');
                 }
 
