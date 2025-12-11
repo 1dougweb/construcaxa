@@ -37,20 +37,21 @@ class NotificationSystem {
 
     async ensureAudioContextReady() {
         // Garantir que o contexto de áudio esteja sempre pronto
+        // Mas não tentar retomar se não houver interação do usuário
         if (!this.audioContext) {
-            this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            // Criar contexto apenas se já houver interação do usuário
+            // Caso contrário, retornar false e não criar
+            return false;
         }
         
-        // Sempre tentar retomar se estiver suspenso
+        // Tentar retomar apenas se o contexto já existir e estiver suspenso
         if (this.audioContext.state === 'suspended') {
             try {
                 await this.audioContext.resume();
             } catch (error) {
-                // Criar novo contexto se não conseguir retomar
-                this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
-                if (this.audioContext.state === 'suspended') {
-                    await this.audioContext.resume();
-                }
+                // Se não conseguir retomar, não criar novo contexto automaticamente
+                // Isso evita avisos do navegador sobre falta de interação do usuário
+                return false;
             }
         }
         
@@ -65,7 +66,11 @@ class NotificationSystem {
         }
 
         // Garantir que o contexto de áudio esteja pronto
-        await this.ensureAudioContextReady();
+        const contextReady = await this.ensureAudioContextReady();
+        if (!contextReady) {
+            // Se o contexto não estiver pronto (sem interação do usuário), não tocar som
+            return;
+        }
 
         // Usar soundFile da instância ou carregar do localStorage
         const soundFile = this.getSoundFile();
@@ -82,32 +87,28 @@ class NotificationSystem {
     async playDefaultSound() {
         try {
             // Garantir que o contexto principal esteja pronto primeiro
-            await this.ensureAudioContextReady();
-            
-            // Sempre criar um novo contexto para evitar problemas de estado
-            const ctx = new (window.AudioContext || window.webkitAudioContext)();
-            
-            // Se suspenso, tentar retomar múltiplas vezes
-            if (ctx.state === 'suspended') {
-                for (let i = 0; i < 5; i++) {
-                    try {
-                        await ctx.resume();
-                        await new Promise(resolve => setTimeout(resolve, 100));
-                        if (ctx.state === 'running') break;
-                    } catch (e) {
-                        // Silenciosamente tenta novamente
-                    }
-                }
+            const contextReady = await this.ensureAudioContextReady();
+            if (!contextReady) {
+                // Se o contexto não estiver pronto, não tocar som
+                return;
             }
             
-            // Se ainda não estiver rodando, tentar mais uma vez
-            if (ctx.state !== 'running') {
-                await new Promise(resolve => setTimeout(resolve, 200));
+            // Usar o contexto principal se disponível, caso contrário criar novo
+            const ctx = this.audioContext || new (window.AudioContext || window.webkitAudioContext)();
+            
+            // Se suspenso, tentar retomar apenas uma vez (evitar múltiplas tentativas)
+            if (ctx.state === 'suspended') {
                 try {
                     await ctx.resume();
                 } catch (e) {
-                    // Silenciosamente ignora
+                    // Se não conseguir retomar, não tocar som
+                    return;
                 }
+            }
+            
+            // Se ainda não estiver rodando, não tocar som
+            if (ctx.state !== 'running') {
+                return;
             }
             
             // Criar oscilador
@@ -160,7 +161,12 @@ class NotificationSystem {
     
     playSimpleBeep() {
         try {
-            const ctx = new (window.AudioContext || window.webkitAudioContext)();
+            // Só tocar se o contexto principal estiver disponível e rodando
+            if (!this.audioContext || this.audioContext.state !== 'running') {
+                return;
+            }
+            
+            const ctx = this.audioContext;
             const osc = ctx.createOscillator();
             const gain = ctx.createGain();
             
@@ -174,7 +180,7 @@ class NotificationSystem {
             osc.start();
             osc.stop(ctx.currentTime + 0.5);
         } catch (error) {
-            console.error('Erro no beep simples:', error);
+            // Erro silencioso
         }
     }
 
@@ -309,38 +315,34 @@ class NotificationSystem {
     }
 
     initializeAudioContext() {
-        // Inicializar contexto de áudio na primeira interação do usuário
+        // Inicializar contexto de áudio apenas após interação do usuário
         // Isso resolve o problema de navegadores que bloqueiam áudio sem interação
+        let audioInitialized = false;
+        
         const initAudio = async () => {
-            await this.ensureAudioContextReady();
+            if (audioInitialized) return;
+            try {
+                await this.ensureAudioContextReady();
+                audioInitialized = true;
+            } catch (error) {
+                // Erro silencioso - tentará novamente na próxima interação
+            }
         };
 
-        // Tentar inicializar em vários eventos de interação (não apenas uma vez)
-        // Isso garante que o contexto seja sempre mantido ativo
+        // Tentar inicializar em vários eventos de interação (apenas uma vez)
+        // Isso garante que o contexto seja inicializado após o primeiro gesto do usuário
+        const initOnInteraction = () => {
+            if (!audioInitialized) {
+                initAudio();
+            }
+        };
+        
         ['click', 'touchstart', 'keydown', 'mousedown'].forEach(eventType => {
-            document.addEventListener(eventType, () => {
-                // Sempre tentar manter o contexto ativo em cada interação
-                this.ensureAudioContextReady().catch(console.warn);
-            });
+            document.addEventListener(eventType, initOnInteraction, { once: true });
         });
         
-        // Também tentar inicializar quando a página carregar completamente
-        if (document.readyState === 'complete') {
-            initAudio();
-        } else {
-            window.addEventListener('load', initAudio, { once: true });
-        }
-        
-        // Tentar inicializar imediatamente se possível
-        initAudio();
-        
-        // Manter o contexto ativo periodicamente (a cada 30 segundos)
-        // Isso garante que o contexto não seja suspenso por inatividade
-        setInterval(() => {
-            if (this.audioContext && this.audioContext.state === 'suspended') {
-                this.audioContext.resume().catch(console.warn);
-            }
-        }, 30000);
+        // Não tentar inicializar automaticamente - apenas após interação do usuário
+        // O setInterval foi removido para evitar avisos do navegador
     }
 
     setupEcho() {

@@ -252,12 +252,18 @@ class ProductForm extends Component
         
         if ($this->product && $this->product->id) {
             // Disparar evento de broadcast de forma síncrona
-            broadcast(new ProductChanged(
-                $this->product->id,
-                $action,
-                $message,
-                $productName
-            ))->toOthers();
+            // Usar try-catch para evitar erros se o WebSocket não estiver disponível
+            try {
+                broadcast(new ProductChanged(
+                    $this->product->id,
+                    $action,
+                    $message,
+                    $productName
+                ));
+            } catch (\Exception $e) {
+                // Log do erro mas não interromper o fluxo
+                \Log::warning('Erro ao fazer broadcast de ProductChanged: ' . $e->getMessage());
+            }
         }
 
         // Atualizar lista em tempo real via Livewire
