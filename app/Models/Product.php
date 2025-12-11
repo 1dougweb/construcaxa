@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\Storage;
 
 class Product extends Model
 {
@@ -95,6 +96,29 @@ class Product extends Model
             return $this->photos[0];
         }
         return null;
+    }
+
+    // Método para obter URLs das fotos
+    public function getPhotoUrlsAttribute(): array
+    {
+        if (!$this->photos || !is_array($this->photos)) {
+            return [];
+        }
+
+        return array_map(function ($photo) {
+            if (empty($photo)) {
+                return null;
+            }
+            // Usar Storage::url() que é mais confiável em produção
+            return Storage::disk('public')->url($photo);
+        }, $this->photos);
+    }
+
+    // Método para obter a URL da primeira foto
+    public function getFirstPhotoUrlAttribute(): ?string
+    {
+        $urls = $this->photo_urls;
+        return !empty($urls) ? $urls[0] : null;
     }
 
     // Escopo para filtrar produtos sem estoque

@@ -230,6 +230,14 @@ RUN echo '#!/bin/bash' > /usr/local/bin/docker-entrypoint.sh && \
     echo '    fi' >> /usr/local/bin/docker-entrypoint.sh && \
     echo 'fi' >> /usr/local/bin/docker-entrypoint.sh && \
     echo '' >> /usr/local/bin/docker-entrypoint.sh && \
+    echo '# Create storage symlink if it does not exist' >> /usr/local/bin/docker-entrypoint.sh && \
+    echo 'if [ ! -L /var/www/public/storage ]; then' >> /usr/local/bin/docker-entrypoint.sh && \
+    echo '    echo "Creating storage symlink..."' >> /usr/local/bin/docker-entrypoint.sh && \
+    echo '    cd /var/www' >> /usr/local/bin/docker-entrypoint.sh && \
+    echo '    php artisan storage:link 2>&1 || echo "Storage link already exists or failed"' >> /usr/local/bin/docker-entrypoint.sh && \
+    echo '    chown -R www:www /var/www/public/storage || true' >> /usr/local/bin/docker-entrypoint.sh && \
+    echo 'fi' >> /usr/local/bin/docker-entrypoint.sh && \
+    echo '' >> /usr/local/bin/docker-entrypoint.sh && \
     echo '# Wait for Laravel to be ready before starting Reverb' >> /usr/local/bin/docker-entrypoint.sh && \
     echo 'echo "Waiting for Laravel to be ready..."' >> /usr/local/bin/docker-entrypoint.sh && \
     echo 'cd /var/www' >> /usr/local/bin/docker-entrypoint.sh && \
