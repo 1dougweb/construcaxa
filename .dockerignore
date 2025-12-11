@@ -1,26 +1,60 @@
+# Dependencies (will be installed in container)
 node_modules
 vendor
+
+# Git
 .git
 .gitignore
+.gitattributes
+
+# Environment files
 .env
 .env.*
 !.env.example
+
+# Laravel cache and logs
 storage/logs/*
 storage/framework/cache/*
 storage/framework/sessions/*
 storage/framework/views/*
 bootstrap/cache/*
 .phpunit.result.cache
+
+# Docker files
 docker-compose.yml
 docker-compose.prod.yml
 Dockerfile
 Dockerfile.prod
+.dockerignore
+
+# Documentation
 README.md
 *.md
+QUICKSTART.md
+REVERB_*.md
+
+# Tests
 tests
 .phpunit.result.cache
+
+# IDE
 .idea
 .vscode
-*.log
+*.swp
+*.swo
+*~
+
+# OS files
 .DS_Store
 Thumbs.db
+desktop.ini
+
+# Build artifacts (will be built in container)
+public/build
+public/hot
+public/storage
+
+# Temporary files
+*.log
+*.tmp
+*.cache

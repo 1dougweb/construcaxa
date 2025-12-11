@@ -48,47 +48,46 @@ RUN node --version && npm --version
 RUN groupadd -g 1000 www || true
 RUN useradd -u 1000 -ms /bin/bash -g www www || true
 
-# Copy existing application directory permissions
-COPY --chown=www:www . /var/www
-
 # Install dependencies (as root, before switching user)
 USER root
 
-# Install Composer dependencies
-RUN cd /var/www && \
+# Copy only dependency files first (for better Docker layer caching)
+COPY --chown=www:www composer.json composer.lock* /var/www/
+COPY --chown=www:www package.json package-lock.json* /var/www/
+
+# Install Composer dependencies with cache mount
+RUN --mount=type=cache,target=/root/.composer/cache \
+    cd /var/www && \
     if [ -f composer.json ]; then \
         composer install --no-dev --optimize-autoloader --no-interaction --no-scripts || \
         composer install --no-dev --optimize-autoloader --no-interaction; \
     fi
 
-# Install Node dependencies and build assets
-RUN cd /var/www && \
-    echo "=== Node version ===" && \
-    node --version && \
-    echo "=== NPM version ===" && \
-    npm --version && \
-    echo "=== Checking for package.json ===" && \
+# Install Node dependencies with cache mount
+RUN --mount=type=cache,target=/root/.npm \
+    cd /var/www && \
     if [ -f package.json ]; then \
-        echo "package.json found!" && \
-        cat package.json | head -20 && \
         echo "=== Installing npm dependencies ===" && \
-        (npm install --legacy-peer-deps 2>&1 || npm install 2>&1) || echo "npm install had issues but continuing..."; \
-        echo "=== Dependencies installed, running build ===" && \
+        npm ci --legacy-peer-deps 2>&1 || npm install --legacy-peer-deps 2>&1 || npm install 2>&1 || echo "npm install had issues but continuing..."; \
+    else \
+        echo "✗ package.json NOT found, skipping npm install"; \
+    fi
+
+# Copy application code (this layer will be invalidated more often)
+COPY --chown=www:www . /var/www
+
+# Build assets (only if package.json exists and dependencies are installed)
+RUN cd /var/www && \
+    if [ -f package.json ] && [ -d node_modules ]; then \
+        echo "=== Building assets ===" && \
         npm run build 2>&1 || (echo "✗ Build failed, will retry at runtime" && mkdir -p public/build); \
         if [ -f public/build/manifest.json ]; then \
             echo "✓ Build successful! manifest.json created during build"; \
         else \
             echo "⚠ Build did not create manifest.json, will be created at runtime"; \
         fi; \
-        echo "=== Build completed, checking output ===" && \
-        ls -la public/build/ && \
-        if [ -f public/build/manifest.json ]; then \
-            echo "✓ manifest.json found!"; \
-        else \
-            echo "✗ manifest.json NOT found!"; \
-        fi; \
     else \
-        echo "✗ package.json NOT found, skipping npm build"; \
+        echo "⚠ Skipping build - package.json or node_modules not found"; \
     fi
 
 # Ensure build directory has correct permissions
