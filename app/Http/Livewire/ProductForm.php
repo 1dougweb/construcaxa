@@ -204,8 +204,18 @@ class ProductForm extends Component
         $this->productId = null;
         $this->showDeleteModal = false;
         
+        // Garantir que propriedades de dados sempre existam
+        $this->categories = Category::orderBy('name')->get();
+        $this->suppliers = Supplier::orderBy('company_name')->get();
+        $this->unitTypes = Product::UNIT_TYPES;
+        
         // Forçar reset do componente Livewire para limpar qualquer estado residual
         $this->reset();
+        
+        // Re-inicializar após reset para garantir que dados estejam disponíveis
+        $this->categories = Category::orderBy('name')->get();
+        $this->suppliers = Supplier::orderBy('company_name')->get();
+        $this->unitTypes = Product::UNIT_TYPES;
     }
 
     private function generateSKU($name)
@@ -357,6 +367,17 @@ class ProductForm extends Component
 
     public function render()
     {
+        // Garantir que propriedades de dados sempre estejam inicializadas
+        if (!isset($this->categories) || $this->categories === null) {
+            $this->categories = Category::orderBy('name')->get();
+        }
+        if (!isset($this->suppliers) || $this->suppliers === null) {
+            $this->suppliers = Supplier::orderBy('company_name')->get();
+        }
+        if (!isset($this->unitTypes) || $this->unitTypes === null) {
+            $this->unitTypes = Product::UNIT_TYPES;
+        }
+        
         return view('livewire.product-form');
     }
 }

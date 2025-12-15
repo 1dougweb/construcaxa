@@ -35,9 +35,15 @@
         <div>
             <x-label for="measurement_unit" value="{{ __('Tipo de Produto') }}" />
             <select id="measurement_unit" wire:model="measurement_unit" class="border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 focus:border-indigo-500 focus:ring-indigo-500 dark:focus:border-indigo-400 dark:focus:ring-indigo-400 rounded-md shadow-sm block mt-1 w-full">
-                @foreach($unitTypes as $value => $type)
-                    <option value="{{ $value }}">{{ $type['label'] }}</option>
-                @endforeach
+                @if(isset($unitTypes) && is_array($unitTypes))
+                    @foreach($unitTypes as $value => $type)
+                        <option value="{{ $value }}">{{ $type['label'] ?? $value }}</option>
+                    @endforeach
+                @else
+                    @foreach(\App\Models\Product::UNIT_TYPES as $value => $type)
+                        <option value="{{ $value }}">{{ $type['label'] }}</option>
+                    @endforeach
+                @endif
             </select>
             @error('measurement_unit')
                 <p class="text-red-500 dark:text-red-400 text-xs mt-1">{{ $message }}</p>
