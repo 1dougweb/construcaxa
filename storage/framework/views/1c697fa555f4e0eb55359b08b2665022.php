@@ -119,9 +119,14 @@
             </div>
         <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
 
-        <p style="text-align: center; margin-top: 24px; color:">
-            <a href="<?php echo e(url('/')); ?>" class="button button-primary" style="color: white;">
+        <p style="text-align: center; margin-top: 24px;">
+            <a href="<?php echo e(route('client.budgets.show', $budget)); ?>" class="button button-primary" style="display: inline-block; padding: 12px 24px; background-color: #4F46E5; color: white; text-decoration: none; border-radius: 6px; font-weight: bold;">
                 Acessar sistema para analisar e responder este orçamento
+            </a>
+        </p>
+        <p style="text-align: center; margin-top: 15px;">
+            <a href="<?php echo e(route('client.budgets.show', $budget)); ?>" style="color: #6b7280; text-decoration: underline; font-size: 14px;">
+                Ou clique aqui para aprovar ou rejeitar este orçamento
             </a>
         </p>
 

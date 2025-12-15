@@ -9,6 +9,11 @@ services:
     volumes:
       - .:/var/www
       - ./php/local.ini:/usr/local/etc/php/conf.d/local.ini
+      # Volumes persistentes para dados (não sobrescrevem, apenas persistem)
+      # Em produção, use apenas os volumes nomeados abaixo e remova o bind mount ".:/var/www"
+      - storage_public:/var/www/storage/app/public
+      - storage_framework:/var/www/storage/framework
+      - storage_logs:/var/www/storage/logs
     ports:
       - "8080:8080"
       - "8000:80"
@@ -53,5 +58,13 @@ networks:
 
 volumes:
   dbdata:
+    driver: local
+  # Volumes persistentes para dados da aplicação (fotos, arquivos, cache)
+  # Estes volumes persistem entre rebuilds do container
+  storage_public:
+    driver: local
+  storage_framework:
+    driver: local
+  storage_logs:
     driver: local
 

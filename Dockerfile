@@ -55,20 +55,22 @@ USER root
 COPY --chown=www:www composer.json composer.lock* /var/www/
 COPY --chown=www:www package.json package-lock.json* /var/www/
 
-# Install Composer dependencies with cache mount
+# Install Composer dependencies with cache mount (only if composer files changed)
 RUN --mount=type=cache,target=/root/.composer/cache \
+    --mount=type=cache,target=/var/www/vendor \
     cd /var/www && \
     if [ -f composer.json ]; then \
-        composer install --no-dev --optimize-autoloader --no-interaction --no-scripts || \
-        composer install --no-dev --optimize-autoloader --no-interaction; \
+        composer install --no-dev --optimize-autoloader --no-interaction --no-scripts --prefer-dist || \
+        composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist; \
     fi
 
-# Install Node dependencies with cache mount
+# Install Node dependencies with cache mount (only if package files changed)
 RUN --mount=type=cache,target=/root/.npm \
+    --mount=type=cache,target=/var/www/node_modules \
     cd /var/www && \
     if [ -f package.json ]; then \
         echo "=== Installing npm dependencies ===" && \
-        npm ci --legacy-peer-deps 2>&1 || npm install --legacy-peer-deps 2>&1 || npm install 2>&1 || echo "npm install had issues but continuing..."; \
+        npm ci --legacy-peer-deps --prefer-offline --no-audit 2>&1 || npm install --legacy-peer-deps --prefer-offline --no-audit 2>&1 || echo "npm install had issues but continuing..."; \
     else \
         echo "✗ package.json NOT found, skipping npm install"; \
     fi
@@ -239,8 +241,14 @@ RUN echo '#!/bin/bash' > /usr/local/bin/docker-entrypoint.sh && \
     echo '' >> /usr/local/bin/docker-entrypoint.sh && \
     echo '# Ensure storage directories exist and have correct permissions' >> /usr/local/bin/docker-entrypoint.sh && \
     echo 'mkdir -p /var/www/storage/app/public/products/photos' >> /usr/local/bin/docker-entrypoint.sh && \
+    echo 'mkdir -p /var/www/storage/app/public/uploads' >> /usr/local/bin/docker-entrypoint.sh && \
+    echo 'mkdir -p /var/www/storage/framework/cache/data' >> /usr/local/bin/docker-entrypoint.sh && \
+    echo 'mkdir -p /var/www/storage/framework/sessions' >> /usr/local/bin/docker-entrypoint.sh && \
+    echo 'mkdir -p /var/www/storage/framework/views' >> /usr/local/bin/docker-entrypoint.sh && \
+    echo 'mkdir -p /var/www/storage/logs' >> /usr/local/bin/docker-entrypoint.sh && \
     echo 'chown -R www:www /var/www/storage' >> /usr/local/bin/docker-entrypoint.sh && \
     echo 'chmod -R 755 /var/www/storage/app/public' >> /usr/local/bin/docker-entrypoint.sh && \
+    echo 'chmod -R 775 /var/www/storage/framework /var/www/storage/logs' >> /usr/local/bin/docker-entrypoint.sh && \
     echo 'chmod -R o+r /var/www/storage/app/public' >> /usr/local/bin/docker-entrypoint.sh && \
     echo '' >> /usr/local/bin/docker-entrypoint.sh && \
     echo '# Create storage symlink if it does not exist' >> /usr/local/bin/docker-entrypoint.sh && \

@@ -199,6 +199,20 @@ Route::middleware(['auth'])->group(function () {
         Route::delete('employees/{employee}', [EmployeeController::class, 'destroy'])->name('employees.destroy');
     });
 
+    // Financeiro por Obra - registrar pagamentos recebidos do cliente
+    Route::middleware(['permission:manage finances'])->group(function () {
+        Route::post('projects/{project}/payments', [\App\Http\Controllers\ProjectController::class, 'storeProjectPayment'])
+            ->name('projects.payments.store');
+
+        // Gestão de equipe e materiais diretamente na obra
+        Route::post('projects/{project}/members', [\App\Http\Controllers\ProjectController::class, 'attachMember'])
+            ->name('projects.members.attach');
+        Route::delete('projects/{project}/members/{employee}', [\App\Http\Controllers\ProjectController::class, 'detachMember'])
+            ->name('projects.members.detach');
+        Route::post('projects/{project}/materials', [\App\Http\Controllers\ProjectController::class, 'storeMaterial'])
+            ->name('projects.materials.store');
+    });
+
     // Propostas de Funcionários
     Route::middleware(['permission:view employees'])->group(function () {
         Route::get('proposals', [\App\Http\Controllers\EmployeeProposalController::class, 'index'])->name('proposals.index');

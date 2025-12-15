@@ -18,6 +18,8 @@ class ProductForm extends Component
     public $name;
     public $description;
     public $price;
+    public $cost_price;
+    public $sale_price;
     public $stock;
     public $min_stock;
     public $category_id;
@@ -40,7 +42,9 @@ class ProductForm extends Component
     protected $rules = [
         'name' => 'required|max:255',
         'description' => 'nullable',
-        'price' => 'required|numeric|min:0',
+        'price' => 'nullable|numeric|min:0', // Mantido para compatibilidade, mas não obrigatório
+        'cost_price' => 'nullable|numeric|min:0',
+        'sale_price' => 'nullable|numeric|min:0',
         'stock' => 'required|numeric|min:0',
         'min_stock' => 'required|numeric|min:0',
         'category_id' => 'required|exists:categories,id',
@@ -59,6 +63,11 @@ class ProductForm extends Component
 
     public function mount($product = null, $productId = null)
     {
+        // SEMPRE resetar estado de fotos primeiro para evitar contaminação
+        $this->featured_photo = null;
+        $this->featured_photo_path = null;
+        $this->showDeleteModal = false;
+        
         // Se receber productId, carregar o produto
         if ($productId && !$product) {
             $product = Product::find($productId);
@@ -67,9 +76,14 @@ class ProductForm extends Component
         $this->product = $product;
         
         if ($product) {
+            // Recarregar produto do banco para garantir dados atualizados
+            $product->refresh();
+            
             $this->name = $product->name;
             $this->description = $product->description;
             $this->price = $product->price;
+            $this->cost_price = $product->cost_price;
+            $this->sale_price = $product->sale_price;
             $this->stock = $product->stock;
             $this->min_stock = $product->min_stock;
             $this->category_id = $product->category_id;
@@ -77,12 +91,27 @@ class ProductForm extends Component
             $this->measurement_unit = $product->measurement_unit;
             $this->unit_label = $product->unit_label;
             
-            // Carregar foto destacada se existir
+            // Carregar foto destacada APENAS se existir no produto atual
             if ($product->photos && is_array($product->photos) && count($product->photos) > 0) {
                 $this->featured_photo_path = $product->photos[0];
+            } else {
+                // Garantir que está null se não há fotos
+                $this->featured_photo_path = null;
             }
         } else {
+            // Reset completo para novo produto
+            $this->name = '';
+            $this->description = '';
+            $this->price = null;
+            $this->cost_price = null;
+            $this->sale_price = null;
+            $this->stock = 0;
+            $this->min_stock = 0;
+            $this->category_id = null;
+            $this->supplier_id = null;
+            $this->measurement_unit = 'unit';
             $this->unit_label = Product::UNIT_TYPES[$this->measurement_unit]['unit'];
+            $this->featured_photo_path = null;
         }
 
         $this->categories = Category::orderBy('name')->get();
@@ -92,8 +121,12 @@ class ProductForm extends Component
 
     public function loadProduct($id)
     {
+        // SEMPRE resetar estado completamente antes de carregar novo produto
+        $this->resetForm();
+        
         $product = Product::find($id);
         if ($product) {
+            // Usar mount para garantir reset completo
             $this->mount($product);
         }
     }
@@ -115,6 +148,7 @@ class ProductForm extends Component
         ]);
         
         // Limpar foto antiga quando uma nova é carregada
+        // Isso garante que apenas a nova foto será salva
         $this->featured_photo_path = null;
     }
 
@@ -152,9 +186,12 @@ class ProductForm extends Component
 
     public function resetForm()
     {
+        // Reset completo de TODOS os campos para evitar contaminação entre produtos
         $this->name = '';
         $this->description = '';
-        $this->price = 0;
+        $this->price = null;
+        $this->cost_price = null;
+        $this->sale_price = null;
         $this->stock = 0;
         $this->min_stock = 0;
         $this->category_id = null;
@@ -164,7 +201,11 @@ class ProductForm extends Component
         $this->featured_photo = null;
         $this->featured_photo_path = null;
         $this->product = null;
+        $this->productId = null;
         $this->showDeleteModal = false;
+        
+        // Forçar reset do componente Livewire para limpar qualquer estado residual
+        $this->reset();
     }
 
     private function generateSKU($name)
@@ -204,32 +245,52 @@ class ProductForm extends Component
         $validatedData['unit_label'] = Product::UNIT_TYPES[$validatedData['measurement_unit']]['unit'];
         
         // Upload da foto destacada
+        // IMPORTANTE: Sempre trabalhar com o produto atual do banco, não com estado em memória
         if ($this->featured_photo) {
+            // Nova foto foi enviada
             $photoPath = $this->featured_photo->store('products/photos', 'public');
             
-            // Se já existe foto destacada, deletar a antiga
-            if ($this->featured_photo_path) {
-                Storage::disk('public')->delete($this->featured_photo_path);
+            // Se é atualização e havia foto antiga, deletar do storage
+            if ($this->product && $this->product->id) {
+                // Recarregar produto do banco para garantir dados atualizados
+                $this->product->refresh();
+                $currentPhotos = $this->product->photos ?? [];
+                
+                // Deletar foto antiga se existir e for diferente da nova
+                if ($this->featured_photo_path && $this->featured_photo_path !== $photoPath) {
+                    Storage::disk('public')->delete($this->featured_photo_path);
+                    // Remover do array também
+                    $currentPhotos = array_filter($currentPhotos, function($photo) {
+                        return $photo !== $this->featured_photo_path;
+                    });
+                }
+                
+                // Adicionar nova foto no início
+                array_unshift($currentPhotos, $photoPath);
+                $validatedData['photos'] = array_values(array_unique($currentPhotos));
+            } else {
+                // Novo produto
+                $validatedData['photos'] = [$photoPath];
             }
+        } elseif ($this->product && $this->product->id) {
+            // Não há upload novo - preservar fotos existentes do banco
+            $this->product->refresh();
+            $currentPhotos = $this->product->photos ?? [];
             
-            // Adicionar foto ao array de fotos
-            $photos = $this->product && $this->product->photos ? $this->product->photos : [];
-            // Remove a foto antiga se existir
-            $photos = array_filter($photos, function($photo) {
-                return $photo !== $this->featured_photo_path;
-            });
-            array_unshift($photos, $photoPath); // Adiciona no início
-            $validatedData['photos'] = array_values($photos);
-        } elseif ($this->product && $this->featured_photo_path) {
-            // Se não há upload novo mas há foto destacada existente, manter o array de fotos
-            $photos = $this->product->photos ?? [];
-            // Garantir que a foto destacada está no início
-            $photos = array_filter($photos, function($photo) {
-                return $photo !== $this->featured_photo_path;
-            });
-            array_unshift($photos, $this->featured_photo_path);
-            $validatedData['photos'] = array_values($photos);
+            if ($this->featured_photo_path) {
+                // Se há featured_photo_path definido, garantir que está no início
+                $currentPhotos = array_filter($currentPhotos, function($photo) {
+                    return $photo !== $this->featured_photo_path;
+                });
+                array_unshift($currentPhotos, $this->featured_photo_path);
+                $validatedData['photos'] = array_values($currentPhotos);
+            } elseif (!empty($currentPhotos)) {
+                // Preservar array existente como está
+                $validatedData['photos'] = $currentPhotos;
+            }
+            // Se não há featured_photo_path e não há fotos, não definir photos (mantém vazio)
         }
+        // Para novo produto sem foto, não definir photos (será null/vazio)
         
         $message = '';
         $action = $this->product ? 'updated' : 'created';

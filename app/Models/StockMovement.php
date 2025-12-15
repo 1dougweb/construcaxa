@@ -14,8 +14,10 @@ class StockMovement extends Model
         'product_id',
         'user_id',
         'service_order_id',
+        'project_id',
         'type',
         'quantity',
+        'cost_price',
         'previous_stock',
         'new_stock',
         'notes',
@@ -23,6 +25,7 @@ class StockMovement extends Model
 
     protected $casts = [
         'quantity' => 'decimal:2',
+        'cost_price' => 'decimal:2',
         'previous_stock' => 'decimal:2',
         'new_stock' => 'decimal:2',
         'created_at' => 'datetime',
@@ -43,5 +46,10 @@ class StockMovement extends Model
     public function serviceOrder()
     {
         return $this->belongsTo(MaterialRequest::class);
+    }
+
+    public function project()
+    {
+        return $this->belongsTo(Project::class);
     }
 }

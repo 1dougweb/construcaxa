@@ -1,0 +1,58 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      # Usar cache de build para acelerar rebuilds
+      cache_from:
+        - php:8.2-fpm
+    container_name: stock-master-app
+    restart: unless-stopped
+    working_dir: /var/www
+    volumes:
+      # Em produção: NÃO usar bind mount do código, apenas volumes de dados
+      - ./php/local.ini:/usr/local/etc/php/conf.d/local.ini:ro
+      # Volumes persistentes para dados (fotos, arquivos, cache)
+      - storage_public:/var/www/storage/app/public
+      - storage_framework:/var/www/storage/framework
+      - storage_logs:/var/www/storage/logs
+    ports:
+      - "8080:8080"
+      - "8000:80"
+    networks:
+      - stock-master-network
+    environment:
+      - APP_ENV=production
+      - APP_DEBUG=false
+
+  db:
+    image: mysql:8.0
+    container_name: stock-master-db
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: ${DB_DATABASE:-stock_master}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+      MYSQL_USER: ${DB_USERNAME}
+    volumes:
+      - dbdata:/var/lib/mysql
+    ports:
+      - "${DB_PORT:-3306}:3306"
+    networks:
+      - stock-master-network
+
+networks:
+  stock-master-network:
+    driver: bridge
+
+volumes:
+  dbdata:
+    driver: local
+  # Volumes persistentes para dados da aplicação
+  # Estes volumes persistem entre rebuilds do container
+  storage_public:
+    driver: local
+  storage_framework:
+    driver: local
+  storage_logs:
+    driver: local

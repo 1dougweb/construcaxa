@@ -20,14 +20,19 @@
     </div>
 
     <!-- Cards de Resumo -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        <!-- Total a Receber -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+        <!-- Total a Receber (Saldo em aberto de obras) -->
         <div class="bg-green-600 rounded-lg shadow-lg p-6 text-white">
             <div class="flex items-center justify-between">
                 <div>
                     <p class="text-green-100 text-sm font-medium">Total a Receber</p>
-                    <p class="text-2xl font-bold">R$ {{ number_format($financialData['total_receivables'] ?? 0, 2, ',', '.') }}</p>
-                    <p class="text-green-100 text-xs mt-1">Pendente: R$ {{ number_format($financialData['pending_receivables'] ?? 0, 2, ',', '.') }}</p>
+                    <p class="text-2xl font-bold">R$ {{ number_format($financialData['to_receive'] ?? 0, 2, ',', '.') }}</p>
+                    <p class="text-green-100 text-xs mt-1">
+                        Contratos aprovados: R$ {{ number_format($financialData['approved_budgets_total'] ?? 0, 2, ',', '.') }}
+                    </p>
+                    <p class="text-green-100 text-xs">
+                        Já recebido em obras: R$ {{ number_format($financialData['received_from_projects'] ?? 0, 2, ',', '.') }}
+                    </p>
                 </div>
                 <div class="bg-green-400 bg-opacity-30 rounded-full p-3">
                     <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -37,13 +42,18 @@
             </div>
         </div>
 
-        <!-- Total a Pagar -->
+        <!-- Total a Pagar (em aberto) -->
         <div class="bg-red-600 rounded-lg shadow-lg p-6 text-white">
             <div class="flex items-center justify-between">
                 <div>
                     <p class="text-red-100 text-sm font-medium">Total a Pagar</p>
-                    <p class="text-2xl font-bold">R$ {{ number_format($financialData['total_payables'] ?? 0, 2, ',', '.') }}</p>
-                    <p class="text-red-100 text-xs mt-1">Pendente: R$ {{ number_format($financialData['pending_payables'] ?? 0, 2, ',', '.') }}</p>
+                    <p class="text-2xl font-bold">R$ {{ number_format($financialData['to_pay'] ?? 0, 2, ',', '.') }}</p>
+                    <p class="text-red-100 text-xs mt-1">
+                        Pendente: R$ {{ number_format($financialData['payables_by_status']['pending'] ?? 0, 2, ',', '.') }}
+                    </p>
+                    <p class="text-red-100 text-xs">
+                        Vencido: R$ {{ number_format($financialData['payables_by_status']['overdue'] ?? 0, 2, ',', '.') }}
+                    </p>
                 </div>
                 <div class="bg-red-400 bg-opacity-30 rounded-full p-3">
                     <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -84,6 +94,45 @@
                 <div class="bg-purple-400 bg-opacity-30 rounded-full p-3">
                     <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path>
+                    </svg>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Cards de Estoque -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+        <!-- Valor do Estoque Atual (Custo) -->
+        <div class="bg-indigo-600 rounded-lg shadow-lg p-6 text-white">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-indigo-100 text-sm font-medium">Valor do Estoque (Custo)</p>
+                    <p class="text-2xl font-bold">R$ {{ number_format($financialData['stock_value'] ?? 0, 2, ',', '.') }}</p>
+                    <p class="text-indigo-100 text-xs mt-1">
+                        Baseado em quantidade × preço de custo
+                    </p>
+                </div>
+                <div class="bg-indigo-400 bg-opacity-30 rounded-full p-3">
+                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
+                    </svg>
+                </div>
+            </div>
+        </div>
+
+        <!-- Custo de Materiais Reservados -->
+        <div class="bg-orange-600 rounded-lg shadow-lg p-6 text-white">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-orange-100 text-sm font-medium">Materiais Reservados (Custo)</p>
+                    <p class="text-2xl font-bold">R$ {{ number_format($financialData['reserved_materials_cost'] ?? 0, 2, ',', '.') }}</p>
+                    <p class="text-orange-100 text-xs mt-1">
+                        Produtos reservados em orçamentos ativos
+                    </p>
+                </div>
+                <div class="bg-orange-400 bg-opacity-30 rounded-full p-3">
+                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                     </svg>
                 </div>
             </div>

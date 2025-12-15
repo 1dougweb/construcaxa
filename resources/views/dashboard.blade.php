@@ -60,8 +60,12 @@
                                 // Previsão = 70% dos orçamentos aprovados + 80% das contas a receber que vencem em 30 dias
                                 $forecast30 = ($approvedBudgetsWithoutInvoice * 0.7) + ($pendingReceivablesNext30Days * 0.8);
                                 
-                                // Total pendente
-                                $totalReceivablesPending = \App\Models\AccountReceivable::where('status', 'pending')->sum('amount') ?? 0;
+                                // Total a receber de obras = orçamentos aprovados - o que já foi recebido nas obras
+                                $approvedBudgetsTotal = \App\Models\ProjectBudget::where('status', \App\Models\ProjectBudget::STATUS_APPROVED)->sum('total') ?? 0;
+                                $receivedFromProjects = \App\Models\AccountReceivable::whereNotNull('project_id')
+                                    ->where('status', 'received')
+                                    ->sum('amount') ?? 0;
+                                $totalReceivablesPending = max($approvedBudgetsTotal - $receivedFromProjects, 0);
                                 $totalPayablesPending = \App\Models\AccountPayable::where('status', 'pending')->sum('amount') ?? 0;
                             } catch (\Exception $e) {
                                 $totalReceivablesCurrent = 0;

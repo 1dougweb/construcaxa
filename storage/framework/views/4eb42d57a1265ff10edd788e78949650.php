@@ -571,7 +571,7 @@
                     </div>
                     <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
 
-                    <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('view client-projects')): ?>
+                    <?php if(auth()->user()->hasRole('client')): ?>
                     <a href="<?php echo e(route('client.dashboard')); ?>" class="flex items-center px-3 py-2 rounded-md text-sm font-medium <?php echo e(request()->routeIs('client.dashboard') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'); ?>">
                         <i class="fi fi-rr-dashboard mr-3 text-base"></i>
                         <?php echo e(__('Dashboard')); ?>
@@ -582,7 +582,7 @@
                         <?php echo e(__('Minhas Obras')); ?>
 
                     </a>
-                    <?php endif; ?>
+                    <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                     <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('view reports')): ?>
                     <a href="<?php echo e(route('reports.index')); ?>" class="flex items-center px-3 py-2 rounded-md text-sm font-medium <?php echo e(request()->routeIs('reports.*') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'); ?>">
                         <i class="fi fi-rr-stats mr-3 text-base"></i>
@@ -638,13 +638,13 @@
                     </div>
                     <?php endif; ?>
 
-                    <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('view attendance')): ?>
+                    <?php if(auth()->user()->hasRole('employee')): ?>
                     <a href="<?php echo e(route('attendance.index')); ?>" class="flex items-center px-3 py-2 rounded-md text-sm font-medium <?php echo e(request()->routeIs('attendance.index') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'); ?>">
                         <i class="fi fi-rr-map mr-3 text-base"></i>
                         <?php echo e(__('Bater Ponto')); ?>
 
                     </a>
-                    <?php endif; ?>
+                    <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
 
                     <!-- Dropdown Administração -->
                     <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('manage permissions')): ?>

@@ -277,13 +277,7 @@ class WebSocketNotificationManager {
     }
 
     handleProductChanged(data) {
-        if (window.showNotification) {
-            const type = data.action === 'created' ? 'success' : 'info';
-            const base = data.action === 'created' ? 'Produto criado' : 'Produto atualizado';
-            const message = data.message || `${base}: ${data.productName || ''}`.trim();
-            window.showNotification(message, type, 4000);
-        }
-
+        // Atualizar listas de produtos em tempo real (sem duplicar notificações)
         if (window.Livewire) {
             window.Livewire.dispatch('refresh-products');
         }

@@ -16,6 +16,8 @@ class Product extends Model
         'sku',
         'description',
         'price',
+        'cost_price',
+        'sale_price',
         'stock',
         'min_stock',
         'supplier_id',
@@ -27,6 +29,8 @@ class Product extends Model
 
     protected $casts = [
         'price' => 'decimal:2',
+        'cost_price' => 'decimal:2',
+        'sale_price' => 'decimal:2',
         'stock' => 'decimal:2',
         'min_stock' => 'decimal:2',
         'photos' => 'array',
@@ -69,6 +73,11 @@ class Product extends Model
     public function stockMovements()
     {
         return $this->hasMany(StockMovement::class);
+    }
+
+    public function reservations()
+    {
+        return $this->hasMany(ProductReservation::class);
     }
 
     // Acessor para o status do estoque
@@ -131,5 +140,29 @@ class Product extends Model
     public function scopeByMeasurementUnit($query, $unit)
     {
         return $query->where('measurement_unit', $unit);
+    }
+
+    /**
+     * Get total reserved quantity for active budgets (pending, under_review, approved)
+     */
+    public function getReservedQuantityAttribute(): float
+    {
+        return (float) ($this->reservations()
+            ->whereHas('projectBudget', function($query) {
+                $query->whereIn('status', [
+                    \App\Models\ProjectBudget::STATUS_PENDING,
+                    \App\Models\ProjectBudget::STATUS_UNDER_REVIEW,
+                    \App\Models\ProjectBudget::STATUS_APPROVED
+                ]);
+            })
+            ->sum('quantity_reserved') ?? 0);
+    }
+
+    /**
+     * Get available stock (physical stock minus reserved)
+     */
+    public function getAvailableStockAttribute(): float
+    {
+        return max($this->stock - $this->reserved_quantity, 0);
     }
 }

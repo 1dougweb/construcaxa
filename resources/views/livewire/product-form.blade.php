@@ -44,15 +44,27 @@
             @enderror
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-                <x-label for="price" value="{{ __('Preço') }}" />
-                <x-input id="price" class="block mt-1 w-full" type="number" wire:model="price" step="0.01" required />
+                <x-label for="price" value="{{ __('Preço de Venda') }}" />
+                <x-input id="price" class="block mt-1 w-full" type="number" wire:model="price" step="0.01" min="0" />
+                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Preço principal de venda do produto (valor antigo do sistema)</p>
                 @error('price')
                     <p class="text-red-500 dark:text-red-400 text-xs mt-1">{{ $message }}</p>
                 @enderror
             </div>
 
+            <div>
+                <x-label for="sale_price" value="{{ __('Preço de Revenda / Estoque') }}" />
+                <x-input id="sale_price" class="block mt-1 w-full" type="number" wire:model="sale_price" step="0.01" min="0" />
+                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Preço padrão de revenda usado em orçamentos e cálculos com estoque</p>
+                @error('sale_price')
+                    <p class="text-red-500 dark:text-red-400 text-xs mt-1">{{ $message }}</p>
+                @enderror
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 gap-6">
             @if($measurement_unit === 'unit')
             <div>
                 <x-label for="stock" value="{{ __('Quantidade em Estoque') }}" />

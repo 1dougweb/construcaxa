@@ -147,12 +147,12 @@
                         </span>
                     </div>
                     <div class="flex items-center gap-3">
-                        <a href="{{ route('budgets.index') }}" class="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50">
-                            Cancelar
-                        </a>
-                        <button type="submit" class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700">
+                    <a href="{{ route('budgets.index') }}" class="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50">
+                        Cancelar
+                    </a>
+                    <button type="submit" class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700">
                             Atualizar
-                        </button>
+                    </button>
                     </div>
                 </div>
             </div>
@@ -190,6 +190,7 @@
                 'name' => $p->name,
                 'sku' => $p->sku ?? '',
                 'price' => $p->price ?? 0,
+                'sale_price' => $p->sale_price ?? null,
                 'photo' => $firstPhoto,
             ];
         })->values();
@@ -518,7 +519,8 @@
                                 <div class="product-option p-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer border-b border-gray-200 dark:border-gray-700 last:border-b-0 flex items-center gap-3" 
                                      data-id="${product.id}" 
                                      data-name="${product.name}"
-                                     data-price="${product.price || 0}">
+                                     data-price="${product.price || 0}"
+                                     data-sale-price="${product.sale_price || ''}">
                                     ${photoUrl ? `
                                         <img src="${photoUrl}" alt="${product.name}" class="w-12 h-12 object-cover rounded border border-gray-200 dark:border-gray-700 flex-shrink-0">
                                     ` : `
@@ -544,6 +546,10 @@
                                 const productId = this.dataset.id;
                                 const productName = this.dataset.name;
                                 const productPrice = parseFloat(this.dataset.price) || 0;
+                                const productSalePrice = this.dataset.salePrice ? parseFloat(this.dataset.salePrice) : null;
+                                
+                                // Usar sale_price se disponível, senão usar price
+                                const priceToUse = productSalePrice !== null && productSalePrice > 0 ? productSalePrice : productPrice;
                                 
                                 const itemTypeInput = container.querySelector('[data-item-type-field="product"]') || container.querySelector('[name*="[item_type]"]');
                                 if (itemTypeInput) {
@@ -552,7 +558,7 @@
                                 
                                 searchInput.value = productName;
                                 if (hiddenInput) {
-                                    hiddenInput.value = productId;
+                                hiddenInput.value = productId;
                                 }
                                 resultsDiv.classList.add('hidden');
                                 
@@ -566,8 +572,9 @@
                                 if (!quantityInput.value || quantityInput.value === '0') {
                                     quantityInput.value = '1';
                                 }
+                                // Preencher com sale_price se disponível, permitindo edição manual
                                 if (!priceInput.value || priceInput.value === '0') {
-                                    priceInput.value = productPrice.toFixed(2);
+                                    priceInput.value = priceToUse.toFixed(2);
                                 }
                                 
                                 calculateTotals();
@@ -733,7 +740,7 @@
                                 
                                 searchInput.value = laborName;
                                 if (hiddenInput) {
-                                    hiddenInput.value = laborId;
+                                hiddenInput.value = laborId;
                                 }
                                 resultsDiv.classList.add('hidden');
                                 
@@ -746,7 +753,7 @@
                                 const descriptionInput = container.querySelector('input[name*="[description]"]');
                                 if (!descriptionInput || !descriptionInput.value) {
                                     if (descriptionInput) {
-                                        descriptionInput.value = laborName;
+                                    descriptionInput.value = laborName;
                                     }
                                 }
                                 

@@ -334,21 +334,37 @@
 
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
-                                    <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($product->stock <= 0): ?>
-                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 dark:bg-red-900/50 text-red-800 dark:text-red-300">
-                                            Sem estoque
-                                        </span>
-                                    <?php elseif($product->stock <= $product->min_stock): ?>
-                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 dark:bg-yellow-900/50 text-yellow-800 dark:text-yellow-300">
-                                            <?php echo e($product->stock); ?> <?php echo e($product->unit_label); ?>
+                                    <?php
+                                        $reservedQty = $product->reserved_quantity ?? 0;
+                                        $availableQty = $product->available_stock ?? $product->stock;
+                                    ?>
+                                    <div class="space-y-1">
+                                        <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($product->stock <= 0): ?>
+                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 dark:bg-red-900/50 text-red-800 dark:text-red-300">
+                                                Sem estoque
+                                            </span>
+                                        <?php elseif($product->stock <= $product->min_stock): ?>
+                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 dark:bg-yellow-900/50 text-yellow-800 dark:text-yellow-300">
+                                                <?php echo e($product->stock); ?> <?php echo e($product->unit_label); ?>
 
-                                        </span>
-                                    <?php else: ?>
-                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 dark:bg-green-900/50 text-green-800 dark:text-green-300">
-                                            <?php echo e($product->stock); ?> <?php echo e($product->unit_label); ?>
+                                            </span>
+                                        <?php else: ?>
+                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 dark:bg-green-900/50 text-green-800 dark:text-green-300">
+                                                <?php echo e($product->stock); ?> <?php echo e($product->unit_label); ?>
 
-                                        </span>
-                                    <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+                                            </span>
+                                        <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+                                        <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($reservedQty > 0): ?>
+                                            <div class="text-xs text-gray-500 dark:text-gray-400">
+                                                Reservado: <?php echo e(number_format($reservedQty, 2, ',', '.')); ?> <?php echo e($product->unit_label); ?>
+
+                                            </div>
+                                            <div class="text-xs font-medium text-blue-600 dark:text-blue-400">
+                                                Disponível: <?php echo e(number_format($availableQty, 2, ',', '.')); ?> <?php echo e($product->unit_label); ?>
+
+                                            </div>
+                                        <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+                                    </div>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                                     R$ <?php echo e(number_format($product->price, 2, ',', '.')); ?>

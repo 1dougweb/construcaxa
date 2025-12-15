@@ -119,4 +119,9 @@ class ProjectBudget extends Model
     {
         return $this->belongsTo(Inspection::class, 'inspection_id');
     }
+
+    public function reservations(): HasMany
+    {
+        return $this->hasMany(ProductReservation::class, 'project_budget_id');
+    }
 }

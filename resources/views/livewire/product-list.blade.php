@@ -275,19 +275,33 @@
                                     {{ $product->supplier ? $product->supplier->company_name : '-' }}
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
-                                    @if($product->stock <= 0)
-                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 dark:bg-red-900/50 text-red-800 dark:text-red-300">
-                                            Sem estoque
-                                        </span>
-                                    @elseif($product->stock <= $product->min_stock)
-                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 dark:bg-yellow-900/50 text-yellow-800 dark:text-yellow-300">
-                                            {{ $product->stock }} {{ $product->unit_label }}
-                                        </span>
-                                    @else
-                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 dark:bg-green-900/50 text-green-800 dark:text-green-300">
-                                            {{ $product->stock }} {{ $product->unit_label }}
-                                        </span>
-                                    @endif
+                                    @php
+                                        $reservedQty = $product->reserved_quantity ?? 0;
+                                        $availableQty = $product->available_stock ?? $product->stock;
+                                    @endphp
+                                    <div class="space-y-1">
+                                        @if($product->stock <= 0)
+                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 dark:bg-red-900/50 text-red-800 dark:text-red-300">
+                                                Sem estoque
+                                            </span>
+                                        @elseif($product->stock <= $product->min_stock)
+                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 dark:bg-yellow-900/50 text-yellow-800 dark:text-yellow-300">
+                                                {{ $product->stock }} {{ $product->unit_label }}
+                                            </span>
+                                        @else
+                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 dark:bg-green-900/50 text-green-800 dark:text-green-300">
+                                                {{ $product->stock }} {{ $product->unit_label }}
+                                            </span>
+                                        @endif
+                                        @if($reservedQty > 0)
+                                            <div class="text-xs text-gray-500 dark:text-gray-400">
+                                                Reservado: {{ number_format($reservedQty, 2, ',', '.') }} {{ $product->unit_label }}
+                                            </div>
+                                            <div class="text-xs font-medium text-blue-600 dark:text-blue-400">
+                                                Disponível: {{ number_format($availableQty, 2, ',', '.') }} {{ $product->unit_label }}
+                                            </div>
+                                        @endif
+                                    </div>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                                     R$ {{ number_format($product->price, 2, ',', '.') }}

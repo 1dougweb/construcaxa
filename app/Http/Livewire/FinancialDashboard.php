@@ -6,6 +6,9 @@ use App\Models\AccountPayable;
 use App\Models\AccountReceivable;
 use App\Models\Invoice;
 use App\Models\Receipt;
+use App\Models\ProjectBudget;
+use App\Models\Product;
+use App\Models\ProductReservation;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Livewire\Component;
@@ -75,7 +78,7 @@ class FinancialDashboard extends Component
         $start = Carbon::parse($this->startDate)->startOfDay();
         $end = Carbon::parse($this->endDate)->endOfDay();
 
-        // Total a Receber
+        // Total a Receber (histórico de títulos)
         $totalReceivables = AccountReceivable::whereBetween('due_date', [$start, $end])
             ->where('status', '!=', 'cancelled')
             ->sum('amount');
@@ -124,6 +127,23 @@ class FinancialDashboard extends Component
         $payablesByStatus = $this->getPayablesByStatus($start, $end);
         $receivablesByStatus = $this->getReceivablesByStatus($start, $end);
 
+        // Valores efetivamente em aberto (pendente + vencido) - visão por títulos
+        $receivablesToReceiveByTitles = ($receivablesByStatus['pending'] ?? 0) + ($receivablesByStatus['overdue'] ?? 0);
+        $payablesToPay = ($payablesByStatus['pending'] ?? 0) + ($payablesByStatus['overdue'] ?? 0);
+
+        // --- Ajuste: Total a receber de obras baseado em orçamentos aprovados ---
+        // Soma de todos os orçamentos aprovados (valor contratado)
+        $approvedBudgetsTotal = ProjectBudget::where('status', ProjectBudget::STATUS_APPROVED)
+            ->sum('total');
+
+        // Tudo que já foi recebido em obras (só contas com project_id e status received)
+        $receivedFromProjects = AccountReceivable::whereNotNull('project_id')
+            ->where('status', AccountReceivable::STATUS_RECEIVED)
+            ->sum('amount');
+
+        // Saldo global a receber de obras (independente de como os títulos foram criados)
+        $receivablesToReceiveFromProjects = max($approvedBudgetsTotal - $receivedFromProjects, 0);
+
         // Previsão de faturamento
         $forecast30 = $this->calculateRevenueForecast(30);
         $forecast60 = $this->calculateRevenueForecast(60);
@@ -132,11 +152,34 @@ class FinancialDashboard extends Component
         // Crescimento mensal
         $growthData = $this->calculateGrowth();
 
+        // Valor do estoque atual (custo)
+        $stockValue = Product::whereNotNull('cost_price')
+            ->sum(DB::raw('stock * cost_price'));
+
+        // Custo de materiais reservados para obras
+        $reservedMaterialsCost = ProductReservation::join('products', 'product_reservations.product_id', '=', 'products.id')
+            ->whereHas('projectBudget', function($query) {
+                $query->whereIn('status', [
+                    ProjectBudget::STATUS_PENDING,
+                    ProjectBudget::STATUS_UNDER_REVIEW,
+                    ProjectBudget::STATUS_APPROVED
+                ]);
+            })
+            ->whereNotNull('products.cost_price')
+            ->sum(DB::raw('product_reservations.quantity_reserved * products.cost_price'));
+
         $this->financialData = [
             'total_receivables' => (float) $totalReceivables,
+            // Saldo baseado em obras (é isso que o usuário quer ver)
+            'to_receive' => (float) $receivablesToReceiveFromProjects,
+            'approved_budgets_total' => (float) $approvedBudgetsTotal,
+            'received_from_projects' => (float) $receivedFromProjects,
+            // Mantém também visão por títulos, caso queira usar em outros lugares
+            'to_receive_by_titles' => (float) $receivablesToReceiveByTitles,
             'received_receivables' => (float) $receivedReceivables,
             'pending_receivables' => (float) $pendingReceivables,
             'total_payables' => (float) $totalPayables,
+            'to_pay' => (float) $payablesToPay,
             'paid_payables' => (float) $paidPayables,
             'pending_payables' => (float) $pendingPayables,
             'total_invoices' => (float) $totalInvoices,
@@ -150,6 +193,8 @@ class FinancialDashboard extends Component
             'forecast_60' => $forecast60,
             'forecast_90' => $forecast90,
             'growth' => $growthData,
+            'stock_value' => (float) $stockValue,
+            'reserved_materials_cost' => (float) $reservedMaterialsCost,
         ];
 
         // Dispatch event for chart updates

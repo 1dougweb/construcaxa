@@ -38,10 +38,50 @@
             <div class="bg-white dark:bg-gray-800 rounded-md shadow p-4 border border-gray-200 dark:border-gray-700">
                 <h2 class="font-medium text-gray-900 dark:text-gray-100 mb-3">Resumo</h2>
                 <div class="grid grid-cols-2 gap-4 text-sm text-gray-700 dark:text-gray-300">
-                    <div><span class="text-gray-500 dark:text-gray-400">Endereço:</span> <?php echo e($project->address ?: '-'); ?></div>
-                    <div><span class="text-gray-500 dark:text-gray-400">Início:</span> <?php echo e(optional($project->start_date)->format('d/m/Y') ?: '-'); ?></div>
-                    <div><span class="text-gray-500 dark:text-gray-400">Previsão:</span> <?php echo e(optional($project->end_date_estimated)->format('d/m/Y') ?: '-'); ?></div>
-                    <div><span class="text-gray-500 dark:text-gray-400">Equipe:</span> <?php echo e($project->employees->count()); ?> membros</div>
+                    <div>
+                        <span class="text-gray-500 dark:text-gray-400">Endereço:</span>
+                        <?php echo e($project->address ?: '-'); ?>
+
+                    </div>
+                    <div>
+                        <span class="text-gray-500 dark:text-gray-400">Início:</span>
+                        <?php echo e(optional($project->start_date)->format('d/m/Y') ?: '-'); ?>
+
+                    </div>
+                    <div>
+                        <span class="text-gray-500 dark:text-gray-400">Previsão:</span>
+                        <?php echo e(optional($project->end_date_estimated)->format('d/m/Y') ?: '-'); ?>
+
+                    </div>
+                    <div>
+                        <span class="text-gray-500 dark:text-gray-400">Equipe:</span>
+                        <?php echo e($project->employees->count()); ?> membros
+                    </div>
+                    <div class="col-span-2 border-t border-dashed border-gray-200 dark:border-gray-700 pt-3 mt-1">
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                            <div>
+                                <p class="text-xs text-gray-500 dark:text-gray-400">Valor total da obra (orçamento aprovado)</p>
+                                <p class="text-base font-semibold text-gray-900 dark:text-gray-100">
+                                    R$ <?php echo e(number_format($totalBudgetedAmount, 2, ',', '.')); ?>
+
+                                </p>
+                            </div>
+                            <div>
+                                <p class="text-xs text-gray-500 dark:text-gray-400">Total recebido do cliente</p>
+                                <p class="text-base font-semibold text-green-600 dark:text-green-400">
+                                    R$ <?php echo e(number_format($totalPaidAmount, 2, ',', '.')); ?>
+
+                                </p>
+                            </div>
+                            <div>
+                                <p class="text-xs text-gray-500 dark:text-gray-400">Saldo a receber</p>
+                                <p class="text-base font-semibold <?php echo e($remainingAmount > 0 ? 'text-amber-600 dark:text-amber-400' : 'text-green-600 dark:text-green-400'); ?>">
+                                    R$ <?php echo e(number_format($remainingAmount, 2, ',', '.')); ?>
+
+                                </p>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -612,18 +652,278 @@
             </div>
             <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
 
-            <div class="bg-white dark:bg-gray-800 rounded-md shadow p-4 border border-gray-200 dark:border-gray-700">
-                <h2 class="font-medium text-gray-900 dark:text-gray-100 mb-3">Equipe</h2>
+            <div class="bg-white dark:bg-gray-800 rounded-md shadow p-4 border border-gray-200 dark:border-gray-700 space-y-4">
+                <div class="flex items-center justify-between">
+                    <h2 class="font-medium text-gray-900 dark:text-gray-100">Equipe</h2>
+                </div>
+                <div class="text-xs text-gray-500 dark:text-gray-400">
+                    Adicione novos membros de equipe à obra (ex: mão de obra especializada, responsáveis por materiais, etc.).
+                </div>
+
+                <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('edit projects')): ?>
+                <form action="<?php echo e(route('projects.members.attach', $project)); ?>" method="POST" class="bg-gray-50 dark:bg-gray-700/40 rounded-lg p-3 border border-gray-200 dark:border-gray-600 mb-3 space-y-3">
+                    <?php echo csrf_field(); ?>
+                    <div class="grid grid-cols-1 gap-3">
+                        <div>
+                            <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Selecionar membro</label>
+                            <select name="employee_id" class="w-full border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 rounded-md text-sm" required>
+                                <option value="">Selecione um colaborador</option>
+                                <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php $__currentLoopData = $availableEmployees; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $employee): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                    <option value="<?php echo e($employee->id); ?>">
+                                        <?php echo e($employee->user->name ?? 'Funcionário #'.$employee->id); ?> 
+                                        <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($employee->position): ?> - <?php echo e($employee->position); ?> <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+                                    </option>
+                                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Função na obra (opcional)</label>
+                            <input 
+                                type="text" 
+                                name="role_on_project" 
+                                class="w-full border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 rounded-md text-sm"
+                                placeholder="Ex: Eletricista, Mestre de Obras..."
+                            >
+                        </div>
+                        <div class="space-y-2" x-data="{ index: 0 }">
+                            <div class="flex items-center justify-between">
+                                <span class="text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wide">Serviços / Mão de Obra</span>
+                                <button 
+                                    type="button" 
+                                    class="text-[11px] text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300"
+                                    onclick="addServiceRow()"
+                                >
+                                    + Adicionar serviço
+                                </button>
+                            </div>
+                            <div id="service-items" class="space-y-3">
+                                <div class="service-item space-y-2">
+                                    <div>
+                                        <label class="block text-[11px] font-medium text-gray-700 dark:text-gray-300 mb-1">Serviço</label>
+                                        <select name="items[0][labor_type_id]" class="w-full border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 rounded-md text-xs" required>
+                                            <option value="">Selecione</option>
+                                            <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php $__currentLoopData = $laborTypes; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $laborType): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                                <option value="<?php echo e($laborType->id); ?>"><?php echo e($laborType->name); ?></option>
+                                            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label class="block text-[11px] font-medium text-gray-700 dark:text-gray-300 mb-1">Valor unitário</label>
+                                        <input 
+                                            type="number" 
+                                            name="items[0][unit_price]" 
+                                            step="0.01"
+                                            min="0"
+                                            class="w-full border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 rounded-md text-xs"
+                                            placeholder="Ex: 150,00"
+                                        >
+                                    </div>
+                                    <div class="flex justify-end">
+                                        <button 
+                                            type="button"
+                                            class="px-2 py-1 text-[11px] text-red-500 hover:text-red-700"
+                                            onclick="removeServiceRow(this)"
+                                        >
+                                            Remover
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            <template id="service-item-template">
+                                <div class="service-item space-y-2">
+                                    <div>
+                                        <label class="block text-[11px] font-medium text-gray-700 dark:text-gray-300 mb-1">Serviço</label>
+                                        <select class="service-labor-type w-full border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 rounded-md text-xs" required>
+                                            <option value="">Selecione</option>
+                                            <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php $__currentLoopData = $laborTypes; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $laborType): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                                <option value="<?php echo e($laborType->id); ?>"><?php echo e($laborType->name); ?></option>
+                                            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label class="block text-[11px] font-medium text-gray-700 dark:text-gray-300 mb-1">Valor unitário</label>
+                                        <input 
+                                            type="number" 
+                                            class="service-unit-price w-full border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 rounded-md text-xs"
+                                            step="0.01"
+                                            min="0"
+                                            placeholder="Ex: 150,00"
+                                        >
+                                    </div>
+                                    <div class="flex justify-end">
+                                        <button 
+                                            type="button"
+                                            class="px-2 py-1 text-[11px] text-red-500 hover:text-red-700"
+                                            onclick="removeServiceRow(this)"
+                                        >
+                                            Remover
+                                        </button>
+                                    </div>
+                                </div>
+                            </template>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Observações (opcional)</label>
+                            <textarea 
+                                name="observations" 
+                                rows="2"
+                                class="w-full border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 rounded-md text-sm"
+                                placeholder="Detalhes do combinado com o colaborador para esta obra"
+                            ></textarea>
+                        </div>
+                        <div class="flex justify-end">
+                            <button class="px-3 py-2 bg-indigo-600 dark:bg-indigo-700 text-white rounded-md text-xs font-medium hover:bg-indigo-700 dark:hover:bg-indigo-600">
+                                Enviar proposta para o colaborador
+                            </button>
+                        </div>
+                    </div>
+                </form>
+                <?php endif; ?>
+
                 <ul class="divide-y divide-gray-200 dark:divide-gray-700">
                     <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php $__empty_1 = true; $__currentLoopData = $project->employees; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $member): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
-                        <li class="py-2 text-sm">
-                            <div class="font-medium text-gray-900 dark:text-gray-100"><?php echo e($member->user->name); ?></div>
-                            <div class="text-gray-500 dark:text-gray-400"><?php echo e($member->position ?: '-'); ?></div>
+                        <li class="py-2 text-sm flex items-center justify-between">
+                            <div>
+                                <div class="font-medium text-gray-900 dark:text-gray-100">
+                                    <?php echo e($member->user->name ?? 'Funcionário #'.$member->id); ?>
+
+                                </div>
+                                <div class="text-xs text-gray-500 dark:text-gray-400">
+                                    <?php echo e($member->pivot->role_on_project ?: ($member->position ?: '-')); ?>
+
+                                </div>
+                            </div>
+                            <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('edit projects')): ?>
+                            <form action="<?php echo e(route('projects.members.detach', [$project, $member])); ?>" method="POST" onsubmit="return confirm('Remover este membro da obra?');">
+                                <?php echo csrf_field(); ?>
+                                <?php echo method_field('DELETE'); ?>
+                                <button type="submit" class="text-xs text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300">
+                                    Remover
+                                </button>
+                            </form>
+                            <?php endif; ?>
                         </li>
                     <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
                         <li class="py-2 text-sm text-gray-500 dark:text-gray-400">Nenhum membro da equipe atribuído.</li>
                     <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                 </ul>
+            </div>
+
+            <div class="bg-white dark:bg-gray-800 rounded-md shadow p-4 border border-gray-200 dark:border-gray-700 space-y-4">
+                <div class="flex items-center justify-between">
+                    <h2 class="font-medium text-gray-900 dark:text-gray-100">Financeiro da Obra</h2>
+                </div>
+                <p class="text-xs text-gray-500 dark:text-gray-400">
+                    Registre pagamentos recebidos do cliente e visualize um resumo financeiro desta obra.
+                </p>
+
+                <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('manage finances')): ?>
+                <form action="<?php echo e(route('projects.payments.store', $project)); ?>" method="POST" class="bg-gray-50 dark:bg-gray-700/40 rounded-lg p-3 border border-gray-200 dark:border-gray-600 space-y-3">
+                    <?php echo csrf_field(); ?>
+                    <div>
+                        <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Valor recebido</label>
+                        <input 
+                            type="number" 
+                            name="amount" 
+                            step="0.01"
+                            min="0"
+                            class="w-full border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 rounded-md text-sm"
+                            placeholder="Ex: 2000,00"
+                            required
+                        >
+                    </div>
+                    <div class="grid grid-cols-1 gap-3">
+                        <div>
+                            <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Data do recebimento</label>
+                            <input 
+                                type="date" 
+                                name="received_date" 
+                                value="<?php echo e(now()->format('Y-m-d')); ?>"
+                                class="w-full border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 rounded-md text-sm"
+                                required
+                            >
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Descrição (opcional)</label>
+                            <input 
+                                type="text" 
+                                name="description" 
+                                class="w-full border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 rounded-md text-sm"
+                                placeholder="Ex: Parcela 1/5, pagamento à vista, etc."
+                            >
+                        </div>
+                    </div>
+                    <div class="flex justify-end">
+                        <button class="px-3 py-2 bg-green-600 dark:bg-green-700 text-white rounded-md text-xs font-medium hover:bg-green-700 dark:hover:bg-green-600 flex items-center gap-1">
+                            <i class="bi bi-cash-coin"></i>
+                            Registrar pagamento
+                        </button>
+                    </div>
+                </form>
+                <?php endif; ?>
+
+                <div class="border border-dashed border-gray-200 dark:border-gray-700 rounded-lg p-3">
+                    <h3 class="text-xs font-semibold text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wide">Resumo rápido</h3>
+                    <dl class="grid grid-cols-2 gap-3 text-xs text-gray-600 dark:text-gray-300">
+                        <div>
+                            <dt class="text-gray-500 dark:text-gray-400">Valor total da obra</dt>
+                            <dd class="font-semibold text-gray-900 dark:text-gray-100">
+                                R$ <?php echo e(number_format($totalBudgetedAmount, 2, ',', '.')); ?>
+
+                            </dd>
+                        </div>
+                        <div>
+                            <dt class="text-gray-500 dark:text-gray-400">Total recebido</dt>
+                            <dd class="font-semibold text-green-600 dark:text-green-400">
+                                R$ <?php echo e(number_format($totalPaidAmount, 2, ',', '.')); ?>
+
+                            </dd>
+                        </div>
+                        <div>
+                            <dt class="text-gray-500 dark:text-gray-400">Saldo em aberto</dt>
+                            <dd class="font-semibold <?php echo e($remainingAmount > 0 ? 'text-amber-600 dark:text-amber-400' : 'text-green-600 dark:text-green-400'); ?>">
+                                R$ <?php echo e(number_format($remainingAmount, 2, ',', '.')); ?>
+
+                            </dd>
+                        </div>
+                    </dl>
+                </div>
+
+                <div class="border border-gray-200 dark:border-gray-700 rounded-lg p-3">
+                    <h3 class="text-xs font-semibold text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wide">Principais materiais lançados</h3>
+                    <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($materials->count() === 0): ?>
+                        <p class="text-xs text-gray-500 dark:text-gray-400">Nenhum material lançado diretamente nesta obra ainda.</p>
+                    <?php else: ?>
+                        <ul class="divide-y divide-gray-200 dark:divide-gray-700 text-xs">
+                            <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php $__currentLoopData = $materials; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $material): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                <li class="py-2 flex items-center justify-between">
+                                    <div class="flex-1 min-w-0">
+                                        <div class="font-medium text-gray-900 dark:text-gray-100 truncate">
+                                            <?php echo e($material->product->name ?? 'Material'); ?>
+
+                                        </div>
+                                        <div class="text-[11px] text-gray-500 dark:text-gray-400">
+                                            <?php echo e($material->description); ?> · 
+                                            <?php echo e(number_format($material->quantity_used, 2, ',', '.')); ?> x 
+                                            R$ <?php echo e(number_format($material->unit_cost, 2, ',', '.')); ?>
+
+                                        </div>
+                                    </div>
+                                    <div class="ml-3 text-right">
+                                        <div class="text-[11px] text-gray-500 dark:text-gray-400">
+                                            <?php echo e(optional($material->usage_date)->format('d/m/Y')); ?>
+
+                                        </div>
+                                        <div class="text-xs font-semibold text-gray-900 dark:text-gray-100">
+                                            R$ <?php echo e(number_format($material->total_cost, 2, ',', '.')); ?>
+
+                                        </div>
+                                    </div>
+                                </li>
+                            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+                        </ul>
+                    <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+                </div>
             </div>
         </div>
     </div>
@@ -667,6 +967,34 @@
 
 <?php $__env->startPush('scripts'); ?>
 <script>
+let serviceItemIndex = 1;
+
+function addServiceRow() {
+    const container = document.getElementById('service-items');
+    const template = document.getElementById('service-item-template');
+    if (!container || !template) return;
+
+    const clone = template.content.cloneNode(true);
+    const index = serviceItemIndex++;
+
+    const laborSelect = clone.querySelector('.service-labor-type');
+    const unitPriceInput = clone.querySelector('.service-unit-price');
+
+    if (laborSelect) laborSelect.name = `items[${index}][labor_type_id]`;
+    if (unitPriceInput) unitPriceInput.name = `items[${index}][unit_price]`;
+
+    container.appendChild(clone);
+}
+
+function removeServiceRow(button) {
+    const item = button.closest('.service-item');
+    const container = document.getElementById('service-items');
+    if (!item || !container) return;
+    // Não permitir remover todos: manter pelo menos 1
+    if (container.querySelectorAll('.service-item').length <= 1) return;
+    item.remove();
+}
+
 function openFileUploadModal(uploadUrl) {
     const modalContent = document.getElementById('file-upload-modal-content');
     const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '<?php echo e(csrf_token()); ?>';

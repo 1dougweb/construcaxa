@@ -1,38 +1,77 @@
 <!DOCTYPE html>
-<html>
+<html lang="pt-BR">
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <meta charset="UTF-8">
     <title>Orçamento #{{ $budget->id }} - v{{ $budget->version }}</title>
     <style>
+        @charset "UTF-8";
+        * {
+            font-family: 'DejaVu Sans', 'DejaVu Sans Condensed', sans-serif;
+        }
         body {
-            font-family: DejaVu Sans, sans-serif;
+            font-family: 'DejaVu Sans', 'DejaVu Sans Condensed', sans-serif;
             font-size: 12px;
             line-height: 1.4;
+            direction: ltr;
+            unicode-bidi: embed;
             margin: 0;
             padding: 20px;
         }
         .header {
-            text-align: center;
             margin-bottom: 30px;
-            border-bottom: 2px solid #333;
-            padding-bottom: 20px;
+            border-bottom: 2px solid #ddd;
+            padding-bottom: 4px;
+            width: 100%;
         }
-        .title {
-            font-size: 24px;
-            font-weight: bold;
-            margin-bottom: 10px;
-            color: #333;
+        .header-table {
+            width: 100%;
+            border-collapse: collapse;
         }
-        .subtitle {
-            font-size: 14px;
-            color: #666;
+        .header-left {
+            width: 50%;
+            vertical-align: top;
+            padding-right: 15px;
+        }
+        .header-right {
+            width: 50%;
+            vertical-align: top;
+            padding-left: 15px;
+        }
+        .logo {
+            max-width: 180px;
+            max-height: 70px;
+            margin-bottom: 8px;
         }
         .company-info {
+            font-size: 11px;
+            line-height: 1.5;
+            margin-top: 5px;
+        }
+        .company-name {
+            font-size: 14px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        .title {
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 15px;
             text-align: center;
+            padding-top: 10px;
+        }
+        .client-info {
+            font-size: 11px;
+            line-height: 1.6;
+        }
+        .client-title {
+            font-size: 13px;
+            font-weight: bold;
+            margin-bottom: 8px;
+            color: #1e40af;
+        }
+        .info {
             margin-bottom: 20px;
-            background-color: #f8f9fa;
-            padding: 15px;
-            border-radius: 5px;
         }
         .info-section {
             margin-bottom: 25px;
@@ -42,16 +81,15 @@
             font-weight: bold;
             margin-bottom: 10px;
             color: #333;
-            border-bottom: 1px solid #ddd;
             padding-bottom: 5px;
         }
         .info-row {
-            margin-bottom: 8px;
+            margin-bottom: 5px;
             display: flex;
         }
         .label {
             font-weight: bold;
-            width: 120px;
+            width: 140px;
             display: inline-block;
         }
         .value {
@@ -64,8 +102,9 @@
         }
         th, td {
             border: 1px solid #ddd;
-            padding: 10px;
+            padding: 8px;
             text-align: left;
+            font-size: 11px;
         }
         th {
             background-color: #f3f4f6;
@@ -103,20 +142,19 @@
             margin-top: 10px;
         }
         .footer {
-            margin-top: 50px;
+            margin-top: 40px;
             text-align: center;
             font-size: 10px;
             color: #666;
-            border-top: 1px solid #ddd;
-            padding-top: 15px;
         }
         .status-badge {
             display: inline-block;
-            padding: 4px 8px;
+            padding: 2px 8px;
             border-radius: 4px;
             font-size: 10px;
             font-weight: bold;
             text-transform: uppercase;
+            margin-left: 8px;
         }
         .status-approved { background-color: #d4edda; color: #155724; }
         .status-pending { background-color: #fff3cd; color: #856404; }
@@ -124,10 +162,11 @@
         .status-rejected { background-color: #f8d7da; color: #721c24; }
         .status-cancelled { background-color: #f5c6cb; color: #721c24; }
         .notes-section {
-            background-color: #f8f9fa;
+            background-color: #f9fafb;
             padding: 15px;
             border-radius: 5px;
             margin-top: 20px;
+            border: 1px solid #e5e7eb;
         }
         .photos-section {
             margin-top: 30px;
@@ -142,21 +181,20 @@
             padding-bottom: 5px;
         }
         .photos-grid {
-            display: flex;
-            flex-wrap: wrap;
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
             gap: 10px;
             margin-bottom: 20px;
         }
         .photo-item {
             width: 100%;
-            margin-bottom: 10px;
+            margin-bottom: 5px;
             page-break-inside: avoid;
         }
         .photo-item img {
             width: 100%;
-            height: auto;
-            max-height: 400px;
-            object-fit: contain;
+            height: 140px;
+            object-fit: cover;
             border: 1px solid #ddd;
             border-radius: 4px;
         }
@@ -164,42 +202,100 @@
 </head>
 <body>
     <div class="header">
-        <div class="title">Orçamento</div>
-        <div class="subtitle">
-            Número: #{{ $budget->id }} - Versão {{ $budget->version }}
-            <span class="status-badge status-{{ $budget->status }}">{{ $budget->status_label }}</span>
+        <table class="header-table">
+            <tr>
+                <td class="header-left">
+                    @php
+                        $logoPath = public_path('assets/images/logo.png');
+                        if (!file_exists($logoPath)) {
+                            $logoPath = public_path('assets/images/logo.svg');
+                        }
+                        $logoUrl = file_exists($logoPath) ? 'file://' . str_replace('\\', '/', $logoPath) : null;
+
+                        $companyName = \App\Models\Setting::get('company_name', config('app.name'));
+                        $companyCnpj = \App\Models\Setting::get('company_cnpj', '');
+                        $companyAddress = \App\Models\Setting::get('company_address', '');
+                        $companyPhone = \App\Models\Setting::get('company_phone', '');
+                        $companyEmail = \App\Models\Setting::get('company_email', '');
+                    @endphp
+                    @if($logoUrl)
+                        <img src="{{ $logoUrl }}" alt="Logo" class="logo" />
+                    @endif
+                    <div class="company-info">
+                        <div class="company-name">{{ $companyName }}</div>
+                        @if($companyCnpj)
+                            <div><strong>CNPJ:</strong> {{ $companyCnpj }}</div>
+                        @endif
+                        @if($companyAddress)
+                            <div><strong>Endereço:</strong> {{ $companyAddress }}</div>
+                        @endif
+                        @if($companyPhone)
+                            <div><strong>Telefone:</strong> {{ $companyPhone }}</div>
+                        @endif
+                        @if($companyEmail)
+                            <div><strong>E-mail:</strong> {{ $companyEmail }}</div>
+                        @endif
+                    </div>
+                </td>
+                <td class="header-right">
+                    <div class="client-title">DADOS DO CLIENTE</div>
+                    <div class="client-info">
+                        @if($budget->client)
+                            <div><strong>Nome/Razão Social:</strong> {{ $budget->client->name ?? $budget->client->trading_name }}</div>
+                            @if($budget->client->trading_name && $budget->client->name)
+                                <div><strong>Nome Fantasia:</strong> {{ $budget->client->trading_name }}</div>
+                            @endif
+                            @if($budget->client->cpf)
+                                <div><strong>CPF:</strong> {{ $budget->client->formatted_cpf ?? $budget->client->cpf }}</div>
+                            @endif
+                            @if($budget->client->cnpj)
+                                <div><strong>CNPJ:</strong> {{ $budget->client->formatted_cnpj ?? $budget->client->cnpj }}</div>
+                            @endif
+                            @if($budget->client->email)
+                                <div><strong>E-mail:</strong> {{ $budget->client->email }}</div>
+                            @endif
+                            @if($budget->client->phone)
+                                <div><strong>Telefone:</strong> {{ $budget->client->phone }}</div>
+                            @endif
+                            @if(method_exists($budget->client, 'getAttribute') && $budget->client->full_address)
+                                <div><strong>Endereço:</strong> {{ $budget->client->full_address }}</div>
+                            @endif
+                            @if($budget->client->zip_code ?? false)
+                                <div><strong>CEP:</strong> {{ $budget->client->zip_code }}</div>
+                            @endif
+                        @else
+                            <div>Cliente não especificado</div>
+                        @endif
+                    </div>
+                </td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="title">
+        Orçamento
+        <span class="status-badge status-{{ $budget->status }}">{{ $budget->status_label }}</span>
+    </div>
+
+    <div class="info">
+        <div class="info-row">
+            <span class="label">Número do Orçamento:</span>
+            <span class="value">#{{ $budget->id }} - Versão {{ $budget->version }}</span>
         </div>
-    </div>
-
-    <!-- Company Information -->
-    <div class="company-info">
-        <strong>{{ config('app.name', 'Empresa') }}</strong><br>
-        <!-- Add your company details here -->
-        Endereço da Empresa<br>
-        Telefone: (00) 0000-0000 | Email: contato@empresa.com
-    </div>
-
-    <!-- Client Information -->
-    <div class="info-section">
-        <div class="info-title">Dados do Cliente</div>
-        @if($budget->client)
+        <div class="info-row">
+            <span class="label">Data de Criação:</span>
+            <span class="value">{{ $budget->created_at->format('d/m/Y H:i') }}</span>
+        </div>
+        @if($budget->approved_at)
             <div class="info-row">
-                <span class="label">Nome:</span>
-                <span class="value">{{ $budget->client->name }}</span>
+                <span class="label">Data de Aprovação:</span>
+                <span class="value">{{ $budget->approved_at->format('d/m/Y H:i') }}</span>
             </div>
+        @endif
+        @if($budget->approver)
             <div class="info-row">
-                <span class="label">Email:</span>
-                <span class="value">{{ $budget->client->email }}</span>
-            </div>
-            @if($budget->client->phone)
-                <div class="info-row">
-                    <span class="label">Telefone:</span>
-                    <span class="value">{{ $budget->client->phone }}</span>
-                </div>
-            @endif
-        @else
-            <div class="info-row">
-                <span class="value">Cliente não especificado</span>
+                <span class="label">Aprovado por:</span>
+                <span class="value">{{ $budget->approver->name }}</span>
             </div>
         @endif
     </div>
@@ -288,6 +384,13 @@
                     <td class="text-right">
                         @if($item->item_type === 'labor')
                             {{ $item->laborType ? $item->laborType->formatted_hourly_rate : 'R$ ' . number_format($item->unit_price, 2, ',', '.') . '/h' }}
+                        @elseif($item->item_type === 'product' && $item->product)
+                            @php
+                                // Priorizar preço de revenda do produto (sale_price);
+                                // se não houver, usar o preço unitário do item (valor do orçamento).
+                                $unitPrice = $item->product->sale_price ?? $item->unit_price;
+                            @endphp
+                            R$ {{ number_format($unitPrice, 2, ',', '.') }}
                         @else
                             R$ {{ number_format($item->unit_price, 2, ',', '.') }}
                         @endif

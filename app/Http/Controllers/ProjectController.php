@@ -10,12 +10,20 @@ use App\Models\ProjectPhoto;
 use App\Models\ProjectFile;
 use App\Models\ProjectUpdate;
 use App\Models\ProjectTask;
+use App\Models\AccountReceivable;
+use App\Models\Product;
+use App\Models\ProjectFinancialBalance;
+use App\Models\FinancialTransaction;
+use App\Models\EmployeeProposal;
+use App\Models\EmployeeProposalItem;
 use App\Models\Service;
 use App\Models\LaborType;
 use App\Models\Inspection;
+use App\Models\ProductReservation;
 use App\Mail\BudgetClientRequestNotification;
 use App\Mail\BudgetApprovedByClientNotification;
 use App\Mail\BudgetRejectedByClientNotification;
+use App\Mail\EmployeeProposalNotification;
 use App\Services\GoogleMapsService;
 use App\Services\NotificationService;
 use Illuminate\Http\Request;
@@ -39,6 +47,68 @@ class ProjectController extends Controller
             if ($employee && $project->employees()->where('employees.id', $employee->id)->exists()) return true;
         }
         return false;
+    }
+
+    /**
+     * Criar conta a receber padrão para um orçamento aprovado (se ainda não existir).
+     * Isso alimenta o painel financeiro com o total a receber da obra.
+     */
+    private function ensureReceivableForApprovedBudget(ProjectBudget $budget, Project $project): void
+    {
+        try {
+            // Se orçamento não tem total ou é zero, nada a fazer
+            if ($budget->total <= 0) {
+                return;
+            }
+
+            // Se já existir uma conta a receber vinculada a este projeto e orçamento, não criar novamente
+            $exists = AccountReceivable::where('project_id', $project->id)
+                ->where('description', 'like', "Orçamento #{$budget->id}%")
+                ->exists();
+
+            if ($exists) {
+                return;
+            }
+
+            // Quanto já foi efetivamente recebido nessa obra
+            $receivedSoFar = AccountReceivable::where('project_id', $project->id)
+                ->where('status', AccountReceivable::STATUS_RECEIVED)
+                ->sum('amount');
+
+            // Valor ainda em aberto deste orçamento
+            $amountToReceive = max($budget->total - $receivedSoFar, 0);
+
+            if ($amountToReceive <= 0) {
+                return;
+            }
+
+            $clientUserId = $project->client?->user_id ?? null;
+            if (!$clientUserId) {
+                $clientUserId = $budget->client?->user_id ?? null;
+            }
+
+            // Gerar número da conta a receber
+            $number = (new AccountReceivable())->generateNumber();
+
+            AccountReceivable::create([
+                'client_id' => $clientUserId,
+                'project_id' => $project->id,
+                'number' => $number,
+                'description' => "Orçamento #{$budget->id} - Receita da obra {$project->code}",
+                'amount' => $amountToReceive,
+                'due_date' => $budget->approved_at ?? now(),
+                'received_date' => null,
+                'status' => AccountReceivable::STATUS_PENDING,
+                'notes' => 'Gerado automaticamente a partir do orçamento aprovado',
+                'user_id' => auth()->id(),
+            ]);
+        } catch (\Throwable $e) {
+            Log::error('Erro ao criar conta a receber para orçamento aprovado', [
+                'budget_id' => $budget->id,
+                'project_id' => $project->id,
+                'error' => $e->getMessage(),
+            ]);
+        }
     }
     public function index(Request $request)
     {
@@ -132,7 +202,50 @@ class ProjectController extends Controller
                 $query->latest();
             }
         ]);
-        return view('projects.show', compact('project'));
+        
+        // Resumo financeiro da obra
+        $approvedBudget = $project->budgets()
+            ->where('status', \App\Models\ProjectBudget::STATUS_APPROVED)
+            ->latest()
+            ->first();
+        $totalBudgetedAmount = $approvedBudget?->total ?? 0;
+
+        // Garantir que exista conta a receber para orçamento aprovado (backfill para orçamentos antigos)
+        if ($approvedBudget && $totalBudgetedAmount > 0) {
+            $this->ensureReceivableForApprovedBudget($approvedBudget, $project);
+        }
+
+        $totalPaidAmount = $project->accountReceivables()
+            ->where('status', AccountReceivable::STATUS_RECEIVED)
+            ->sum('amount');
+
+        $remainingAmount = max($totalBudgetedAmount - $totalPaidAmount, 0);
+
+        // Materiais já lançados no balanço financeiro da obra
+        $materials = $project->financialBalances()
+            ->with('product')
+            ->orderByDesc('usage_date')
+            ->take(20)
+            ->get();
+
+        // Tipos de mão de obra (serviços) para propostas de equipe
+        $laborTypes = LaborType::active()->orderBy('name')->get();
+
+        // Funcionários disponíveis para adicionar na obra
+        $availableEmployees = Employee::with('user')
+            ->orderBy('id', 'desc')
+            ->get();
+
+        return view('projects.show', compact(
+            'project',
+            'approvedBudget',
+            'totalBudgetedAmount',
+            'totalPaidAmount',
+            'remainingAmount',
+            'materials',
+            'availableEmployees',
+            'laborTypes'
+        ));
     }
 
     public function edit(Project $project)
@@ -170,8 +283,14 @@ class ProjectController extends Controller
             }
         }
 
+        $wasInProgress = $project->status === 'in_progress';
         $project->update($data);
         $project->employees()->sync($data['employee_ids'] ?? []);
+
+        // Se projeto acabou de entrar em execução, converter reservas em baixas de estoque
+        if (!$wasInProgress && $project->status === 'in_progress') {
+            $this->convertReservationsToStockMovements($project);
+        }
 
         return redirect()->route('projects.show', $project)->with('success', 'Obra atualizada com sucesso.');
     }
@@ -397,6 +516,231 @@ class ProjectController extends Controller
         return redirect()->route('projects.show', $project)->with('success', 'Tarefa atualizada.');
     }
 
+    /**
+     * Registrar pagamento recebido do cliente para esta obra
+     */
+    public function storeProjectPayment(Request $request, Project $project)
+    {
+        abort_unless(auth()->user()->can('manage finances') || auth()->user()->hasAnyRole(['manager','admin']), 403);
+
+        $data = $request->validate([
+            'amount' => ['required', 'numeric', 'min:0.01'],
+            'received_date' => ['required', 'date'],
+            'description' => ['nullable', 'string', 'max:255'],
+        ]);
+
+        // Identificar usuário cliente vinculado a esta obra (se existir)
+        $clientUserId = null;
+        if ($project->client) {
+            $clientUserId = $project->client->user_id ?? null;
+        }
+
+        // Gerar número da conta a receber
+        $number = method_exists(AccountReceivable::class, 'generateNumber')
+            ? (new AccountReceivable())->generateNumber()
+            : null;
+
+        // Criar conta a receber já como recebida
+        $receivable = AccountReceivable::create([
+            'client_id' => $clientUserId,
+            'project_id' => $project->id,
+            'number' => $number,
+            'description' => $data['description'] ?: "Pagamento recebido da obra {$project->code}",
+            'amount' => $data['amount'],
+            'due_date' => $data['received_date'],
+            'received_date' => $data['received_date'],
+            'status' => AccountReceivable::STATUS_RECEIVED,
+            'notes' => 'Registro manual via tela da obra',
+            'user_id' => auth()->id(),
+        ]);
+
+        // Registrar movimentação financeira atrelada
+        FinancialTransaction::create([
+            'transaction_type' => FinancialTransaction::TRANSACTION_TYPE_ACCOUNT_RECEIVABLE,
+            'transaction_id' => $receivable->id,
+            'type' => FinancialTransaction::TYPE_INCOME,
+            'amount' => $data['amount'],
+            'transaction_date' => $data['received_date'],
+            'project_id' => $project->id,
+            'description' => $receivable->description,
+            'notes' => 'Gerado automaticamente a partir de pagamento de obra',
+            'user_id' => auth()->id(),
+        ]);
+
+        return redirect()->route('projects.show', $project)
+            ->with('success', 'Pagamento registrado e integrado ao financeiro.');
+    }
+
+    /**
+     * Adicionar membro à equipe da obra
+     */
+    public function attachMember(Request $request, Project $project)
+    {
+        abort_unless(auth()->user()->can('edit projects') || auth()->user()->hasAnyRole(['manager','admin']), 403);
+
+        $data = $request->validate([
+            'employee_id' => ['required', 'exists:employees,id'],
+            'role_on_project' => ['nullable', 'string', 'max:255'],
+            'observations' => ['nullable', 'string', 'max:500'],
+            'items' => ['required', 'array', 'min:1'],
+            'items.*.labor_type_id' => ['required', 'exists:labor_types,id'],
+            'items.*.unit_price' => ['nullable', 'numeric', 'min:0'],
+        ]);
+
+        DB::beginTransaction();
+        try {
+            $employee = Employee::findOrFail($data['employee_id']);
+            $items = $data['items'];
+
+            // Criar proposta para o funcionário vinculado a esta obra
+            $proposal = EmployeeProposal::create([
+                'employee_id' => $employee->id,
+                'project_id' => $project->id,
+                'hourly_rate' => $items[0]['unit_price'] ?? 0,
+                'contract_type' => EmployeeProposal::CONTRACT_TYPE_INDEFINITE,
+                'days' => null,
+                'start_date' => null,
+                'end_date' => null,
+                'observations' => $data['observations'] 
+                    ?? "Função na obra {$project->code}: " . ($data['role_on_project'] ?? 'Membro da equipe'),
+                'created_by' => auth()->id(),
+            ]);
+
+            // Itens de mão de obra (serviços que ele vai fazer)
+            foreach ($items as $item) {
+                EmployeeProposalItem::create([
+                    'proposal_id' => $proposal->id,
+                    'item_type' => EmployeeProposalItem::ITEM_TYPE_LABOR,
+                    'labor_type_id' => $item['labor_type_id'],
+                    'service_id' => null,
+                    'quantity' => 1,
+                    'unit_price' => $item['unit_price'] ?? 0,
+                ]);
+            }
+
+            // Recalcular total
+            $proposal->refresh();
+            $proposal->total_amount = $proposal->calculateTotalAmount();
+            $proposal->save();
+
+            // Enviar email de proposta para o funcionário (fluxo padrão já existente)
+            try {
+                Mail::to($employee->user->email)->send(new EmployeeProposalNotification($proposal));
+            } catch (\Exception $e) {
+                Log::error('Erro ao enviar email de proposta de equipe na obra', [
+                    'proposal_id' => $proposal->id,
+                    'employee_id' => $employee->id,
+                    'error' => $e->getMessage(),
+                ]);
+            }
+
+            DB::commit();
+
+            return redirect()->route('projects.show', $project)
+                ->with('success', 'Proposta enviada para o colaborador por e-mail. Ele só será adicionado à obra após aceitar a proposta.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            return redirect()->route('projects.show', $project)
+                ->with('error', 'Erro ao criar proposta para o colaborador: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Remover membro da equipe da obra
+     */
+    public function detachMember(Project $project, Employee $employee)
+    {
+        abort_unless(auth()->user()->can('edit projects') || auth()->user()->hasAnyRole(['manager','admin']), 403);
+
+        $project->employees()->detach($employee->id);
+
+        return redirect()->route('projects.show', $project)
+            ->with('success', 'Membro removido da equipe da obra.');
+    }
+
+    /**
+     * Registrar material/produto usado diretamente na obra
+     */
+    public function storeMaterial(Request $request, Project $project)
+    {
+        abort_unless(auth()->user()->can('manage stock') || auth()->user()->hasAnyRole(['manager','admin']), 403);
+
+        $data = $request->validate([
+            'product_id' => ['nullable', 'exists:products,id'],
+            'name' => ['required_without:product_id', 'string', 'max:255'],
+            'quantity_used' => ['required', 'numeric', 'min:0.01'],
+            'unit_cost' => ['required', 'numeric', 'min:0'],
+            'usage_date' => ['required', 'date'],
+            'category' => ['nullable', 'string', 'max:255'],
+            'description' => ['nullable', 'string', 'max:255'],
+        ]);
+
+        // Criar produto se não existir e nome informado
+        $productId = $data['product_id'] ?? null;
+        if (!$productId && !empty($data['name'])) {
+            $product = Product::create([
+                'name' => $data['name'],
+                'price' => $data['unit_cost'],
+                'status' => 'active',
+            ]);
+            $productId = $product->id;
+        }
+
+        $totalCost = $data['unit_cost'] * $data['quantity_used'];
+
+        DB::beginTransaction();
+        try {
+            // Se há product_id, diminuir estoque e criar movimento
+            if ($productId) {
+                $product = Product::findOrFail($productId);
+                $previousStock = $product->stock;
+                $quantityUsed = $data['quantity_used'];
+                
+                // Verificar se há estoque suficiente
+                if ($previousStock < $quantityUsed) {
+                    return back()->withInput()->with('error', "Estoque insuficiente. Disponível: {$previousStock} {$product->unit_label}");
+                }
+                
+                // Diminuir estoque
+                $product->stock = max(0, $previousStock - $quantityUsed);
+                $product->save();
+                
+                // Criar movimento de saída
+                \App\Models\StockMovement::create([
+                    'product_id' => $productId,
+                    'project_id' => $project->id,
+                    'user_id' => auth()->id(),
+                    'type' => 'saida',
+                    'quantity' => $quantityUsed,
+                    'cost_price' => $product->cost_price ?? $data['unit_cost'],
+                    'previous_stock' => $previousStock,
+                    'new_stock' => $product->stock,
+                    'notes' => $data['description'] ?: "Uso de material na obra {$project->code}",
+                ]);
+            }
+
+            ProjectFinancialBalance::create([
+                'project_id' => $project->id,
+                'product_id' => $productId,
+                'material_request_id' => null,
+                'quantity_used' => $data['quantity_used'],
+                'unit_cost' => $data['unit_cost'],
+                'total_cost' => $totalCost,
+                'usage_date' => $data['usage_date'],
+                'category' => $data['category'] ?? null,
+                'description' => $data['description'] ?: 'Lançamento manual de material na obra',
+            ]);
+
+            DB::commit();
+            return redirect()->route('projects.show', $project)
+                ->with('success', 'Material registrado e estoque atualizado.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()->withInput()->with('error', 'Erro ao registrar material: ' . $e->getMessage());
+        }
+    }
+
     public function budgetsIndex()
     {
         // Access controlled by route middleware
@@ -536,6 +880,9 @@ class ProjectController extends Controller
                     'total' => $itemTotal,
                 ]);
             }
+
+            // Sync product reservations for active budgets
+            $this->syncProductReservations($budget, $data['items']);
 
             DB::commit();
             
@@ -727,6 +1074,7 @@ class ProjectController extends Controller
             ]);
 
             // Create project automatically if budget was just approved
+            $project = $budget->project;
             if ($wasApproved && !$budget->project_id) {
                 $project = Project::createFromApprovedBudget($budget);
             }
@@ -755,6 +1103,14 @@ class ProjectController extends Controller
                     'unit_price' => $itemData['unit_price'],
                     'total' => $itemTotal,
                 ]);
+            }
+
+            // Sync product reservations for active budgets
+            $this->syncProductReservations($budget, $data['items']);
+
+            // Se orçamento acabou de ser aprovado e há projeto, garantir conta a receber
+            if ($wasApproved && $project) {
+                $this->ensureReceivableForApprovedBudget($budget, $project);
             }
 
             DB::commit();
@@ -946,6 +1302,8 @@ class ProjectController extends Controller
                 'approved_by' => auth()->id(),
             ]);
 
+            $project = null;
+
             // Create project automatically if it doesn't exist
             if (!$budget->project_id) {
                 $project = Project::createFromApprovedBudget($budget);
@@ -953,7 +1311,13 @@ class ProjectController extends Controller
             } else {
                 // If project already exists, just assign OS number
                 $budget->project->assignOsNumber();
+                $project = $budget->project;
                 $message = 'Orçamento aprovado com sucesso! OS número ' . $budget->project->os_number . ' foi gerado.';
+            }
+
+            // Criar conta a receber padrão para alimentar o painel financeiro
+            if ($project) {
+                $this->ensureReceivableForApprovedBudget($budget, $project);
             }
 
             DB::commit();
@@ -1034,8 +1398,14 @@ class ProjectController extends Controller
             ]);
 
             // Create project automatically if it doesn't exist
+            $project = $budget->project;
             if (!$budget->project_id) {
                 $project = Project::createFromApprovedBudget($budget);
+            }
+
+            // Garantir conta a receber vinculada ao orçamento aprovado
+            if ($project) {
+                $this->ensureReceivableForApprovedBudget($budget, $project);
             }
 
             DB::commit();
@@ -1166,6 +1536,129 @@ class ProjectController extends Controller
         $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('budgets.pdf', compact('budget'));
         
         return $pdf->stream("orcamento-{$budget->id}-v{$budget->version}.pdf");
+    }
+
+    /**
+     * Convert product reservations to stock movements when project starts.
+     * This decreases physical stock and creates movement records.
+     * 
+     * @param Project $project
+     */
+    private function convertReservationsToStockMovements(Project $project): void
+    {
+        // Find approved budget for this project
+        $budget = $project->budgets()
+            ->where('status', ProjectBudget::STATUS_APPROVED)
+            ->latest()
+            ->first();
+
+        if (!$budget) {
+            return;
+        }
+
+        $reservations = ProductReservation::where('project_budget_id', $budget->id)
+            ->with('product')
+            ->get();
+
+        DB::beginTransaction();
+        try {
+            foreach ($reservations as $reservation) {
+                $product = $reservation->product;
+                if (!$product) {
+                    continue;
+                }
+
+                $quantity = $reservation->quantity_reserved;
+                $previousStock = $product->stock;
+
+                // Verificar se há estoque suficiente
+                if ($previousStock < $quantity) {
+                    Log::warning('Estoque insuficiente ao converter reserva em baixa', [
+                        'project_id' => $project->id,
+                        'product_id' => $product->id,
+                        'reserved' => $quantity,
+                        'available' => $previousStock,
+                    ]);
+                    // Continuar mesmo assim, mas registrar o problema
+                }
+
+                // Diminuir estoque
+                $product->stock = max(0, $previousStock - $quantity);
+                $product->save();
+
+                // Criar movimento de saída
+                \App\Models\StockMovement::create([
+                    'product_id' => $product->id,
+                    'project_id' => $project->id,
+                    'user_id' => auth()->id(),
+                    'type' => 'saida',
+                    'quantity' => $quantity,
+                    'cost_price' => $product->cost_price ?? 0,
+                    'previous_stock' => $previousStock,
+                    'new_stock' => $product->stock,
+                    'notes' => "Baixa automática ao iniciar obra {$project->code} (reserva do orçamento #{$budget->id})",
+                ]);
+            }
+
+            DB::commit();
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Erro ao converter reservas em baixas de estoque', [
+                'project_id' => $project->id,
+                'error' => $e->getMessage(),
+            ]);
+        }
+    }
+
+    /**
+     * Sync product reservations for a budget.
+     * Only reserves stock for active budgets (pending, under_review, approved).
+     * 
+     * @param ProjectBudget $budget
+     * @param array $items Array of item data from the request
+     */
+    private function syncProductReservations(ProjectBudget $budget, array $items): void
+    {
+        // Only sync reservations for active budgets
+        $activeStatuses = [
+            ProjectBudget::STATUS_PENDING,
+            ProjectBudget::STATUS_UNDER_REVIEW,
+            ProjectBudget::STATUS_APPROVED,
+        ];
+
+        if (!in_array($budget->status, $activeStatuses)) {
+            // If budget is not active, delete all reservations
+            ProductReservation::where('project_budget_id', $budget->id)->delete();
+            return;
+        }
+
+        // Delete all existing reservations for this budget
+        ProductReservation::where('project_budget_id', $budget->id)->delete();
+
+        // Group product items by product_id and sum quantities
+        $productQuantities = [];
+        foreach ($items as $item) {
+            if ($item['item_type'] === 'product' && !empty($item['product_id'])) {
+                $productId = $item['product_id'];
+                $quantity = floatval($item['quantity'] ?? 0);
+                
+                if ($quantity > 0) {
+                    if (!isset($productQuantities[$productId])) {
+                        $productQuantities[$productId] = 0;
+                    }
+                    $productQuantities[$productId] += $quantity;
+                }
+            }
+        }
+
+        // Create reservations for each product
+        foreach ($productQuantities as $productId => $totalQuantity) {
+            ProductReservation::create([
+                'product_id' => $productId,
+                'project_budget_id' => $budget->id,
+                'quantity_reserved' => $totalQuantity,
+            ]);
+        }
     }
 }
 

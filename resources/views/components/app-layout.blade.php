@@ -549,7 +549,7 @@
                     </div>
                     @endif
 
-                    @can('view client-projects')
+                    @if(auth()->user()->hasRole('client'))
                     <a href="{{ route('client.dashboard') }}" class="flex items-center px-3 py-2 rounded-md text-sm font-medium {{ request()->routeIs('client.dashboard') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700' }}">
                         <i class="fi fi-rr-dashboard mr-3 text-base"></i>
                         {{ __('Dashboard') }}
@@ -558,7 +558,7 @@
                         <i class="fi fi-rr-home mr-3 text-base"></i>
                         {{ __('Minhas Obras') }}
                     </a>
-                    @endcan
+                    @endif
                     @can('view reports')
                     <a href="{{ route('reports.index') }}" class="flex items-center px-3 py-2 rounded-md text-sm font-medium {{ request()->routeIs('reports.*') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700' }}">
                         <i class="fi fi-rr-stats mr-3 text-base"></i>
@@ -608,12 +608,12 @@
                     </div>
                     @endcan
 
-                    @can('view attendance')
+                    @if(auth()->user()->hasRole('employee'))
                     <a href="{{ route('attendance.index') }}" class="flex items-center px-3 py-2 rounded-md text-sm font-medium {{ request()->routeIs('attendance.index') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700' }}">
                         <i class="fi fi-rr-map mr-3 text-base"></i>
                         {{ __('Bater Ponto') }}
                     </a>
-                    @endcan
+                    @endif
 
                     <!-- Dropdown Administração -->
                     @can('manage permissions')

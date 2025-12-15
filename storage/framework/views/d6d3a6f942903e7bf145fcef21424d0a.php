@@ -216,11 +216,19 @@ if (isset($__slots)) unset($__slots);
 
             openOffcanvas('product-offcanvas');
 
-            // Aguardar o componente estar disponível
-            setTimeout(() => {
-                const component = getProductFormComponent();
-                if (component) component.call('loadProduct', productId);
-            }, 200);
+            // SEMPRE resetar o formulário antes de carregar um novo produto
+            // Isso evita contaminação de estado entre produtos
+            const component = getProductFormComponent();
+            if (component) {
+                // Resetar primeiro
+                component.call('resetForm');
+                
+                // Aguardar um pouco para garantir que o reset foi processado
+                setTimeout(() => {
+                    // Agora carregar o produto
+                    component.call('loadProduct', productId);
+                }, 100);
+            }
         };
 
         Livewire.on('edit-product', ({ id }) => handleEditProduct(id));
