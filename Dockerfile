@@ -55,27 +55,32 @@ USER root
 COPY --chown=www:www composer.json composer.lock* /var/www/
 COPY --chown=www:www package.json package-lock.json* /var/www/
 
-# Install Composer dependencies with cache mount (only if composer files changed)
+# Install Composer dependencies with cache mount (cache apenas para downloads)
 RUN --mount=type=cache,target=/root/.composer/cache \
-    --mount=type=cache,target=/var/www/vendor \
     cd /var/www && \
     if [ -f composer.json ]; then \
+        echo "=== Installing Composer dependencies ===" && \
         composer install --no-dev --optimize-autoloader --no-interaction --no-scripts --prefer-dist || \
         composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist; \
+        echo "✓ Composer dependencies installed" && \
+        ls -la vendor/autoload.php || echo "⚠ Warning: vendor/autoload.php not found"; \
+    else \
+        echo "✗ composer.json NOT found, skipping composer install"; \
     fi
 
-# Install Node dependencies with cache mount (only if package files changed)
+# Install Node dependencies with cache mount (cache apenas para downloads)
 RUN --mount=type=cache,target=/root/.npm \
-    --mount=type=cache,target=/var/www/node_modules \
     cd /var/www && \
     if [ -f package.json ]; then \
         echo "=== Installing npm dependencies ===" && \
         npm ci --legacy-peer-deps --prefer-offline --no-audit 2>&1 || npm install --legacy-peer-deps --prefer-offline --no-audit 2>&1 || echo "npm install had issues but continuing..."; \
+        echo "✓ npm dependencies installed"; \
     else \
         echo "✗ package.json NOT found, skipping npm install"; \
     fi
 
 # Copy application code (this layer will be invalidated more often)
+# NOTA: Se usar bind mount em desenvolvimento, o entrypoint reinstala vendor se necessário
 COPY --chown=www:www . /var/www
 
 # Build assets (only if package.json exists and dependencies are installed)
@@ -251,24 +256,57 @@ RUN echo '#!/bin/bash' > /usr/local/bin/docker-entrypoint.sh && \
     echo 'chmod -R 775 /var/www/storage/framework /var/www/storage/logs' >> /usr/local/bin/docker-entrypoint.sh && \
     echo 'chmod -R o+r /var/www/storage/app/public' >> /usr/local/bin/docker-entrypoint.sh && \
     echo '' >> /usr/local/bin/docker-entrypoint.sh && \
+    echo '# Verificar e instalar dependências se necessário' >> /usr/local/bin/docker-entrypoint.sh && \
+    echo 'cd /var/www' >> /usr/local/bin/docker-entrypoint.sh && \
+    echo '' >> /usr/local/bin/docker-entrypoint.sh && \
+    echo '# Verificar vendor (necessário para artisan funcionar)' >> /usr/local/bin/docker-entrypoint.sh && \
+    echo 'if [ ! -f /var/www/vendor/autoload.php ]; then' >> /usr/local/bin/docker-entrypoint.sh && \
+    echo '    echo "⚠ vendor/autoload.php not found, installing Composer dependencies..."' >> /usr/local/bin/docker-entrypoint.sh && \
+    echo '    if [ -f composer.json ]; then' >> /usr/local/bin/docker-entrypoint.sh && \
+    echo '        composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist 2>&1' >> /usr/local/bin/docker-entrypoint.sh && \
+    echo '        if [ -f /var/www/vendor/autoload.php ]; then' >> /usr/local/bin/docker-entrypoint.sh && \
+    echo '            echo "✓ Composer dependencies installed successfully"' >> /usr/local/bin/docker-entrypoint.sh && \
+    echo '            chown -R www:www /var/www/vendor || true' >> /usr/local/bin/docker-entrypoint.sh && \
+    echo '        else' >> /usr/local/bin/docker-entrypoint.sh && \
+    echo '            echo "✗ Failed to install Composer dependencies"' >> /usr/local/bin/docker-entrypoint.sh && \
+    echo '        fi' >> /usr/local/bin/docker-entrypoint.sh && \
+    echo '    else' >> /usr/local/bin/docker-entrypoint.sh && \
+    echo '        echo "✗ composer.json not found"' >> /usr/local/bin/docker-entrypoint.sh && \
+    echo '    fi' >> /usr/local/bin/docker-entrypoint.sh && \
+    echo 'else' >> /usr/local/bin/docker-entrypoint.sh && \
+    echo '    echo "✓ vendor/autoload.php found"' >> /usr/local/bin/docker-entrypoint.sh && \
+    echo 'fi' >> /usr/local/bin/docker-entrypoint.sh && \
+    echo '' >> /usr/local/bin/docker-entrypoint.sh && \
+    echo '' >> /usr/local/bin/docker-entrypoint.sh && \
     echo '# Create storage symlink if it does not exist' >> /usr/local/bin/docker-entrypoint.sh && \
-    echo 'if [ ! -L /var/www/public/storage ]; then' >> /usr/local/bin/docker-entrypoint.sh && \
+    echo 'if [ ! -L /var/www/public/storage ] && [ -f /var/www/vendor/autoload.php ]; then' >> /usr/local/bin/docker-entrypoint.sh && \
     echo '    echo "Creating storage symlink..."' >> /usr/local/bin/docker-entrypoint.sh && \
     echo '    cd /var/www' >> /usr/local/bin/docker-entrypoint.sh && \
     echo '    php artisan storage:link 2>&1 || echo "Storage link already exists or failed"' >> /usr/local/bin/docker-entrypoint.sh && \
-    echo '    chown -R www:www /var/www/public/storage || true' >> /usr/local/bin/docker-entrypoint.sh && \
-    echo '    chmod -R 755 /var/www/public/storage || true' >> /usr/local/bin/docker-entrypoint.sh && \
+    echo '    if [ -L /var/www/public/storage ]; then' >> /usr/local/bin/docker-entrypoint.sh && \
+    echo '        chown -R www:www /var/www/public/storage || true' >> /usr/local/bin/docker-entrypoint.sh && \
+    echo '        chmod -R 755 /var/www/public/storage || true' >> /usr/local/bin/docker-entrypoint.sh && \
+    echo '    fi' >> /usr/local/bin/docker-entrypoint.sh && \
     echo 'fi' >> /usr/local/bin/docker-entrypoint.sh && \
     echo '' >> /usr/local/bin/docker-entrypoint.sh && \
-        echo '# Wait for Laravel to be ready before starting Reverb' >> /usr/local/bin/docker-entrypoint.sh && \
+    echo '# Wait for Laravel to be ready before starting Reverb' >> /usr/local/bin/docker-entrypoint.sh && \
     echo 'echo "Waiting for Laravel to be ready..."' >> /usr/local/bin/docker-entrypoint.sh && \
     echo 'cd /var/www' >> /usr/local/bin/docker-entrypoint.sh && \
-    echo 'for i in {1..30}; do' >> /usr/local/bin/docker-entrypoint.sh && \
+    echo 'if [ ! -f /var/www/vendor/autoload.php ]; then' >> /usr/local/bin/docker-entrypoint.sh && \
+    echo '    echo "✗ ERROR: vendor/autoload.php is missing. Laravel cannot start."' >> /usr/local/bin/docker-entrypoint.sh && \
+    echo '    echo "Please check if Composer dependencies were installed correctly."' >> /usr/local/bin/docker-entrypoint.sh && \
+    echo '    exit 1' >> /usr/local/bin/docker-entrypoint.sh && \
+    echo 'fi' >> /usr/local/bin/docker-entrypoint.sh && \
+    echo 'for i in {1..10}; do' >> /usr/local/bin/docker-entrypoint.sh && \
     echo '    if php artisan --version >/dev/null 2>&1; then' >> /usr/local/bin/docker-entrypoint.sh && \
     echo '        echo "✓ Laravel is ready"' >> /usr/local/bin/docker-entrypoint.sh && \
     echo '        break' >> /usr/local/bin/docker-entrypoint.sh && \
     echo '    fi' >> /usr/local/bin/docker-entrypoint.sh && \
-    echo '    echo "Waiting for Laravel... ($i/30)"' >> /usr/local/bin/docker-entrypoint.sh && \
+    echo '    if [ $i -eq 10 ]; then' >> /usr/local/bin/docker-entrypoint.sh && \
+    echo '        echo "⚠ Warning: Laravel artisan command failed, but continuing anyway..."' >> /usr/local/bin/docker-entrypoint.sh && \
+    echo '    else' >> /usr/local/bin/docker-entrypoint.sh && \
+    echo '        echo "Waiting for Laravel... ($i/10)"' >> /usr/local/bin/docker-entrypoint.sh && \
+    echo '    fi' >> /usr/local/bin/docker-entrypoint.sh && \
     echo '    sleep 1' >> /usr/local/bin/docker-entrypoint.sh && \
     echo 'done' >> /usr/local/bin/docker-entrypoint.sh && \
     echo '' >> /usr/local/bin/docker-entrypoint.sh && \

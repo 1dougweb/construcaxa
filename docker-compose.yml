@@ -10,7 +10,9 @@ services:
       - .:/var/www
       - ./php/local.ini:/usr/local/etc/php/conf.d/local.ini
       # Volumes persistentes para dados (não sobrescrevem, apenas persistem)
-      # Em produção, use apenas os volumes nomeados abaixo e remova o bind mount ".:/var/www"
+      # NOTA: Em desenvolvimento, o bind mount ".:/var/www" sobrescreve vendor/node_modules
+      # O entrypoint detecta isso e reinstala automaticamente se necessário
+      # Em produção, use docker-compose.prod.yml (sem bind mount)
       - storage_public:/var/www/storage/app/public
       - storage_framework:/var/www/storage/framework
       - storage_logs:/var/www/storage/logs
