@@ -128,6 +128,46 @@ class ClientController extends Controller
     public function show(Client $client)
     {
         $client->load(['contracts', 'projects', 'budgets', 'user']);
+
+        if (request()->wantsJson() || request()->ajax()) {
+            // Garantir contadores mesmo fora do index
+            $projectsCount = method_exists($client, 'projects') ? $client->projects()->count() : 0;
+            $contractsCount = method_exists($client, 'contracts') ? $client->contracts()->count() : 0;
+            $budgetsCount = method_exists($client, 'budgets') ? $client->budgets()->count() : 0;
+
+            return response()->json([
+                'success' => true,
+                'client' => [
+                    'id' => $client->id,
+                    'type' => $client->type,
+                    'name' => $client->name,
+                    'trading_name' => $client->trading_name,
+                    'email' => $client->email,
+                    'phone' => $client->phone,
+                    'formatted_phone' => $client->formatted_phone ?? null,
+                    'cpf' => $client->cpf,
+                    'cnpj' => $client->cnpj,
+                    'formatted_cpf' => $client->formatted_cpf ?? null,
+                    'formatted_cnpj' => $client->formatted_cnpj ?? null,
+                    'address' => $client->address,
+                    'address_number' => $client->address_number,
+                    'address_complement' => $client->address_complement,
+                    'neighborhood' => $client->neighborhood,
+                    'city' => $client->city,
+                    'state' => $client->state,
+                    'zip_code' => $client->zip_code,
+                    'formatted_zip_code' => $client->formatted_zip_code ?? null,
+                    'notes' => $client->notes,
+                    'is_active' => (bool) $client->is_active,
+                    'projects_count' => $projectsCount,
+                    'contracts_count' => $contractsCount,
+                    'budgets_count' => $budgetsCount,
+                    'created_at' => $client->created_at?->toIso8601String(),
+                    'updated_at' => $client->updated_at?->toIso8601String(),
+                ],
+            ]);
+        }
+
         return view('clients.show', compact('client'));
     }
 

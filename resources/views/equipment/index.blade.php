@@ -308,45 +308,70 @@
 
 @push('scripts')
 <script>
-    document.addEventListener('livewire:init', () => {
-        Livewire.on('equipmentSaved', () => {
-            closeOffcanvas('equipment-offcanvas');
-            // Recarregar a página para atualizar a lista
-            window.location.reload();
+    (function () {
+        const getEquipmentFormComponent = () => {
+            const offcanvas = document.getElementById('equipment-offcanvas');
+            if (!offcanvas) return null;
+            const componentEl = offcanvas.querySelector('[wire\\:id]');
+            return componentEl ? Livewire.find(componentEl.getAttribute('wire:id')) : null;
+        };
+
+        document.addEventListener('livewire:init', () => {
+            Livewire.on('equipmentSaved', () => {
+                closeOffcanvas('equipment-offcanvas');
+                // Recarregar a página para atualizar a lista
+                window.location.reload();
+            });
         });
-    });
 
-    // Escutar evento de edição
-    window.addEventListener('edit-equipment', (event) => {
-        const equipmentId = event.detail.id;
-        const offcanvas = document.getElementById('equipment-offcanvas');
-        const title = offcanvas.querySelector('h2');
-        if (title) {
-            title.textContent = 'Editar Equipamento';
-        }
-        // Encontrar o componente Livewire e carregar o equipamento
-        const livewireComponent = document.querySelector('[wire\\:id]');
-        if (livewireComponent) {
-            const componentId = livewireComponent.getAttribute('wire:id');
-            Livewire.find(componentId).call('loadEquipment', equipmentId);
-        }
-    });
-
-    // Resetar título quando abrir para novo
-    document.addEventListener('click', (e) => {
-        if (e.target.closest('[onclick*="equipment-offcanvas"]') && !e.target.closest('[onclick*="edit-equipment"]')) {
+        // Escutar evento de edição
+        window.addEventListener('edit-equipment', (event) => {
+            const equipmentId = event.detail.id;
             const offcanvas = document.getElementById('equipment-offcanvas');
             const title = offcanvas.querySelector('h2');
             if (title) {
-                title.textContent = 'Novo Equipamento';
+                title.textContent = 'Editar Equipamento';
             }
-            // Resetar o formulário
-            const livewireComponent = document.querySelector('[wire\\:id]');
-            if (livewireComponent) {
-                const componentId = livewireComponent.getAttribute('wire:id');
-                Livewire.find(componentId).call('resetForm');
+            // Abrir o offcanvas antes de carregar os dados
+            openOffcanvas('equipment-offcanvas');
+
+            // Aguardar o componente dentro do offcanvas estar disponível
+            setTimeout(() => {
+                const component = getEquipmentFormComponent();
+                if (component) {
+                    // Chamada direta ao método Livewire
+                    component.call('loadEquipment', equipmentId);
+                    // Fallback: disparar evento Livewire para componentes ouvintes
+                    if (window.Livewire?.dispatch) {
+                        window.Livewire.dispatch('edit-equipment', { id: equipmentId });
+                    }
+                } else {
+                    console.warn('[equipment] componente equipment-form não encontrado dentro do offcanvas');
+                }
+            }, 200);
+        });
+
+        // Resetar título e formulário quando abrir para novo
+        document.addEventListener('click', (e) => {
+            if (e.target.closest('[onclick*="equipment-offcanvas"]') && !e.target.closest('[onclick*="edit-equipment"]')) {
+                const offcanvas = document.getElementById('equipment-offcanvas');
+                const title = offcanvas.querySelector('h2');
+                if (title) {
+                    title.textContent = 'Novo Equipamento';
+                }
+
+                // Resetar o formulário apenas do componente dentro do offcanvas
+                setTimeout(() => {
+                    const component = getEquipmentFormComponent();
+                    if (component) {
+                        component.call('resetForm');
+                        if (window.Livewire?.dispatch) {
+                            window.Livewire.dispatch('reset-equipment-form');
+                        }
+                    }
+                }, 100);
             }
-        }
-    });
+        });
+    })();
 </script>
 @endpush

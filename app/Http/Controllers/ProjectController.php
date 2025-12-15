@@ -12,10 +12,16 @@ use App\Models\ProjectUpdate;
 use App\Models\ProjectTask;
 use App\Models\Service;
 use App\Models\LaborType;
+use App\Models\Inspection;
+use App\Mail\BudgetClientRequestNotification;
+use App\Mail\BudgetApprovedByClientNotification;
+use App\Mail\BudgetRejectedByClientNotification;
 use App\Services\GoogleMapsService;
 use App\Services\NotificationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 
@@ -34,11 +40,38 @@ class ProjectController extends Controller
         }
         return false;
     }
-    public function index()
+    public function index(Request $request)
     {
         // Access controlled by route middleware (role_or_permission)
-        $projects = Project::latest()->paginate(15);
-        return view('projects.index', compact('projects'));
+        $query = Project::query();
+        
+        // Filtro por status
+        if ($request->has('status') && $request->status !== '') {
+            $query->where('status', $request->status);
+        }
+        
+        // Busca por nome ou código
+        if ($request->has('search') && $request->search !== '') {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('code', 'like', "%{$search}%");
+            });
+        }
+        
+        $projects = $query->latest()->paginate(15)->withQueryString();
+        
+        // Estatísticas
+        $stats = [
+            'total' => Project::count(),
+            'in_progress' => Project::where('status', 'in_progress')->count(),
+            'completed' => Project::where('status', 'completed')->count(),
+            'planned' => Project::where('status', 'planned')->count(),
+            'paused' => Project::where('status', 'paused')->count(),
+            'cancelled' => Project::where('status', 'cancelled')->count(),
+        ];
+        
+        return view('projects.index', compact('projects', 'stats'));
     }
 
     public function create()
@@ -391,26 +424,51 @@ class ProjectController extends Controller
     {
         abort_unless(auth()->user()->can('manage budgets') || auth()->user()->hasAnyRole(['manager','admin']), 403);
         
-        $data = $request->validate([
-            'client_id' => ['required', 'exists:clients,id'],
-            'inspection_id' => ['nullable', 'exists:inspections,id'],
-            'version' => ['required', 'integer', 'min:1'],
-            'discount' => ['nullable', 'numeric', 'min:0'],
-            'status' => ['required', 'in:pending,under_review,approved,rejected,cancelled'],
-            'notes' => ['nullable', 'string'],
-            'items' => ['required', 'array', 'min:1'],
-            'items.*.item_type' => ['required', 'in:product,service,labor'],
-            'items.*.product_id' => ['nullable', 'required_if:items.*.item_type,product', 'exists:products,id'],
-            'items.*.service_id' => ['nullable', 'required_if:items.*.item_type,service', 'exists:services,id'],
-            'items.*.labor_type_id' => ['nullable', 'required_if:items.*.item_type,labor', 'exists:labor_types,id'],
-            'items.*.description' => ['required', 'string', 'max:255'],
-            'items.*.quantity' => ['nullable', 'numeric', 'min:0'],
-            'items.*.hours' => ['nullable', 'numeric', 'min:0'],
-            'items.*.overtime_hours' => ['nullable', 'numeric', 'min:0'],
-            'items.*.unit_price' => ['required', 'numeric', 'min:0'],
-        ]);
+        try {
+            $data = $request->validate([
+                'client_id' => ['required', 'exists:clients,id'],
+                'inspection_id' => ['nullable', 'exists:inspections,id'],
+                'version' => ['required', 'integer', 'min:1'],
+                'address' => ['nullable', 'string', 'max:255'],
+                'discount' => ['nullable', 'numeric', 'min:0'],
+                'status' => ['required', 'in:pending,under_review,approved,rejected,cancelled'],
+                'notes' => ['nullable', 'string'],
+                'items' => ['required', 'array', 'min:1'],
+                'items.*.item_type' => ['required', 'in:product,service,labor'],
+                'items.*.product_id' => ['nullable', 'required_if:items.*.item_type,product', 'exists:products,id'],
+                'items.*.service_id' => ['nullable', 'required_if:items.*.item_type,service', 'exists:services,id'],
+                'items.*.labor_type_id' => ['nullable', 'required_if:items.*.item_type,labor', 'exists:labor_types,id'],
+                'items.*.description' => ['required', 'string', 'max:255'],
+                'items.*.quantity' => ['nullable', 'numeric', 'min:0'],
+                'items.*.hours' => ['nullable', 'numeric', 'min:0'],
+                'items.*.overtime_hours' => ['nullable', 'numeric', 'min:0'],
+                'items.*.unit_price' => ['required', 'numeric', 'min:0'],
+            ], [
+                'client_id.required' => 'Por favor, selecione um cliente.',
+                'client_id.exists' => 'O cliente selecionado não existe.',
+                'version.required' => 'A versão do orçamento é obrigatória.',
+                'version.integer' => 'A versão deve ser um número inteiro.',
+                'version.min' => 'A versão deve ser pelo menos 1.',
+                'status.required' => 'O status do orçamento é obrigatório.',
+                'status.in' => 'O status selecionado é inválido.',
+                'items.required' => 'É necessário adicionar pelo menos um item ao orçamento.',
+                'items.min' => 'É necessário adicionar pelo menos um item ao orçamento.',
+                'items.*.item_type.required' => 'O tipo do item é obrigatório.',
+                'items.*.item_type.in' => 'O tipo do item deve ser produto, serviço ou mão de obra.',
+                'items.*.description.required' => 'A descrição do item é obrigatória.',
+                'items.*.unit_price.required' => 'O preço unitário do item é obrigatório.',
+                'items.*.unit_price.numeric' => 'O preço unitário deve ser um número.',
+                'items.*.unit_price.min' => 'O preço unitário deve ser maior ou igual a zero.',
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            Log::error('Erro de validação ao criar orçamento', [
+                'errors' => $e->errors(),
+                'request_data' => $request->all()
+            ]);
+            return back()->withInput()->withErrors($e->errors());
+        }
 
-        // Calculate subtotal and total based on item type
+        // Calculate subtotal e total com base no tipo de item
         $subtotal = collect($data['items'])->sum(function ($item) {
             if ($item['item_type'] === 'labor') {
                 $hours = ($item['hours'] ?? 0);
@@ -430,6 +488,7 @@ class ProjectController extends Controller
                 'inspection_id' => $data['inspection_id'] ?? null,
                 'project_id' => null, // Will be set when approved
                 'version' => $data['version'],
+                'address' => $data['address'] ?? null,
                 'subtotal' => $subtotal,
                 'discount' => $discount,
                 'total' => $total,
@@ -439,6 +498,14 @@ class ProjectController extends Controller
                 'approved_at' => $data['status'] === 'approved' ? now() : null,
                 'approved_by' => $data['status'] === 'approved' ? auth()->id() : null,
             ]);
+
+            // Se uma vistoria foi selecionada, vincular também o orçamento à vistoria
+            if (!empty($data['inspection_id'])) {
+                $inspection = Inspection::find($data['inspection_id']);
+                if ($inspection && !$inspection->budget_id) {
+                    $inspection->update(['budget_id' => $budget->id]);
+                }
+            }
 
             // Create project automatically if budget is approved
             if ($data['status'] === 'approved') {
@@ -471,6 +538,93 @@ class ProjectController extends Controller
             }
 
             DB::commit();
+            
+            // Enviar e-mail para o cliente com o orçamento recém-criado
+            try {
+                Log::info('[BUDGET EMAIL] Iniciando processo de envio de email de orçamento', [
+                    'budget_id' => $budget->id,
+                    'client_id' => $budget->client_id,
+                ]);
+                
+                $budget->loadMissing(['client', 'items', 'inspection']);
+                $clientEmail = $budget->client?->email ?? $budget->client?->user?->email;
+                
+                Log::info('[BUDGET EMAIL] Email do cliente identificado', [
+                    'budget_id' => $budget->id,
+                    'client_email' => $clientEmail,
+                    'client_id' => $budget->client_id,
+                    'has_client' => $budget->client !== null,
+                    'has_client_user' => $budget->client?->user !== null,
+                ]);
+                
+                if ($clientEmail) {
+                    // Aplicar configurações de email definidas em /admin/email
+                    Log::info('[BUDGET EMAIL] Aplicando configurações de email', [
+                        'budget_id' => $budget->id,
+                    ]);
+                    
+                    if (class_exists(\App\Http\Controllers\AdminController::class) && method_exists(\App\Http\Controllers\AdminController::class, 'applyEmailSettings')) {
+                        \App\Http\Controllers\AdminController::applyEmailSettings();
+                        Log::info('[BUDGET EMAIL] Configurações de email aplicadas', [
+                            'budget_id' => $budget->id,
+                            'mail_default' => config('mail.default'),
+                            'mail_from_address' => config('mail.from.address'),
+                        ]);
+                    } else {
+                        Log::warning('[BUDGET EMAIL] AdminController::applyEmailSettings não encontrado', [
+                            'budget_id' => $budget->id,
+                        ]);
+                    }
+                    
+                    Log::info('[BUDGET EMAIL] Criando instância do mailable', [
+                        'budget_id' => $budget->id,
+                        'email' => $clientEmail,
+                    ]);
+                    
+                    $mailable = new BudgetClientRequestNotification($budget);
+                    
+                    Log::info('[BUDGET EMAIL] Enviando email via Mail::to()->send()', [
+                        'budget_id' => $budget->id,
+                        'email' => $clientEmail,
+                    ]);
+                    
+                    Mail::to($clientEmail)->send($mailable);
+                    
+                    // Criar notificação para o cliente
+                    NotificationService::createBudgetSentNotification($budget);
+                    
+                    Log::info('[BUDGET EMAIL] Email de orçamento enviado com SUCESSO para o cliente', [
+                        'budget_id' => $budget->id,
+                        'client_id' => $budget->client_id,
+                        'email' => $clientEmail,
+                    ]);
+                } else {
+                    Log::warning('[BUDGET EMAIL] Não foi possível enviar email de orçamento: cliente sem email definido', [
+                        'budget_id' => $budget->id,
+                        'client_id' => $budget->client_id,
+                        'client_email' => $budget->client?->email,
+                        'client_user_email' => $budget->client?->user?->email,
+                    ]);
+                }
+            } catch (\Exception $mailException) {
+                Log::error('[BUDGET EMAIL] ERRO ao enviar email de orçamento para o cliente', [
+                    'budget_id' => $budget->id ?? null,
+                    'client_id' => $data['client_id'] ?? null,
+                    'email' => $clientEmail ?? null,
+                    'error_message' => $mailException->getMessage(),
+                    'error_file' => $mailException->getFile(),
+                    'error_line' => $mailException->getLine(),
+                    'error_trace' => $mailException->getTraceAsString(),
+                ]);
+            }
+            
+            Log::info('Orçamento criado com sucesso', [
+                'budget_id' => $budget->id,
+                'client_id' => $budget->client_id,
+                'total' => $budget->total,
+                'items_count' => $budget->items()->count()
+            ]);
+            
             $message = 'Orçamento criado com sucesso!';
             if ($data['status'] === 'approved' && isset($project)) {
                 $message .= ' Projeto criado automaticamente com OS número ' . $project->os_number . '.';
@@ -478,7 +632,21 @@ class ProjectController extends Controller
             return redirect()->route('budgets.index')->with('success', $message);
         } catch (\Exception $e) {
             DB::rollBack();
-            return back()->withInput()->with('error', 'Erro ao criar orçamento: ' . $e->getMessage());
+            
+            Log::error('Erro ao criar orçamento', [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+                'request_data' => $request->except(['_token'])
+            ]);
+            
+            $errorMessage = 'Erro ao criar orçamento. ';
+            if (config('app.debug')) {
+                $errorMessage .= $e->getMessage();
+            } else {
+                $errorMessage .= 'Por favor, verifique os dados e tente novamente.';
+            }
+            
+            return back()->withInput()->with('error', $errorMessage);
         }
     }
 
@@ -522,6 +690,8 @@ class ProjectController extends Controller
         ]);
 
         // Calculate subtotal and total based on item type
+        $oldVersion = $budget->version;
+
         $subtotal = collect($data['items'])->sum(function ($item) {
             if ($item['item_type'] === 'labor') {
                 $hours = ($item['hours'] ?? 0);
@@ -534,6 +704,8 @@ class ProjectController extends Controller
         $discount = $data['discount'] ?? 0;
         $total = $subtotal - $discount;
 
+        $oldVersion = $budget->version;
+
         DB::beginTransaction();
         try {
             // Check if status changed to approved
@@ -543,6 +715,7 @@ class ProjectController extends Controller
                 'client_id' => $data['client_id'],
                 'inspection_id' => $data['inspection_id'] ?? null,
                 'version' => $data['version'],
+                'address' => $data['address'] ?? null,
                 'subtotal' => $subtotal,
                 'discount' => $discount,
                 'total' => $total,
@@ -586,6 +759,73 @@ class ProjectController extends Controller
 
             DB::commit();
             
+            // Reenviar automaticamente se a versão foi alterada
+            if ((int) $data['version'] !== (int) $oldVersion) {
+                try {
+                    Log::info('[BUDGET EMAIL] Versão alterada, iniciando reenvio automático', [
+                        'budget_id' => $budget->id,
+                        'old_version' => $oldVersion,
+                        'new_version' => $data['version'],
+                    ]);
+                    
+                    $budget->loadMissing(['client', 'items', 'inspection']);
+                    $clientEmail = $budget->client?->email ?? $budget->client?->user?->email;
+                    
+                    Log::info('[BUDGET EMAIL] Email do cliente identificado (reenvio automático)', [
+                        'budget_id' => $budget->id,
+                        'client_email' => $clientEmail,
+                    ]);
+                    
+                    if ($clientEmail) {
+                        // Aplicar configurações de email definidas em /admin/email
+                        if (class_exists(\App\Http\Controllers\AdminController::class) && method_exists(\App\Http\Controllers\AdminController::class, 'applyEmailSettings')) {
+                            \App\Http\Controllers\AdminController::applyEmailSettings();
+                            Log::info('[BUDGET EMAIL] Configurações de email aplicadas (reenvio automático)', [
+                                'budget_id' => $budget->id,
+                                'mail_default' => config('mail.default'),
+                            ]);
+                        }
+                        
+                        Log::info('[BUDGET EMAIL] Enviando email via Mail::to()->send() (reenvio automático)', [
+                            'budget_id' => $budget->id,
+                            'email' => $clientEmail,
+                        ]);
+                        
+                        Mail::to($clientEmail)->send(new BudgetClientRequestNotification($budget));
+                        
+                        // Criar notificação para o cliente
+                        NotificationService::createBudgetSentNotification($budget);
+                        
+                        Log::info('[BUDGET EMAIL] Email de orçamento reenviado automaticamente com SUCESSO após alteração de versão', [
+                            'budget_id' => $budget->id,
+                            'client_id' => $budget->client_id,
+                            'old_version' => $oldVersion,
+                            'new_version' => $data['version'],
+                            'email' => $clientEmail,
+                        ]);
+                    } else {
+                        Log::warning('[BUDGET EMAIL] Não foi possível reenviar email de orçamento após alteração de versão: cliente sem email definido', [
+                            'budget_id' => $budget->id,
+                            'client_id' => $budget->client_id,
+                            'old_version' => $oldVersion,
+                            'new_version' => $data['version'],
+                        ]);
+                    }
+                } catch (\Exception $mailException) {
+                    Log::error('[BUDGET EMAIL] ERRO ao reenviar email de orçamento após alteração de versão', [
+                        'budget_id' => $budget->id,
+                        'client_id' => $data['client_id'] ?? null,
+                        'old_version' => $oldVersion,
+                        'new_version' => $data['version'],
+                        'email' => $clientEmail ?? null,
+                        'error_message' => $mailException->getMessage(),
+                        'error_file' => $mailException->getFile(),
+                        'error_line' => $mailException->getLine(),
+                        'error_trace' => $mailException->getTraceAsString(),
+                    ]);
+                }
+            }
+            
             $message = 'Orçamento atualizado com sucesso!';
             if ($wasApproved && isset($project)) {
                 $message .= ' Projeto criado automaticamente com OS número ' . $project->os_number . '.';
@@ -595,6 +835,95 @@ class ProjectController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
             return back()->withInput()->with('error', 'Erro ao atualizar orçamento: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Reenviar orçamento manualmente para o cliente.
+     */
+    public function budgetsResend(ProjectBudget $budget)
+    {
+        abort_unless(auth()->user()->can('manage budgets') || auth()->user()->hasAnyRole(['manager','admin']), 403);
+
+        try {
+            Log::info('[BUDGET EMAIL] Iniciando reenvio manual de email de orçamento', [
+                'budget_id' => $budget->id,
+                'client_id' => $budget->client_id,
+                'user_id' => auth()->id(),
+            ]);
+            
+            $budget->loadMissing(['client', 'items', 'inspection']);
+            $clientEmail = $budget->client?->email ?? $budget->client?->user?->email;
+
+            Log::info('[BUDGET EMAIL] Email do cliente identificado (reenvio manual)', [
+                'budget_id' => $budget->id,
+                'client_email' => $clientEmail,
+                'has_client' => $budget->client !== null,
+                'has_client_user' => $budget->client?->user !== null,
+            ]);
+
+            if (!$clientEmail) {
+                Log::warning('[BUDGET EMAIL] Cliente sem email definido (reenvio manual)', [
+                    'budget_id' => $budget->id,
+                    'client_id' => $budget->client_id,
+                ]);
+                return back()->with('error', 'Não foi possível reenviar o orçamento: o cliente não possui e-mail configurado.');
+            }
+
+            // Aplicar configurações de email definidas em /admin/email
+            Log::info('[BUDGET EMAIL] Aplicando configurações de email (reenvio manual)', [
+                'budget_id' => $budget->id,
+            ]);
+            
+            if (class_exists(\App\Http\Controllers\AdminController::class) && method_exists(\App\Http\Controllers\AdminController::class, 'applyEmailSettings')) {
+                \App\Http\Controllers\AdminController::applyEmailSettings();
+                Log::info('[BUDGET EMAIL] Configurações de email aplicadas (reenvio manual)', [
+                    'budget_id' => $budget->id,
+                    'mail_default' => config('mail.default'),
+                    'mail_from_address' => config('mail.from.address'),
+                ]);
+            } else {
+                Log::warning('[BUDGET EMAIL] AdminController::applyEmailSettings não encontrado (reenvio manual)', [
+                    'budget_id' => $budget->id,
+                ]);
+            }
+
+            Log::info('[BUDGET EMAIL] Criando instância do mailable (reenvio manual)', [
+                'budget_id' => $budget->id,
+                'email' => $clientEmail,
+            ]);
+            
+            $mailable = new BudgetClientRequestNotification($budget);
+            
+            Log::info('[BUDGET EMAIL] Enviando email via Mail::to()->send() (reenvio manual)', [
+                'budget_id' => $budget->id,
+                'email' => $clientEmail,
+            ]);
+
+            Mail::to($clientEmail)->send($mailable);
+            
+            // Criar notificação para o cliente
+            NotificationService::createBudgetSentNotification($budget);
+
+            Log::info('[BUDGET EMAIL] Email de orçamento reenviado manualmente com SUCESSO para o cliente', [
+                'budget_id' => $budget->id,
+                'client_id' => $budget->client_id,
+                'email' => $clientEmail,
+            ]);
+
+            return back()->with('success', 'Orçamento reenviado para o cliente com sucesso.');
+        } catch (\Exception $e) {
+            Log::error('[BUDGET EMAIL] ERRO ao reenviar orçamento para o cliente (reenvio manual)', [
+                'budget_id' => $budget->id,
+                'client_id' => $budget->client_id,
+                'email' => $clientEmail ?? null,
+                'error_message' => $e->getMessage(),
+                'error_file' => $e->getFile(),
+                'error_line' => $e->getLine(),
+                'error_trace' => $e->getTraceAsString(),
+            ]);
+
+            return back()->with('error', 'Erro ao reenviar orçamento para o cliente: ' . $e->getMessage());
         }
     }
 
@@ -663,6 +992,166 @@ class ProjectController extends Controller
         
         $budget->update(['status' => 'cancelled']);
         return back()->with('success', 'Orçamento cancelado.');
+    }
+
+    /**
+     * Show budget for client (with approve/reject actions)
+     */
+    public function budgetsShowForClient(ProjectBudget $budget)
+    {
+        $client = Client::where('user_id', auth()->id())->first();
+        
+        abort_unless($client && $budget->client_id === $client->id, 403);
+        
+        $budget->loadMissing(['client', 'items', 'inspection']);
+        
+        return view('budgets.client-actions', compact('budget', 'client'));
+    }
+
+    /**
+     * Approve budget by client
+     */
+    public function budgetsApproveByClient(Request $request, ProjectBudget $budget)
+    {
+        $client = Client::where('user_id', auth()->id())->first();
+        
+        abort_unless($client && $budget->client_id === $client->id, 403);
+        
+        if ($budget->status === 'approved') {
+            return back()->with('error', 'Este orçamento já está aprovado.');
+        }
+
+        if ($budget->status === 'cancelled') {
+            return back()->with('error', 'Não é possível aprovar um orçamento cancelado.');
+        }
+
+        DB::beginTransaction();
+        try {
+            $budget->update([
+                'status' => 'approved',
+                'approved_at' => now(),
+                'approved_by' => auth()->id(),
+            ]);
+
+            // Create project automatically if it doesn't exist
+            if (!$budget->project_id) {
+                $project = Project::createFromApprovedBudget($budget);
+            }
+
+            DB::commit();
+            
+            // Criar notificação para admins/gerentes
+            NotificationService::createBudgetApprovedByClientNotification($budget);
+            
+            // Enviar email para admins/gerentes
+            try {
+                if (class_exists(\App\Http\Controllers\AdminController::class) && method_exists(\App\Http\Controllers\AdminController::class, 'applyEmailSettings')) {
+                    \App\Http\Controllers\AdminController::applyEmailSettings();
+                }
+                
+                try {
+                    $admins = \App\Models\User::role(['admin', 'manager'])->get();
+                } catch (\Exception $e) {
+                    $admins = \App\Models\User::whereHas('roles', function ($query) {
+                        $query->whereIn('name', ['admin', 'manager']);
+                    })->get();
+                }
+                
+                foreach ($admins as $admin) {
+                    if ($admin->email) {
+                        Mail::to($admin->email)->send(new BudgetApprovedByClientNotification($budget));
+                    }
+                }
+            } catch (\Exception $e) {
+                Log::error('Erro ao enviar email de aprovação pelo cliente', [
+                    'budget_id' => $budget->id,
+                    'error' => $e->getMessage(),
+                ]);
+            }
+            
+            return redirect()->route('client.dashboard')->with('success', 'Orçamento aprovado com sucesso! O projeto será criado automaticamente.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Erro ao aprovar orçamento pelo cliente', [
+                'budget_id' => $budget->id,
+                'client_id' => $client->id,
+                'error' => $e->getMessage(),
+            ]);
+            return back()->with('error', 'Erro ao aprovar orçamento: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Reject budget by client
+     */
+    public function budgetsRejectByClient(Request $request, ProjectBudget $budget)
+    {
+        $client = Client::where('user_id', auth()->id())->first();
+        
+        abort_unless($client && $budget->client_id === $client->id, 403);
+        
+        if ($budget->status === 'approved') {
+            return back()->with('error', 'Não é possível rejeitar um orçamento já aprovado.');
+        }
+
+        if ($budget->status === 'cancelled') {
+            return back()->with('error', 'Não é possível rejeitar um orçamento cancelado.');
+        }
+
+        $validated = $request->validate([
+            'rejection_reason' => 'nullable|string|max:1000',
+        ]);
+
+        DB::beginTransaction();
+        try {
+            $budget->update([
+                'status' => 'rejected',
+                'rejected_at' => now(),
+                'rejected_by' => auth()->id(),
+                'rejection_reason' => $validated['rejection_reason'] ?? null,
+            ]);
+
+            DB::commit();
+            
+            // Criar notificação para admins/gerentes
+            NotificationService::createBudgetRejectedByClientNotification($budget);
+            
+            // Enviar email para admins/gerentes
+            try {
+                if (class_exists(\App\Http\Controllers\AdminController::class) && method_exists(\App\Http\Controllers\AdminController::class, 'applyEmailSettings')) {
+                    \App\Http\Controllers\AdminController::applyEmailSettings();
+                }
+                
+                try {
+                    $admins = \App\Models\User::role(['admin', 'manager'])->get();
+                } catch (\Exception $e) {
+                    $admins = \App\Models\User::whereHas('roles', function ($query) {
+                        $query->whereIn('name', ['admin', 'manager']);
+                    })->get();
+                }
+                
+                foreach ($admins as $admin) {
+                    if ($admin->email) {
+                        Mail::to($admin->email)->send(new BudgetRejectedByClientNotification($budget));
+                    }
+                }
+            } catch (\Exception $e) {
+                Log::error('Erro ao enviar email de rejeição pelo cliente', [
+                    'budget_id' => $budget->id,
+                    'error' => $e->getMessage(),
+                ]);
+            }
+            
+            return redirect()->route('client.dashboard')->with('success', 'Orçamento rejeitado. Sua contestação foi registrada.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Erro ao rejeitar orçamento pelo cliente', [
+                'budget_id' => $budget->id,
+                'client_id' => $client->id,
+                'error' => $e->getMessage(),
+            ]);
+            return back()->with('error', 'Erro ao rejeitar orçamento: ' . $e->getMessage());
+        }
     }
 
     /**

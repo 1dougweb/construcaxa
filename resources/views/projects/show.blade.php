@@ -35,60 +35,155 @@
                 </div>
             </div>
 
-            <div class="bg-white dark:bg-gray-800 rounded-md shadow p-4 border border-gray-200 dark:border-gray-700">
-                <div class="flex items-center justify-between mb-3">
-                    <h2 class="font-medium text-gray-900 dark:text-gray-100">Timeline</h2>
-                    @can('post project-updates')
-                    <form action="{{ route('projects.updates.store', $project) }}" method="POST" class="flex items-end gap-2">
-                        @csrf
-                        <div>
-                            <label class="block text-xs text-gray-600 dark:text-gray-400">Tipo</label>
-                            <select name="type" class="border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 rounded-md text-sm">
-                                <option value="note">Nota</option>
-                                <option value="issue">Problema</option>
-                                <option value="material_missing">Material faltante</option>
-                                <option value="progress">Progresso</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="block text-xs text-gray-600 dark:text-gray-400">Mensagem</label>
-                            <input name="message" class="border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 rounded-md text-sm w-64" placeholder="Descreva a atualização" required>
-                        </div>
-                        <div>
-                            <label class="block text-xs text-gray-600 dark:text-gray-400">Δ Progresso</label>
-                            <input name="progress_delta" type="number" class="border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 rounded-md text-sm w-24" placeholder="ex: 5">
-                        </div>
-                        <button class="px-3 py-2 bg-indigo-600 dark:bg-indigo-700 text-white rounded-md text-sm hover:bg-indigo-700 dark:hover:bg-indigo-600">Postar</button>
-                    </form>
-                    @endcan
+            <div class="bg-white dark:bg-gray-800 rounded-md shadow p-6 border border-gray-200 dark:border-gray-700">
+                <div class="flex items-center justify-between mb-6">
+                    <div>
+                        <h2 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Timeline</h2>
+                        <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Acompanhe todas as atualizações do projeto</p>
+                    </div>
                 </div>
-                <ul class="space-y-4">
-                    @forelse($project->updates()->latest()->take(20)->get() as $update)
-                    <li class="border-l-2 pl-3 {{ $update->type === 'issue' ? 'border-red-400 dark:border-red-500' : 'border-gray-300 dark:border-gray-600' }}">
-                        <div class="text-sm text-gray-700 dark:text-gray-300">
-                            <span class="font-medium">{{ $update->user->name }}</span>
-                            <span class="text-gray-500 dark:text-gray-400">· {{ $update->created_at->format('d/m/Y H:i') }}</span>
-                            <span class="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200">{{ $update->type }}</span>
+
+                @can('post project-updates')
+                <div class="mb-6 bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4 border border-gray-200 dark:border-gray-600">
+                    <form action="{{ route('projects.updates.store', $project) }}" method="POST" class="space-y-4">
+                        @csrf
+                        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Tipo de Atualização</label>
+                                <select name="type" class="w-full border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 rounded-md text-sm shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                                    <option value="note">Nota</option>
+                                    <option value="issue">Problema</option>
+                                    <option value="material_missing">Material faltante</option>
+                                    <option value="progress">Progresso</option>
+                                </select>
+                            </div>
+                            <div class="md:col-span-2">
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Mensagem</label>
+                                <input 
+                                    name="message" 
+                                    class="w-full border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 rounded-md text-sm shadow-sm focus:border-indigo-500 focus:ring-indigo-500" 
+                                    placeholder="Descreva a atualização..." 
+                                    required
+                                >
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Δ Progresso (%)</label>
+                                <input 
+                                    name="progress_delta" 
+                                    type="number" 
+                                    min="0" 
+                                    max="100"
+                                    class="w-full border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 rounded-md text-sm shadow-sm focus:border-indigo-500 focus:ring-indigo-500" 
+                                    placeholder="ex: 5"
+                                >
+                            </div>
                         </div>
-                        <div class="text-sm text-gray-800 dark:text-gray-200">{{ $update->message }}</div>
-                    </li>
+                        <div class="flex justify-end">
+                            <button class="px-4 py-2 bg-indigo-600 dark:bg-indigo-700 text-white rounded-md text-sm hover:bg-indigo-700 dark:hover:bg-indigo-600 transition-colors flex items-center gap-2">
+                                <i class="bi bi-plus-circle"></i>
+                                Adicionar Atualização
+                            </button>
+                        </div>
+                    </form>
+                </div>
+                @endcan
+
+                @php
+                    $updates = $project->updates()->latest()->take(20)->get();
+                    $typeConfigs = [
+                        'note' => [
+                            'icon' => 'bi-file-text',
+                            'color' => 'text-blue-600 dark:text-blue-400',
+                            'bg' => 'bg-blue-100 dark:bg-blue-900/30',
+                            'border' => 'border-blue-300 dark:border-blue-600',
+                            'label' => 'Nota',
+                        ],
+                        'issue' => [
+                            'icon' => 'bi-exclamation-triangle',
+                            'color' => 'text-red-600 dark:text-red-400',
+                            'bg' => 'bg-red-100 dark:bg-red-900/30',
+                            'border' => 'border-red-300 dark:border-red-600',
+                            'label' => 'Problema',
+                        ],
+                        'material_missing' => [
+                            'icon' => 'bi-box-seam',
+                            'color' => 'text-yellow-600 dark:text-yellow-400',
+                            'bg' => 'bg-yellow-100 dark:bg-yellow-900/30',
+                            'border' => 'border-yellow-300 dark:border-yellow-600',
+                            'label' => 'Material Faltante',
+                        ],
+                        'progress' => [
+                            'icon' => 'bi-arrow-up-circle',
+                            'color' => 'text-green-600 dark:text-green-400',
+                            'bg' => 'bg-green-100 dark:bg-green-900/30',
+                            'border' => 'border-green-300 dark:border-green-600',
+                            'label' => 'Progresso',
+                        ],
+                    ];
+                @endphp
+
+                <div class="space-y-4">
+                    @forelse($updates as $update)
+                        @php
+                            $config = $typeConfigs[$update->type] ?? $typeConfigs['note'];
+                        @endphp
+                        <div class="relative pl-8 pb-4 border-l-2 {{ $config['border'] }}">
+                            <div class="absolute -left-3 top-0">
+                                <div class="w-6 h-6 rounded-full {{ $config['bg'] }} flex items-center justify-center border-2 border-white dark:border-gray-800">
+                                    <i class="{{ $config['icon'] }} {{ $config['color'] }} text-sm"></i>
+                                </div>
+                            </div>
+                            <div class="bg-gray-50 dark:bg-gray-700/30 rounded-lg p-4 border border-gray-200 dark:border-gray-600">
+                                <div class="flex items-start justify-between gap-3 mb-2">
+                                    <div class="flex items-center gap-2">
+                                        <span class="font-semibold text-gray-900 dark:text-gray-100">{{ $update->user->name }}</span>
+                                        <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium {{ $config['bg'] }} {{ $config['color'] }}">
+                                            {{ $config['label'] }}
+                                        </span>
+                                    </div>
+                                    <span class="text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap">
+                                        {{ $update->created_at->format('d/m/Y') }}
+                                        <span class="text-gray-400 dark:text-gray-500">às</span>
+                                        {{ $update->created_at->format('H:i') }}
+                                    </span>
+                                </div>
+                                <p class="text-sm text-gray-800 dark:text-gray-200 leading-relaxed">{{ $update->message }}</p>
+                                @if($update->progress_delta)
+                                    <div class="mt-3 pt-3 border-t border-gray-200 dark:border-gray-600">
+                                        <span class="text-xs font-medium text-gray-600 dark:text-gray-400">
+                                            <i class="bi bi-arrow-up-circle mr-1"></i>
+                                            Progresso alterado: 
+                                            <span class="text-green-600 dark:text-green-400 font-semibold">
+                                                +{{ $update->progress_delta }}%
+                                            </span>
+                                        </span>
+                                    </div>
+                                @endif
+                            </div>
+                        </div>
                     @empty
-                    <li class="text-sm text-gray-500 dark:text-gray-400">Nenhuma atualização ainda.</li>
+                        <div class="text-center py-12 bg-gray-50 dark:bg-gray-700/30 rounded-lg border border-gray-200 dark:border-gray-600">
+                            <i class="bi bi-clock-history text-4xl text-gray-400 dark:text-gray-500 mb-3"></i>
+                            <p class="text-sm font-medium text-gray-900 dark:text-gray-100 mb-1">Nenhuma atualização ainda</p>
+                            <p class="text-xs text-gray-500 dark:text-gray-400">
+                                @can('post project-updates')
+                                    Adicione a primeira atualização usando o formulário acima
+                                @else
+                                    Aguardando atualizações do projeto
+                                @endcan
+                            </p>
+                        </div>
                     @endforelse
-                </ul>
+                </div>
             </div>
 
-            <div class="bg-white dark:bg-gray-800 rounded-md shadow p-4 border border-gray-200 dark:border-gray-700">
-                <h2 class="font-medium text-gray-900 dark:text-gray-100 mb-4">Tarefas</h2>
-
-                <form action="{{ route('projects.tasks.store', $project) }}" method="POST" class="mb-4">
-                    @csrf
-                    <div class="flex gap-2">
-                        <input name="title" class="border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 rounded-md text-sm w-full" placeholder="Adicionar nova tarefa e pressionar Adicionar" required>
-                        <input type="date" name="due_date" class="border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 rounded-md text-sm">
-                        <button class="px-3 py-2 bg-indigo-600 dark:bg-indigo-700 text-white rounded-md text-sm hover:bg-indigo-700 dark:hover:bg-indigo-600">Adicionar</button>
+            <div class="bg-white dark:bg-gray-800 rounded-md shadow p-6 border border-gray-200 dark:border-gray-700">
+                <div class="flex items-center justify-between mb-6">
+                    <div>
+                        <h2 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Tarefas</h2>
+                        <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Gerencie as tarefas deste projeto</p>
                     </div>
-                </form>
+                </div>
 
                 @php
                     $tasks = $project->tasks()
@@ -96,79 +191,218 @@
                         ->orderBy('sort_order')
                         ->orderByDesc('id')
                         ->get();
+                    
+                    $todoCount = $tasks->where('status', 'todo')->count();
+                    $inProgressCount = $tasks->where('status', 'in_progress')->count();
+                    $doneCount = $tasks->where('status', 'done')->count();
+                    $totalCount = $tasks->count();
                 @endphp
 
-                <ul class="divide-y divide-gray-200 dark:divide-gray-700">
-                    @forelse($tasks as $task)
-                        <li class="py-3 text-sm flex items-center justify-between" x-data="{ open:false }">
-                            <div class="flex items-start gap-3">
-                                <form action="{{ route('projects.tasks.status', [$project, $task]) }}" method="POST">
-                                    @csrf
-                                    @method('PATCH')
-                                    <input type="hidden" name="status" value="{{ $task->status === 'done' ? 'todo' : 'done' }}">
-                                    <input type="checkbox" {{ $task->status === 'done' ? 'checked' : '' }} onchange="this.form.submit()" class="h-4 w-4 text-indigo-600 rounded border-gray-300 dark:border-gray-600 dark:bg-gray-700">
-                                </form>
-                                <div>
-                                    <div class="font-medium {{ $task->status === 'done' ? 'line-through text-gray-400 dark:text-gray-500' : 'text-gray-900 dark:text-gray-100' }}">{{ $task->title }}</div>
-                                    <div class="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-2">
-                                        <span>{{ $task->status === 'in_progress' ? 'Em progresso' : ($task->status === 'done' ? 'Concluída' : 'A fazer') }}</span>
-                                        @if($task->due_date)
-                                            @php
-                                                $days = now()->startOfDay()->diffInDays($task->due_date, false);
-                                                $badgeClass = $days < 0
-                                                    ? 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300'
-                                                    : ($days <= 2
-                                                        ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300'
-                                                        : 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300');
-                                            @endphp
-                                            <span class="inline-flex items-center px-2 py-0.5 rounded {{ $badgeClass }}">Vence: {{ $task->due_date->format('d/m/Y') }}</span>
-                                        @endif
-                                    </div>
-                                </div>
+                <!-- Contadores e Filtros -->
+                <div class="mb-6">
+                    <div class="flex flex-wrap items-center gap-4 mb-4">
+                        <div class="flex items-center gap-2">
+                            <span class="px-3 py-1 text-xs font-medium rounded-full bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200">
+                                Total: {{ $totalCount }}
+                            </span>
+                            <span class="px-3 py-1 text-xs font-medium rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300">
+                                A fazer: {{ $todoCount }}
+                            </span>
+                            <span class="px-3 py-1 text-xs font-medium rounded-full bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300">
+                                Em progresso: {{ $inProgressCount }}
+                            </span>
+                            <span class="px-3 py-1 text-xs font-medium rounded-full bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300">
+                                Concluídas: {{ $doneCount }}
+                            </span>
+                        </div>
+                    </div>
+                    
+                    <!-- Formulário de adicionar tarefa -->
+                    <form action="{{ route('projects.tasks.store', $project) }}" method="POST" class="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4 border border-gray-200 dark:border-gray-600">
+                        @csrf
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                            <div class="md:col-span-2">
+                                <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Nova Tarefa</label>
+                                <input 
+                                    name="title" 
+                                    class="w-full border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 rounded-md text-sm shadow-sm focus:border-indigo-500 focus:ring-indigo-500" 
+                                    placeholder="Digite o título da tarefa..." 
+                                    required
+                                >
                             </div>
-                            <div class="flex items-center gap-3">
-                                <button type="button" class="text-indigo-600 dark:text-indigo-400 text-xs" @click="open=true">Detalhes</button>
-                                <form action="{{ route('projects.tasks.delete', [$project, $task]) }}" method="POST" onsubmit="return confirm('Remover esta tarefa?')">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button class="text-red-600 dark:text-red-400 text-xs">Remover</button>
-                                </form>
+                            <div>
+                                <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Data de Vencimento</label>
+                                <input 
+                                    type="date" 
+                                    name="due_date" 
+                                    class="w-full border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 rounded-md text-sm shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                >
                             </div>
+                        </div>
+                        <div class="mt-3 flex justify-end">
+                            <button class="px-4 py-2 bg-indigo-600 dark:bg-indigo-700 text-white rounded-md text-sm hover:bg-indigo-700 dark:hover:bg-indigo-600 transition-colors flex items-center gap-2">
+                                <i class="bi bi-plus-circle"></i>
+                                Adicionar Tarefa
+                            </button>
+                        </div>
+                    </form>
+                </div>
 
-                            <!-- Modal de edição -->
-                            <div x-show="open" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50" x-cloak>
-                                <div class="bg-white dark:bg-gray-800 rounded-md shadow p-4 w-full max-w-lg border border-gray-200 dark:border-gray-700">
-                                    <div class="flex items-center justify-between mb-3">
-                                        <h3 class="font-medium text-gray-900 dark:text-gray-100">Editar Tarefa</h3>
-                                        <button class="text-gray-500 dark:text-gray-400" @click="open=false">✕</button>
-                                    </div>
-                                    <form action="{{ route('projects.tasks.update', [$project, $task]) }}" method="POST" class="space-y-3">
+                <!-- Lista de Tarefas -->
+                <div class="space-y-3" x-data="{ filter: 'all' }">
+                    <div class="flex items-center gap-2 mb-4">
+                        <button 
+                            @click="filter = 'all'"
+                            :class="filter === 'all' ? 'bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300' : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300'"
+                            class="px-3 py-1 text-xs font-medium rounded-md transition-colors"
+                        >
+                            Todas
+                        </button>
+                        <button 
+                            @click="filter = 'todo'"
+                            :class="filter === 'todo' ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300' : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300'"
+                            class="px-3 py-1 text-xs font-medium rounded-md transition-colors"
+                        >
+                            A fazer
+                        </button>
+                        <button 
+                            @click="filter = 'in_progress'"
+                            :class="filter === 'in_progress' ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300' : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300'"
+                            class="px-3 py-1 text-xs font-medium rounded-md transition-colors"
+                        >
+                            Em progresso
+                        </button>
+                        <button 
+                            @click="filter = 'done'"
+                            :class="filter === 'done' ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300' : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300'"
+                            class="px-3 py-1 text-xs font-medium rounded-md transition-colors"
+                        >
+                            Concluídas
+                        </button>
+                    </div>
+
+                    <div class="space-y-2">
+                        @forelse($tasks as $task)
+                            <div 
+                                x-show="filter === 'all' || filter === '{{ $task->status }}'"
+                                class="bg-gray-50 dark:bg-gray-700/30 rounded-lg p-4 border border-gray-200 dark:border-gray-600 hover:shadow-md transition-shadow"
+                                x-data="{ open: false }"
+                            >
+                                <div class="flex items-start gap-4">
+                                    <form action="{{ route('projects.tasks.status', [$project, $task]) }}" method="POST" class="mt-1">
                                         @csrf
                                         @method('PATCH')
-                                        <div>
-                                            <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">Título</label>
-                                            <input name="title" class="border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 rounded-md text-sm w-full" value="{{ $task->title }}" required>
-                                        </div>
-                                        <div>
-                                            <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">Descrição</label>
-                                            <textarea name="description" class="border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 rounded-md text-sm w-full" rows="4">{{ $task->description }}</textarea>
-                                        </div>
-                                        <div>
-                                            <label class="block text-xs text-gray-600 dark:text-gray-400 mb-1">Vencimento</label>
-                                            <input type="date" name="due_date" class="border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 rounded-md text-sm" value="{{ optional($task->due_date)->format('Y-m-d') }}">
-                                        </div>
-                                        <div class="flex items-center justify-end gap-2 pt-2">
-                                            <button type="button" class="px-3 py-2 text-sm text-gray-600 dark:text-gray-400" @click="open=false">Cancelar</button>
-                                            <button class="px-3 py-2 bg-indigo-600 dark:bg-indigo-700 text-white rounded-md text-sm hover:bg-indigo-700 dark:hover:bg-indigo-600">Salvar</button>
-                                        </div>
+                                        <input type="hidden" name="status" value="{{ $task->status === 'done' ? 'todo' : 'done' }}">
+                                        <input 
+                                            type="checkbox" 
+                                            {{ $task->status === 'done' ? 'checked' : '' }} 
+                                            onchange="this.form.submit()" 
+                                            class="h-5 w-5 text-indigo-600 rounded border-gray-300 dark:border-gray-600 dark:bg-gray-700 focus:ring-indigo-500 cursor-pointer"
+                                        >
                                     </form>
+                                    <div class="flex-1 min-w-0">
+                                        <div class="flex items-start justify-between gap-3">
+                                            <div class="flex-1">
+                                                <h3 class="font-medium {{ $task->status === 'done' ? 'line-through text-gray-400 dark:text-gray-500' : 'text-gray-900 dark:text-gray-100' }} mb-1">
+                                                    {{ $task->title }}
+                                                </h3>
+                                                @if($task->description)
+                                                    <p class="text-sm text-gray-600 dark:text-gray-400 mt-1 line-clamp-2">
+                                                        {{ $task->description }}
+                                                    </p>
+                                                @endif
+                                                <div class="flex items-center gap-3 mt-2">
+                                                    <span class="inline-flex items-center px-2 py-1 text-xs font-medium rounded-full 
+                                                        {{ $task->status === 'todo' ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300' : '' }}
+                                                        {{ $task->status === 'in_progress' ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300' : '' }}
+                                                        {{ $task->status === 'done' ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300' : '' }}
+                                                    ">
+                                                        @if($task->status === 'in_progress')
+                                                            Em progresso
+                                                        @elseif($task->status === 'done')
+                                                            Concluída
+                                                        @else
+                                                            A fazer
+                                                        @endif
+                                                    </span>
+                                                    @if($task->due_date)
+                                                        @php
+                                                            $days = now()->startOfDay()->diffInDays($task->due_date, false);
+                                                            $badgeClass = $days < 0
+                                                                ? 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300'
+                                                                : ($days <= 2
+                                                                    ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300'
+                                                                    : 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300');
+                                                            $urgencyText = $days < 0 ? 'Atrasada' : ($days === 0 ? 'Vence hoje' : ($days <= 2 ? 'Vence em breve' : 'No prazo'));
+                                                        @endphp
+                                                        <span class="inline-flex items-center px-2 py-1 text-xs font-medium rounded-full {{ $badgeClass }}">
+                                                            <i class="bi bi-calendar-event mr-1"></i>
+                                                            {{ $urgencyText }}: {{ $task->due_date->format('d/m/Y') }}
+                                                        </span>
+                                                    @endif
+                                                </div>
+                                            </div>
+                                            <div class="flex items-center gap-2">
+                                                <button 
+                                                    type="button" 
+                                                    class="text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 text-sm font-medium" 
+                                                    @click="open = true"
+                                                >
+                                                    <i class="bi bi-pencil"></i>
+                                                </button>
+                                                <form action="{{ route('projects.tasks.delete', [$project, $task]) }}" method="POST" onsubmit="return confirm('Tem certeza que deseja remover esta tarefa?')">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="submit" class="text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 text-sm font-medium">
+                                                        <i class="bi bi-trash"></i>
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Modal de edição -->
+                                <div x-show="open" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50" x-cloak @click.away="open = false">
+                                    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 w-full max-w-lg border border-gray-200 dark:border-gray-700 mx-4" @click.stop>
+                                        <div class="flex items-center justify-between mb-4">
+                                            <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Editar Tarefa</h3>
+                                            <button class="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200" @click="open = false">
+                                                <i class="bi bi-x-lg"></i>
+                                            </button>
+                                        </div>
+                                        <form action="{{ route('projects.tasks.update', [$project, $task]) }}" method="POST" class="space-y-4">
+                                            @csrf
+                                            @method('PATCH')
+                                            <div>
+                                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Título</label>
+                                                <input name="title" class="w-full border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 rounded-md text-sm shadow-sm focus:border-indigo-500 focus:ring-indigo-500" value="{{ $task->title }}" required>
+                                            </div>
+                                            <div>
+                                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Descrição</label>
+                                                <textarea name="description" class="w-full border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 rounded-md text-sm shadow-sm focus:border-indigo-500 focus:ring-indigo-500" rows="4">{{ $task->description }}</textarea>
+                                            </div>
+                                            <div>
+                                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Data de Vencimento</label>
+                                                <input type="date" name="due_date" class="w-full border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 rounded-md text-sm shadow-sm focus:border-indigo-500 focus:ring-indigo-500" value="{{ optional($task->due_date)->format('Y-m-d') }}">
+                                            </div>
+                                            <div class="flex items-center justify-end gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
+                                                <button type="button" class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700" @click="open = false">Cancelar</button>
+                                                <button type="submit" class="px-4 py-2 bg-indigo-600 dark:bg-indigo-700 text-white rounded-md text-sm hover:bg-indigo-700 dark:hover:bg-indigo-600 transition-colors">Salvar</button>
+                                            </div>
+                                        </form>
+                                    </div>
                                 </div>
                             </div>
-                        </li>
-                    @empty
-                        <li class="py-3 text-sm text-gray-500 dark:text-gray-400">Nenhuma tarefa adicionada ainda.</li>
-                    @endforelse
-                </ul>
+                        @empty
+                            <div class="text-center py-12 bg-gray-50 dark:bg-gray-700/30 rounded-lg border border-gray-200 dark:border-gray-600">
+                                <i class="bi bi-check2-square text-4xl text-gray-400 dark:text-gray-500 mb-3"></i>
+                                <p class="text-sm font-medium text-gray-900 dark:text-gray-100 mb-1">Nenhuma tarefa adicionada ainda</p>
+                                <p class="text-xs text-gray-500 dark:text-gray-400">Adicione uma nova tarefa usando o formulário acima</p>
+                            </div>
+                        @endforelse
+                    </div>
+                </div>
             </div>
 
             <div class="bg-white dark:bg-gray-800 rounded-md shadow p-4 border border-gray-200 dark:border-gray-700">

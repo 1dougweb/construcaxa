@@ -6,11 +6,15 @@ use App\Models\Employee;
 use App\Models\EmployeeDeduction;
 use App\Models\EmployeeDocument;
 use App\Models\User;
+use App\Mail\NewEmployeeCredentials;
+use App\Http\Controllers\AdminController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
+use Illuminate\Support\Str;
 
 class EmployeeController extends Controller
 {
@@ -33,7 +37,6 @@ class EmployeeController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
-            'password' => 'required|string|min:8|confirmed',
             'position' => 'required|string|max:255',
             'department' => 'required|string|max:255',
             'hire_date' => 'required|date',
@@ -44,7 +47,7 @@ class EmployeeController extends Controller
             'phone' => 'nullable|string|max:20',
             'cellphone' => 'nullable|string|max:20',
             'address' => 'nullable|string',
-            'profile_photo' => 'required|image|max:2048',
+            'profile_photo' => 'nullable|image|max:2048',
             'document_file' => 'nullable|mimes:pdf,jpg,jpeg,png|max:4096',
             'emergency_contact' => 'nullable|string|max:255',
             'notes' => 'nullable|string',
@@ -52,11 +55,14 @@ class EmployeeController extends Controller
 
         DB::beginTransaction();
         try {
+            // Gerar senha aleatória
+            $plainPassword = Str::random(12);
+
             // Criar usuário
             $user = User::create([
                 'name' => $validated['name'],
                 'email' => $validated['email'],
-                'password' => Hash::make($validated['password']),
+                'password' => Hash::make($plainPassword),
             ]);
 
             // Atribuir papel de funcionário
@@ -91,6 +97,18 @@ class EmployeeController extends Controller
             ]);
 
             DB::commit();
+
+            // Enviar email com as credenciais
+            try {
+                // Aplicar configurações de email definidas em /admin/email
+                AdminController::applyEmailSettings();
+
+                Mail::to($user->email)->send(new NewEmployeeCredentials($user, $plainPassword));
+            } catch (\Throwable $e) {
+                \Log::error('Erro ao enviar email de credenciais para funcionário: ' . $e->getMessage(), [
+                    'user_id' => $user->id,
+                ]);
+            }
             
             if (request()->wantsJson() || request()->ajax()) {
                 return response()->json([
@@ -120,6 +138,52 @@ class EmployeeController extends Controller
                 ], 500);
             }
             throw ValidationException::withMessages(['error' => 'Erro ao cadastrar funcionário. ' . $e->getMessage()]);
+        }
+    }
+
+    /**
+     * Reenvia as credenciais de acesso para o funcionário, gerando uma nova senha.
+     */
+    public function resendCredentials(Employee $employee)
+    {
+        $user = $employee->user;
+
+        DB::beginTransaction();
+        try {
+            // Gerar nova senha aleatória
+            $plainPassword = Str::random(12);
+
+            // Atualizar senha do usuário
+            $user->password = Hash::make($plainPassword);
+            $user->save();
+
+            DB::commit();
+
+            try {
+                // Aplicar configurações de email definidas em /admin/email
+                AdminController::applyEmailSettings();
+
+                Mail::to($user->email)->send(new NewEmployeeCredentials($user, $plainPassword));
+            } catch (\Throwable $e) {
+                \Log::error('Erro ao reenviar email de credenciais para funcionário: ' . $e->getMessage(), [
+                    'user_id' => $user->id,
+                    'employee_id' => $employee->id,
+                ]);
+
+                return redirect()
+                    ->back()
+                    ->with('error', 'Senha atualizada, mas ocorreu um erro ao reenviar as credenciais por email.');
+            }
+
+            return redirect()
+                ->back()
+                ->with('success', 'Credenciais reenviadas com sucesso para o email do funcionário.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            return redirect()
+                ->back()
+                ->with('error', 'Erro ao reenviar credenciais: ' . $e->getMessage());
         }
     }
 

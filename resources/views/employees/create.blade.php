@@ -19,7 +19,6 @@
                                 <x-photo-upload-simple 
                                     name="profile_photo"
                                     label="{{ __('Foto de Perfil') }}"
-                                    :required="true"
                                 />
                             </div>
                             

@@ -121,6 +121,8 @@
                                                     'equipment_loan' => 'bi-tools',
                                                     'material_request' => 'bi-clipboard-check',
                                                     'budget_approval' => 'bi-receipt',
+                                                    'budget_approved_by_client' => 'bi-check-circle',
+                                                    'budget_rejected_by_client' => 'bi-x-circle',
                                                     'proposal_approval' => 'bi-file-earmark-text',
                                                 ];
                                                 $icon = $icons[$notification->type] ?? 'bi-bell';

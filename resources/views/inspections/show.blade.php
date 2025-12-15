@@ -1,29 +1,8 @@
 <x-app-layout>
     <x-slot name="header">
-        <div class="flex justify-between items-center">
-            <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-                {{ __('Vistoria') }} #{{ $inspection->number }}
-            </h2>
-            <div class="flex gap-4">
-                @if($inspection->status !== 'completed')
-                    <a href="{{ route('inspections.edit', $inspection) }}" class="inline-flex items-center px-4 py-2 bg-indigo-600 dark:bg-indigo-700 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-indigo-700 dark:hover:bg-indigo-600">
-                        {{ __('Editar') }}
-                    </a>
-                    <form method="POST" action="{{ route('inspections.complete', $inspection) }}" class="inline">
-                        @csrf
-                        <button type="submit" class="inline-flex items-center px-4 py-2 bg-green-600 dark:bg-green-700 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-green-700 dark:hover:bg-green-600">
-                            {{ __('Marcar como Concluída') }}
-                        </button>
-                    </form>
-                @endif
-                <a href="{{ route('inspections.pdf', $inspection) }}" class="inline-flex items-center px-4 py-2 bg-gray-800 dark:bg-gray-700 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700 dark:hover:bg-gray-600" target="_blank">
-                    {{ __('Gerar PDF') }}
-                </a>
-                <a href="{{ route('inspections.index') }}" class="inline-flex items-center px-4 py-2 bg-gray-800 dark:bg-gray-700 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700 dark:hover:bg-gray-600">
-                    {{ __('Voltar') }}
-                </a>
-            </div>
-        </div>
+        <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
+            {{ __('Vistoria') }} #{{ $inspection->number }}
+        </h2>
     </x-slot>
 
     <div class="py-6">
@@ -38,8 +17,11 @@
                     {{ session('error') }}
                 </div>
             @endif
-            <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-xl sm:rounded-lg">
-                <div class="p-6 lg:p-8 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+            <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+                <!-- Conteúdo principal -->
+                <div class="lg:col-span-3">
+                    <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-xl sm:rounded-lg">
+                        <div class="p-6 lg:p-8 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                         <div>
                             <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">{{ __('Informações da Vistoria') }}</h3>
@@ -181,6 +163,68 @@
                                     @endif
                                 </div>
                             @endforeach
+                        </div>
+                    </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sidebar de ações -->
+                <div class="space-y-4">
+                    <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-xl sm:rounded-lg">
+                        <div class="p-4 lg:p-6 space-y-3">
+                            <h3 class="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-2">
+                                Ações da Vistoria
+                            </h3>
+
+                            @if($inspection->status !== 'completed')
+                                <a href="{{ route('inspections.edit', $inspection) }}"
+                                   class="w-full inline-flex items-center justify-center px-4 py-2 bg-indigo-600 dark:bg-indigo-700 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-indigo-700 dark:hover:bg-indigo-600 transition-colors">
+                                    <i class="fi fi-rr-edit mr-2"></i>
+                                    {{ __('Editar Vistoria') }}
+                                </a>
+
+                                <form method="POST"
+                                      action="{{ route('inspections.complete', $inspection) }}"
+                                      onsubmit="return confirm('Marcar esta vistoria como concluída e notificar o cliente?');">
+                                    @csrf
+                                    <button type="submit"
+                                            class="w-full mt-2 inline-flex items-center justify-center px-4 py-2 bg-green-600 dark:bg-green-700 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-green-700 dark:hover:bg-green-600 transition-colors">
+                                        <i class="fi fi-rr-check-circle mr-2"></i>
+                                        {{ __('Marcar como Concluída') }}
+                                    </button>
+                                </form>
+                            @else
+                                <div class="space-y-2">
+                                    <div class="w-full inline-flex items-center justify-center px-4 py-2 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-700 rounded-md text-xs text-emerald-800 dark:text-emerald-200">
+                                        <i class="fi fi-rr-badge-check mr-2"></i>
+                                        {{ __('Vistoria concluída') }}
+                                    </div>
+                                    <form method="POST"
+                                          action="{{ route('inspections.resend-email', $inspection) }}"
+                                          onsubmit="return confirm('Reenviar o e-mail de vistoria concluída para o cliente?');">
+                                        @csrf
+                                        <button type="submit"
+                                                class="w-full inline-flex items-center justify-center px-4 py-2 bg-blue-600 dark:bg-blue-700 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-700 dark:hover:bg-blue-600 transition-colors">
+                                            <i class="fi fi-rr-envelope mr-2"></i>
+                                            Reenviar e-mail da vistoria
+                                        </button>
+                                    </form>
+                                </div>
+                            @endif
+
+                            <a href="{{ route('inspections.pdf', $inspection) }}"
+                               target="_blank"
+                               class="w-full inline-flex items-center justify-center px-4 py-2 bg-gray-800 dark:bg-gray-700 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700 dark:hover:bg-gray-600 transition-colors">
+                                <i class="fi fi-rr-file-pdf mr-2"></i>
+                                {{ __('Gerar PDF') }}
+                            </a>
+
+                            <a href="{{ route('inspections.index') }}"
+                               class="w-full inline-flex items-center justify-center px-4 py-2 bg-gray-200 dark:bg-gray-700 border border-transparent rounded-md font-semibold text-xs text-gray-800 dark:text-gray-100 uppercase tracking-widest hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors">
+                                <i class="fi fi-rr-arrow-left mr-2"></i>
+                                {{ __('Voltar para Vistorias') }}
+                            </a>
                         </div>
                     </div>
                 </div>

@@ -4,9 +4,12 @@ namespace App\Http\Controllers;
 
 use App\Models\Inspection;
 use App\Models\ProjectBudget;
+use App\Models\Client;
+use App\Mail\InspectionCompletedNotification;
 use Illuminate\Http\Request;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Mail;
 
 class InspectionController extends Controller
 {
@@ -74,6 +77,79 @@ class InspectionController extends Controller
         ]);
 
         return view('inspections.public', compact('inspection'));
+    }
+
+    /**
+     * Cliente aprova a vistoria (via link público).
+     */
+    public function approveByClient(Request $request, string $token)
+    {
+        $inspection = Inspection::where('public_token', $token)->firstOrFail();
+
+        if ($inspection->client_decision) {
+            return redirect()->route('inspections.public', $token)
+                ->with('error', 'Esta vistoria já foi respondida pelo cliente.');
+        }
+
+        $inspection->update([
+            'client_decision' => 'approved',
+            'client_decision_at' => now(),
+            'client_comment' => $request->input('client_comment'),
+        ]);
+
+        return redirect()->route('inspections.public', $token)
+            ->with('success', 'Obrigado! Sua aprovação da vistoria foi registrada.');
+    }
+
+    /**
+     * Cliente contesta a vistoria (via link público).
+     */
+    public function contestByClient(Request $request, string $token)
+    {
+        $inspection = Inspection::where('public_token', $token)->firstOrFail();
+
+        if ($inspection->client_decision) {
+            return redirect()->route('inspections.public', $token)
+                ->with('error', 'Esta vistoria já foi respondida pelo cliente.');
+        }
+
+        $validated = $request->validate([
+            'client_comment' => ['required', 'string', 'max:2000'],
+        ]);
+
+        $inspection->update([
+            'client_decision' => 'contested',
+            'client_decision_at' => now(),
+            'client_comment' => $validated['client_comment'],
+        ]);
+
+        return redirect()->route('inspections.public', $token)
+            ->with('success', 'Sua contestação foi registrada com sucesso. Nossa equipe irá analisar e entrar em contato se necessário.');
+    }
+
+    /**
+     * List inspections for a given client (used when creating budgets).
+     */
+    public function listByClient(Client $client)
+    {
+        $inspections = Inspection::where('client_id', $client->id)
+            ->orderByDesc('inspection_date')
+            ->get(['id', 'number', 'inspection_date', 'status']);
+
+        $data = $inspections->map(fn ($inspection) => [
+            'id' => $inspection->id,
+            'label' => sprintf(
+                '%s - %s (%s)',
+                $inspection->number,
+                optional($inspection->inspection_date)->format('d/m/Y') ?? 'sem data',
+                ucfirst(str_replace('_', ' ', $inspection->status ?? ''))
+            ),
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'inspections' => $data,
+        ]);
     }
 
     /**
@@ -222,8 +298,68 @@ class InspectionController extends Controller
      */
     public function complete(Inspection $inspection)
     {
+        // Evitar completar novamente
+        if ($inspection->status === 'completed') {
+            return back()->with('success', 'Esta vistoria já está marcada como concluída.');
+        }
+
         $inspection->update(['status' => 'completed']);
-        
-        return back()->with('success', 'Vistoria marcada como concluída!');
+
+        // Enviar email para o cliente com link público da vistoria
+        try {
+            if ($inspection->client && $inspection->client->email) {
+                // Garantir que existe um token público
+                $inspection->generatePublicToken();
+
+                // Aplicar configurações de email definidas em /admin/email, se disponíveis
+                if (class_exists(\App\Http\Controllers\AdminController::class) && method_exists(\App\Http\Controllers\AdminController::class, 'applyEmailSettings')) {
+                    \App\Http\Controllers\AdminController::applyEmailSettings();
+                }
+
+                Mail::to($inspection->client->email)
+                    ->send(new InspectionCompletedNotification($inspection));
+            }
+        } catch (\Throwable $e) {
+            \Log::error('Erro ao enviar email de vistoria concluída para cliente: ' . $e->getMessage(), [
+                'inspection_id' => $inspection->id,
+                'client_id' => $inspection->client_id,
+            ]);
+        }
+
+        return back()->with('success', 'Vistoria marcada como concluída e o cliente foi notificado por e-mail.');
+    }
+
+    /**
+     * Reenviar email de vistoria concluída para o cliente.
+     */
+    public function resendEmail(Inspection $inspection)
+    {
+        if ($inspection->status !== 'completed') {
+            return back()->with('error', 'Só é possível reenviar o e-mail após a vistoria estar concluída.');
+        }
+
+        try {
+            if ($inspection->client && $inspection->client->email) {
+                $inspection->generatePublicToken();
+
+                if (class_exists(\App\Http\Controllers\AdminController::class) && method_exists(\App\Http\Controllers\AdminController::class, 'applyEmailSettings')) {
+                    \App\Http\Controllers\AdminController::applyEmailSettings();
+                }
+
+                Mail::to($inspection->client->email)
+                    ->send(new InspectionCompletedNotification($inspection));
+            } else {
+                return back()->with('error', 'Não há e-mail de cliente configurado para esta vistoria.');
+            }
+        } catch (\Throwable $e) {
+            \Log::error('Erro ao reenviar email de vistoria concluída para cliente: ' . $e->getMessage(), [
+                'inspection_id' => $inspection->id,
+                'client_id' => $inspection->client_id,
+            ]);
+
+            return back()->with('error', 'Ocorreu um erro ao reenviar o e-mail da vistoria.');
+        }
+
+        return back()->with('success', 'E-mail da vistoria reenviado com sucesso para o cliente.');
     }
 }

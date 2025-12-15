@@ -96,7 +96,7 @@ class AdminController extends Controller
 
         try {
             // Aplicar configurações do banco dinamicamente
-            $this->applyEmailSettings();
+            self::applyEmailSettings();
 
             // Enviar email de teste
             Mail::raw('Este é um email de teste do sistema. Se você recebeu esta mensagem, a configuração SMTP está funcionando corretamente.', function ($message) use ($request) {
@@ -118,8 +118,10 @@ class AdminController extends Controller
 
     /**
      * Aplica as configurações de email do banco de dados dinamicamente
+     *
+     * Tornado público/estático para ser reutilizado em outros pontos (ex: envio de credenciais).
      */
-    private function applyEmailSettings()
+    public static function applyEmailSettings(): void
     {
         $mailer = Setting::get('mail_mailer', 'smtp');
         

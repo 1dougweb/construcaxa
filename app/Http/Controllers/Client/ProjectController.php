@@ -6,6 +6,9 @@ use App\Http\Controllers\Controller;
 use App\Models\Project;
 use App\Models\Client;
 use App\Models\Contract;
+use App\Models\ProjectBudget;
+use App\Models\Inspection;
+use App\Models\ProjectPhoto;
 
 class ProjectController extends Controller
 {
@@ -30,14 +33,35 @@ class ProjectController extends Controller
             ->limit(5)
             ->get();
 
+        $budgets = ProjectBudget::where('client_id', $client->id)
+            ->orderByDesc('created_at')
+            ->limit(5)
+            ->get();
+
+        $inspections = Inspection::where('client_id', $client->id)
+            ->orderByDesc('inspection_date')
+            ->limit(5)
+            ->get();
+
+        $photos = ProjectPhoto::whereHas('project', function ($q) use ($client) {
+                $q->where('client_id', $client->id);
+            })
+            ->latest()
+            ->limit(12)
+            ->get();
+
         $stats = [
             'total_projects' => Project::where('client_id', $client->id)->count(),
             'active_projects' => Project::where('client_id', $client->id)->where('status', 'in_progress')->count(),
             'total_contracts' => Contract::where('client_id', $client->id)->count(),
             'active_contracts' => Contract::where('client_id', $client->id)->where('status', 'active')->count(),
+            'total_budgets' => ProjectBudget::where('client_id', $client->id)->count(),
+            'under_review_budgets' => ProjectBudget::where('client_id', $client->id)->where('status', 'under_review')->count(),
+            'approved_budgets' => ProjectBudget::where('client_id', $client->id)->where('status', 'approved')->count(),
+            'total_inspections' => Inspection::where('client_id', $client->id)->count(),
         ];
 
-        return view('client.dashboard', compact('client', 'projects', 'contracts', 'stats'));
+        return view('client.dashboard', compact('client', 'projects', 'contracts', 'budgets', 'inspections', 'photos', 'stats'));
     }
 
     public function index()

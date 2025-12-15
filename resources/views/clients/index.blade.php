@@ -351,6 +351,158 @@
                 }
             }
         };
+
+        // Função para carregar visualização de cliente no offcanvas - definida cedo para uso imediato
+        window.loadClientView = async function(clientId) {
+            const contentDiv = document.getElementById('client-view-content');
+            const offcanvasTitle = document.querySelector('#client-view-offcanvas h2');
+            
+            if (!contentDiv || !offcanvasTitle) return;
+            
+            // Loading
+            contentDiv.innerHTML = '<div class="flex justify-center items-center py-12"><div class="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div></div>';
+            
+            if (window.openOffcanvas) {
+                window.openOffcanvas('client-view-offcanvas');
+            } else if (typeof openOffcanvas === 'function') {
+                openOffcanvas('client-view-offcanvas');
+            }
+            
+            try {
+                const response = await fetch(`/clients/${clientId}`, {
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Accept': 'application/json'
+                    }
+                });
+                
+                if (!response.ok) {
+                    console.error('Falha na requisição de cliente:', response.status, response.statusText);
+                    throw new Error('Erro ao carregar cliente');
+                }
+                
+                const responseText = await response.text();
+                let data;
+                try {
+                    data = JSON.parse(responseText);
+                } catch (e) {
+                    console.error('Resposta não é JSON válido. Response:', responseText);
+                    throw new Error('Resposta do servidor inválida ao carregar cliente');
+                }
+                const client = data.client || data;
+                
+                offcanvasTitle.textContent = 'Detalhes do Cliente';
+                
+                let html = `
+                    <div class="p-4 space-y-6">
+                        <!-- Header -->
+                        <div class="flex items-start justify-between">
+                            <div class="flex-1">
+                                <div class="flex items-center space-x-3 mb-2">
+                                    <h1 class="text-2xl font-bold text-gray-900 dark:text-gray-100">
+                                        ${client.name || ''}
+                                    </h1>
+                                    <span class="px-3 py-1 text-sm rounded-full ${client.is_active ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300' : 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300'}">
+                                        ${client.is_active ? 'Ativo' : 'Inativo'}
+                                    </span>
+                                </div>
+                                ${client.trading_name ? `
+                                    <p class="text-gray-600 dark:text-gray-400">${client.trading_name}</p>
+                                ` : ''}
+                                <p class="text-sm text-gray-500 dark:text-gray-400">
+                                    ${client.type === 'individual' ? 'Pessoa Física' : 'Pessoa Jurídica'}
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- Info Cards -->
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
+                                <div class="text-sm text-gray-600 dark:text-gray-400 mb-1">CPF/CNPJ</div>
+                                <div class="font-medium text-gray-900 dark:text-gray-100">
+                                    ${client.formatted_cpf || client.formatted_cnpj || '-'}
+                                </div>
+                            </div>
+                            <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
+                                <div class="text-sm text-gray-600 dark:text-gray-400 mb-1">Email</div>
+                                <div class="font-medium text-gray-900 dark:text-gray-100">
+                                    ${client.email || '-'}
+                                </div>
+                            </div>
+                            <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
+                                <div class="text-sm text-gray-600 dark:text-gray-400 mb-1">Telefone</div>
+                                <div class="font-medium text-gray-900 dark:text-gray-100">
+                                    ${client.formatted_phone || client.phone || '-'}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Endereço -->
+                        ${(client.address || client.city) ? `
+                        <div>
+                            <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">Endereço</h3>
+                            <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
+                                <p class="text-gray-700 dark:text-gray-300">
+                                    ${client.address ? `
+                                        ${client.address}${client.address_number ? ', ' + client.address_number : ''}${client.address_complement ? ' - ' + client.address_complement : ''}<br>
+                                    ` : ''}
+                                    ${client.neighborhood ? `
+                                        ${client.neighborhood}<br>
+                                    ` : ''}
+                                    ${(client.city || client.state) ? `
+                                        ${client.city || ''}${client.state ? ' - ' + client.state : ''}${client.zip_code ? ' - ' + (client.formatted_zip_code || client.zip_code) : ''}
+                                    ` : ''}
+                                </p>
+                            </div>
+                        </div>
+                        ` : ''}
+
+                        <!-- Observações -->
+                        ${client.notes ? `
+                        <div>
+                            <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">Observações</h3>
+                            <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
+                                <p class="text-gray-700 dark:text-gray-300 whitespace-pre-wrap">
+                                    ${client.notes}
+                                </p>
+                            </div>
+                        </div>
+                        ` : ''}
+
+                        <!-- Estatísticas -->
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div class="bg-blue-50 dark:bg-blue-900/30 rounded-lg p-4">
+                                <div class="text-sm text-blue-600 dark:text-blue-400 mb-1">Projetos</div>
+                                <div class="text-2xl font-bold text-blue-900 dark:text-blue-100">
+                                    ${client.projects_count ?? 0}
+                                </div>
+                            </div>
+                            <div class="bg-purple-50 dark:bg-purple-900/30 rounded-lg p-4">
+                                <div class="text-sm text-purple-600 dark:text-purple-400 mb-1">Contratos</div>
+                                <div class="text-2xl font-bold text-purple-900 dark:text-purple-100">
+                                    ${client.contracts_count ?? 0}
+                                </div>
+                            </div>
+                            <div class="bg-green-50 dark:bg-green-900/30 rounded-lg p-4">
+                                <div class="text-sm text-green-600 dark:text-green-400 mb-1">Orçamentos</div>
+                                <div class="text-2xl font-bold text-green-900 dark:text-green-100">
+                                    ${client.budgets_count ?? 0}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                contentDiv.innerHTML = html;
+            } catch (error) {
+                console.error('Erro ao carregar cliente:', error);
+                contentDiv.innerHTML = `
+                    <div class="py-8 text-center">
+                        <p class="text-sm text-red-600 dark:text-red-400">Erro ao carregar os dados do cliente.</p>
+                    </div>
+                `;
+            }
+        };
     </script>
     
     <x-slot name="header">
@@ -448,10 +600,33 @@
                                             </span>
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                            <a href="{{ route('clients.show', $client) }}" class="text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-300 mr-3">Ver</a>
-                                            @can('edit clients')
-                                            <button onclick="loadClientForm({{ $client->id }})" class="text-yellow-600 dark:text-yellow-400 hover:text-yellow-900 dark:hover:text-yellow-300 mr-3">Editar</button>
-                                            @endcan
+                                            <div class="flex items-center justify-end space-x-4">
+                                                @can('view clients')
+                                                <button
+                                                    type="button"
+                                                    onclick="if (window.openOffcanvas) { window.openOffcanvas('client-view-offcanvas'); } else if (typeof openOffcanvas === 'function') { openOffcanvas('client-view-offcanvas'); } if (typeof window.loadClientView === 'function') { window.loadClientView({{ $client->id }}); }"
+                                                    class="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100"
+                                                    title="Ver detalhes"
+                                                >
+                                                    <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                                    </svg>
+                                                </button>
+                                                @endcan
+                                                @can('edit clients')
+                                                <button 
+                                                    type="button"
+                                                    onclick="loadClientForm({{ $client->id }})"
+                                                    class="text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-300"
+                                                    title="Editar cliente"
+                                                >
+                                                    <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                                    </svg>
+                                                </button>
+                                                @endcan
+                                            </div>
                                         </td>
                                     </tr>
                                 @empty
@@ -653,11 +828,142 @@
             </div>
         </form>
     </x-offcanvas>
+
+    <!-- Offcanvas para Visualizar Cliente -->
+    <x-offcanvas id="client-view-offcanvas" title="Detalhes do Cliente" width="w-full md:w-[700px]">
+        <div id="client-view-content">
+            <div class="flex justify-center items-center py-12">
+                <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
+            </div>
+        </div>
+    </x-offcanvas>
 </x-app-layout>
 
 @push('scripts')
 <script src="{{ asset('js/client-form.js') }}"></script>
 <script>
+// Garantir que loadClientView exista antes de qualquer chamada inline
+window.loadClientView = async function(clientId) {
+    const contentDiv = document.getElementById('client-view-content');
+    const offcanvasTitle = document.querySelector('#client-view-offcanvas h2');
+    
+    if (!contentDiv || !offcanvasTitle) return;
+    
+    // Loading
+    contentDiv.innerHTML = '<div class="flex justify-center items-center py-12"><div class="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div></div>';
+    
+    if (window.openOffcanvas) {
+        window.openOffcanvas('client-view-offcanvas');
+    } else if (typeof openOffcanvas === 'function') {
+        openOffcanvas('client-view-offcanvas');
+    }
+    
+    try {
+        const response = await fetch(`/clients/${clientId}`, {
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'application/json'
+            }
+        });
+        
+        if (!response.ok) {
+            console.error('Falha na requisição de cliente:', response.status, response.statusText);
+            throw new Error('Erro ao carregar cliente');
+        }
+        
+        const responseText = await response.text();
+        let data;
+        try {
+            data = JSON.parse(responseText);
+        } catch (e) {
+            console.error('Resposta não é JSON válido. Response:', responseText);
+            throw new Error('Resposta do servidor inválida ao carregar cliente');
+        }
+        const client = data.client || data;
+        
+        offcanvasTitle.textContent = 'Detalhes do Cliente';
+        
+        let html = `
+            <div class="space-y-6">
+                <div class="flex items-start justify-between pb-4 border-b border-gray-200 dark:border-gray-700">
+                    <div>
+                        <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-1">
+                            ${client.name || ''}
+                        </h3>
+                        ${client.trading_name ? `
+                            <p class="text-sm text-gray-500 dark:text-gray-400">${client.trading_name}</p>
+                        ` : ''}
+                        <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">
+                            ${client.type === 'individual' ? 'Pessoa Física' : 'Pessoa Jurídica'}
+                        </p>
+                    </div>
+                    <span class="px-3 py-1 text-sm rounded-full ${client.is_active ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300' : 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300'}">
+                        ${client.is_active ? 'Ativo' : 'Inativo'}
+                    </span>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <h4 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Documento</h4>
+                        <p class="text-sm text-gray-900 dark:text-gray-100">
+                            ${client.formatted_cpf || client.formatted_cnpj || '-'}
+                        </p>
+                    </div>
+                    <div>
+                        <h4 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Email</h4>
+                        <p class="text-sm text-gray-900 dark:text-gray-100">
+                            ${client.email || '-'}
+                        </p>
+                    </div>
+                    <div>
+                        <h4 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Telefone</h4>
+                        <p class="text-sm text-gray-900 dark:text-gray-100">
+                            ${client.formatted_phone || client.phone || '-'}
+                        </p>
+                    </div>
+                    <div>
+                        <h4 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Projetos</h4>
+                        <p class="text-sm text-gray-900 dark:text-gray-100">
+                            ${client.projects_count ?? 0}
+                        </p>
+                    </div>
+                </div>
+                
+                <div>
+                    <h4 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Endereço</h4>
+                    <p class="text-sm text-gray-900 dark:text-gray-100">
+                        ${client.address || ''}${client.address_number ? ', ' + client.address_number : ''}${client.address_complement ? ' - ' + client.address_complement : ''}
+                    </p>
+                    <p class="text-sm text-gray-900 dark:text-gray-100">
+                        ${client.neighborhood || ''}${client.city ? ' - ' + client.city : ''}${client.state ? ' / ' + client.state : ''}
+                    </p>
+                    <p class="text-sm text-gray-900 dark:text-gray-100">
+                        ${client.formatted_zip_code || client.zip_code || ''}
+                    </p>
+                </div>
+                
+                ${client.notes ? `
+                <div>
+                    <h4 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Observações</h4>
+                    <p class="text-sm text-gray-600 dark:text-gray-400 whitespace-pre-wrap">
+                        ${client.notes}
+                    </p>
+                </div>
+                ` : ''}
+            </div>
+        `;
+        
+        contentDiv.innerHTML = html;
+    } catch (error) {
+        console.error('Erro ao carregar cliente:', error);
+        contentDiv.innerHTML = `
+            <div class="py-8 text-center">
+                <p class="text-sm text-red-600 dark:text-red-400">Erro ao carregar os dados do cliente.</p>
+            </div>
+        `;
+    }
+};
+
 (function() {
     'use strict';
     
@@ -959,6 +1265,19 @@
     // Anexar handler do formulário de cliente quando o DOM estiver pronto
     document.addEventListener('DOMContentLoaded', function() {
         // O formulário está dentro do offcanvas, então será anexado quando o offcanvas abrir
+
+        // Delegação de clique para botões de visualizar cliente (evita depender de onclick global)
+        document.addEventListener('click', function(e) {
+            const btn = e.target.closest('[data-client-view]');
+            if (!btn) return;
+            const clientId = btn.getAttribute('data-client-view');
+            if (!clientId) return;
+            if (typeof window.loadClientView === 'function') {
+                window.loadClientView(clientId);
+            } else {
+                console.warn('loadClientView não está definido');
+            }
+        });
     });
 })();
 </script>

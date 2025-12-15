@@ -276,13 +276,18 @@
                                             class="px-4 py-3 border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer transition-colors">
                                             <div class="flex items-start gap-3">
                                                 <div class="flex-shrink-0 mt-1">
-                                                    <i :class="getNotificationIcon(notification.type)" 
-                                                       class="text-lg text-indigo-600 dark:text-indigo-400"></i>
+                                                    <i :class="getNotificationIcon(notification.type) + ' ' + getNotificationColor(notification.type) + ' text-lg'"></i>
                                                 </div>
                                                 <div class="flex-1 min-w-0">
-                                                    <p class="text-sm font-medium text-gray-900 dark:text-gray-100" 
-                                                       x-text="notification.title"></p>
-                                                    <p class="text-xs text-gray-600 dark:text-gray-400 mt-1" 
+                                                    <div class="flex items-start justify-between gap-2">
+                                                        <p class="text-sm font-medium text-gray-900 dark:text-gray-100 flex-1" 
+                                                           x-text="notification.title"></p>
+                                                        <span x-show="getNotificationBadge(notification.type)" 
+                                                              :class="getNotificationBadge(notification.type)"
+                                                              class="px-2 py-0.5 text-xs font-medium rounded-full whitespace-nowrap"
+                                                              x-cloak></span>
+                                                    </div>
+                                                    <p class="text-xs text-gray-600 dark:text-gray-400 mt-1 line-clamp-2" 
                                                        x-text="notification.message"></p>
                                                     <p class="text-xs text-gray-500 dark:text-gray-500 mt-1" 
                                                        x-text="notification.time_ago"></p>
@@ -488,12 +493,12 @@
                                 {{ __('Funcionários') }}
                             </a>
                             @endcan
-                            @can('view employees')
+                            <!-- @can('view employees')
                             <a href="{{ route('proposals.index') }}" class="flex items-center px-3 py-2 rounded-md text-sm font-medium {{ request()->routeIs('proposals.*') || request()->routeIs('employees.proposals.*') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 -ml-3 pl-5' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700' }}">
                                 <i class="fi fi-rr-receipt mr-3 text-base"></i>
                                 {{ __('Propostas') }}
                             </a>
-                            @endcan
+                            @endcan -->
                             @can('manage attendance')
                             <a href="{{ route('attendance.manage') }}" class="flex items-center px-3 py-2 rounded-md text-sm font-medium {{ request()->routeIs('attendance.manage') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 -ml-3 pl-5' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700' }}">
                                 <i class="fi fi-rr-calendar-check mr-3 text-base"></i>
@@ -739,13 +744,18 @@
                                                 class="px-4 py-3 border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer transition-colors">
                                                 <div class="flex items-start gap-3">
                                                     <div class="flex-shrink-0 mt-1">
-                                                        <i :class="getNotificationIcon(notification.type)" 
-                                                           class="text-lg text-indigo-600 dark:text-indigo-400"></i>
+                                                        <i :class="getNotificationIcon(notification.type) + ' ' + getNotificationColor(notification.type) + ' text-lg'"></i>
                                                     </div>
                                                     <div class="flex-1 min-w-0">
-                                                        <p class="text-sm font-medium text-gray-900 dark:text-gray-100" 
-                                                           x-text="notification.title"></p>
-                                                        <p class="text-xs text-gray-600 dark:text-gray-400 mt-1" 
+                                                        <div class="flex items-start justify-between gap-2">
+                                                            <p class="text-sm font-medium text-gray-900 dark:text-gray-100 flex-1" 
+                                                               x-text="notification.title"></p>
+                                                            <span x-show="getNotificationBadge(notification.type)" 
+                                                                  :class="getNotificationBadge(notification.type)"
+                                                                  class="px-2 py-0.5 text-xs font-medium rounded-full whitespace-nowrap"
+                                                                  x-cloak></span>
+                                                        </div>
+                                                        <p class="text-xs text-gray-600 dark:text-gray-400 mt-1 line-clamp-2" 
                                                            x-text="notification.message"></p>
                                                         <p class="text-xs text-gray-500 dark:text-gray-500 mt-1" 
                                                            x-text="notification.time_ago"></p>
@@ -1081,12 +1091,40 @@
                         const icons = {
                             'equipment_loan': 'bi-tools',
                             'material_request': 'bi-clipboard-check',
-                            'budget_approval': 'bi-receipt',
+                            'budget_approval': 'bi-check-circle',
+                            'budget_sent': 'bi-envelope',
+                            'budget_approved_by_client': 'bi-check-circle-fill',
+                            'budget_rejected_by_client': 'bi-x-circle-fill',
+                            'budget_contested': 'bi-exclamation-triangle-fill',
                             'proposal_approval': 'bi-file-earmark-text',
                             'attendance': 'fi fi-rr-calendar-clock',
                             'test': 'bi-bell-fill',
                         };
                         return icons[type] || 'bi-bell';
+                    },
+                    getNotificationColor(type) {
+                        const colors = {
+                            'equipment_loan': 'text-blue-600 dark:text-blue-400',
+                            'material_request': 'text-green-600 dark:text-green-400',
+                            'budget_approval': 'text-green-600 dark:text-green-400',
+                            'budget_sent': 'text-indigo-600 dark:text-indigo-400',
+                            'budget_approved_by_client': 'text-green-600 dark:text-green-400',
+                            'budget_rejected_by_client': 'text-red-600 dark:text-red-400',
+                            'budget_contested': 'text-yellow-600 dark:text-yellow-400',
+                            'proposal_approval': 'text-purple-600 dark:text-purple-400',
+                            'attendance': 'text-gray-600 dark:text-gray-400',
+                            'test': 'text-indigo-600 dark:text-indigo-400',
+                        };
+                        return colors[type] || 'text-indigo-600 dark:text-indigo-400';
+                    },
+                    getNotificationBadge(type) {
+                        const badges = {
+                            'budget_approved_by_client': 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300',
+                            'budget_rejected_by_client': 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300',
+                            'budget_contested': 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300',
+                            'budget_sent': 'bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300',
+                        };
+                        return badges[type] || '';
                     },
                     async sendTestNotification() {
                         if (this.sendingTest) return;

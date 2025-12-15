@@ -197,6 +197,7 @@ class Project extends Model
             'name' => 'Obra - ' . ($client ? $client->name : 'Cliente #' . $budget->client_id),
             'code' => $code,
             'client_id' => $budget->client_id,
+            'address' => $budget->address,
             'status' => 'planned',
             'progress_percentage' => 0,
         ]);

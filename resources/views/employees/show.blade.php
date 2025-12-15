@@ -3,28 +3,9 @@ use Illuminate\Support\Facades\Storage;
 @endphp
 <x-app-layout>
     <x-slot name="header">
-        <div class="flex justify-between items-center">
-            <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-                {{ __('Perfil do Funcionário') }}
-            </h2>
-            <div class="flex gap-2">
-                <a href="{{ route('attendance.employee.report', $employee) }}" class="inline-flex items-center px-4 py-2 bg-indigo-600 dark:bg-indigo-700 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-indigo-700 dark:hover:bg-indigo-600 transition-colors">
-                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                    </svg>
-                    {{ __('Ver Pontos') }}
-                </a>
-                <a href="{{ route('employees.edit', $employee) }}" class="inline-flex items-center px-4 py-2 bg-gray-600 dark:bg-gray-700 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700 dark:hover:bg-gray-600 transition-colors">
-                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                    </svg>
-                    {{ __('Editar') }}
-                </a>
-                <a href="{{ route('employees.index') }}" class="inline-flex items-center px-4 py-2 bg-gray-300 dark:bg-gray-600 border border-transparent rounded-md font-semibold text-xs text-gray-700 dark:text-gray-200 uppercase tracking-widest hover:bg-gray-400 dark:hover:bg-gray-500 transition-colors">
-                    {{ __('Voltar') }}
-                </a>
-            </div>
-        </div>
+        <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
+            {{ __('Perfil do Funcionário') }}
+        </h2>
     </x-slot>
 
     <div class="py-6">
@@ -113,8 +94,41 @@ use Illuminate\Support\Facades\Storage;
                     </div>
                 </div>
 
-                <!-- Coluna Direita - Foto de Perfil e Fotos -->
+                <!-- Coluna Direita - Ações, Foto de Perfil e Fotos -->
                 <div class="space-y-6">
+                    <!-- Ações -->
+                    <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-xl sm:rounded-lg">
+                        <div class="p-6 space-y-3">
+                            @can('edit employees')
+                            <form method="POST" action="{{ route('employees.resend-credentials', $employee) }}" onsubmit="return confirm('Gerar nova senha e reenviar credenciais para este funcionário?');">
+                                @csrf
+                                <button type="submit" class="w-full inline-flex items-center justify-center px-4 py-2 bg-green-600 dark:bg-green-700 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-green-700 dark:hover:bg-green-600 transition-colors">
+                                <i class="fi fi-rr-envelope mr-2 mt-1"></i>
+                                    {{ __('Reenviar Credenciais') }}
+                                </button>
+                            </form>
+                            @endcan
+
+                            <a href="{{ route('attendance.employee.report', $employee) }}" class="w-full inline-flex items-center justify-center px-4 py-2 bg-indigo-600 dark:bg-indigo-700 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-indigo-700 dark:hover:bg-indigo-600 transition-colors">
+                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                </svg>
+                                {{ __('Ver Pontos') }}
+                            </a>
+
+                            <a href="{{ route('employees.edit', $employee) }}" class="w-full inline-flex items-center justify-center px-4 py-2 bg-gray-600 dark:bg-gray-700 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700 dark:hover:bg-gray-600 transition-colors">
+                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                </svg>
+                                {{ __('Editar') }}
+                            </a>
+
+                            <a href="{{ route('employees.index') }}" class="w-full inline-flex items-center justify-center px-4 py-2 bg-gray-300 dark:bg-gray-600 border border-transparent rounded-md font-semibold text-xs text-gray-700 dark:text-gray-200 uppercase tracking-widest hover:bg-gray-400 dark:hover:bg-gray-500 transition-colors">
+                                {{ __('Voltar') }}
+                            </a>
+                        </div>
+                    </div>
+
                     <!-- Foto de Perfil -->
                     @if($employee->profile_photo_path)
                     <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-xl sm:rounded-lg">

@@ -19,6 +19,17 @@
 
                 <!-- Content -->
                 <div class="px-6 py-6">
+                    @if (session('success'))
+                        <div class="mb-4 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded">
+                            {{ session('success') }}
+                        </div>
+                    @endif
+                    @if (session('error'))
+                        <div class="mb-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+                            {{ session('error') }}
+                        </div>
+                    @endif
+
                     @if($inspection->address)
                         <div class="mb-6">
                             <h2 class="text-lg font-semibold mb-2">Endereço</h2>
@@ -84,28 +95,74 @@
                         </div>
                     @endforeach
 
-                    <!-- Formulário de Solicitação -->
+                    <!-- Decisão do cliente -->
                     <div class="mt-8 border-t border-gray-200 pt-6">
-                        <h2 class="text-lg font-semibold mb-4">Fazer uma Solicitação</h2>
-                        <form method="POST" action="{{ route('inspections.public.request', $inspection->public_token) }}" class="space-y-4">
-                            @csrf
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Tipo de Solicitação</label>
-                                <select name="request_type" class="w-full border border-gray-300 rounded-md px-3 py-2" required>
-                                    <option value="alter_quality">Alterar Qualidade</option>
-                                    <option value="add_observation">Adicionar Observação</option>
-                                    <option value="request_change">Solicitar Alteração</option>
-                                    <option value="other">Outro</option>
-                                </select>
+                        <h2 class="text-lg font-semibold mb-4">Sua decisão sobre esta vistoria</h2>
+
+                        @if($inspection->client_decision === 'approved')
+                            <div class="bg-green-50 border border-green-200 text-green-800 px-4 py-3 rounded">
+                                Esta vistoria foi aprovada em {{ optional($inspection->client_decision_at)->format('d/m/Y H:i') }}.
                             </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Mensagem</label>
-                                <textarea name="message" rows="4" class="w-full border border-gray-300 rounded-md px-3 py-2" required></textarea>
+                        @elseif($inspection->client_decision === 'contested')
+                            <div class="bg-yellow-50 border border-yellow-200 text-yellow-800 px-4 py-3 rounded space-y-2">
+                                <p>Esta vistoria foi contestada em {{ optional($inspection->client_decision_at)->format('d/m/Y H:i') }}.</p>
+                                @if($inspection->client_comment)
+                                    <p><strong>Comentário registrado:</strong></p>
+                                    <p class="whitespace-pre-line">{{ $inspection->client_comment }}</p>
+                                @endif
                             </div>
-                            <button type="submit" class="w-full bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700">
-                                Enviar Solicitação
-                            </button>
-                        </form>
+                        @elseif($inspection->status === 'completed')
+                            <p class="text-sm text-gray-600 mb-4">
+                                Após revisar todas as informações acima, escolha uma das opções abaixo.
+                                Sua decisão será registrada uma única vez para esta vistoria.
+                            </p>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <!-- Aprovar -->
+                                <div class="border border-green-200 rounded-lg p-4 bg-green-50">
+                                    <h3 class="font-semibold text-green-800 mb-2">Aprovar vistoria</h3>
+                                    <p class="text-sm text-green-900 mb-3">
+                                        Use esta opção se você concorda com o conteúdo da vistoria e não tem ajustes a solicitar.
+                                    </p>
+                                    <form method="POST" action="{{ route('inspections.public.approve', $inspection->public_token) }}">
+                                        @csrf
+                                        <div class="mb-3">
+                                            <label class="block text-xs font-medium text-green-900 mb-1">
+                                                Comentário (opcional)
+                                            </label>
+                                            <textarea name="client_comment" rows="2" class="w-full border border-green-200 rounded-md px-3 py-2 text-sm" placeholder="Você pode deixar um breve comentário, se desejar."></textarea>
+                                        </div>
+                                        <button type="submit" class="w-full bg-green-600 text-white px-4 py-2 rounded-md text-sm font-semibold hover:bg-green-700">
+                                            Aprovar vistoria
+                                        </button>
+                                    </form>
+                                </div>
+
+                                <!-- Contestar -->
+                                <div class="border border-red-200 rounded-lg p-4 bg-red-50">
+                                    <h3 class="font-semibold text-red-800 mb-2">Contestar vistoria</h3>
+                                    <p class="text-sm text-red-900 mb-3">
+                                        Use esta opção se você não concorda com algum ponto e deseja registrar sua contestação.
+                                    </p>
+                                    <form method="POST" action="{{ route('inspections.public.contest', $inspection->public_token) }}">
+                                        @csrf
+                                        <div class="mb-3">
+                                            <label class="block text-xs font-medium text-red-900 mb-1">
+                                                Descreva o que você não concorda *
+                                            </label>
+                                            <textarea name="client_comment" rows="3" class="w-full border border-red-200 rounded-md px-3 py-2 text-sm" required placeholder="Explique, com suas palavras, o que você considera incorreto ou precisa ser ajustado."></textarea>
+                                        </div>
+                                        <button type="submit" class="w-full bg-red-600 text-white px-4 py-2 rounded-md text-sm font-semibold hover:bg-red-700">
+                                            Contestar vistoria
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        @else
+                            <p class="text-sm text-gray-600">
+                                Esta vistoria ainda está em elaboração pela nossa equipe. Assim que for concluída, você receberá um e-mail para aprovar ou contestar.
+                            </p>
+                        @endif
                     </div>
                 </div>
             </div>

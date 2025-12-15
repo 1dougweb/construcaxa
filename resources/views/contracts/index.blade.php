@@ -1,4 +1,85 @@
 <x-app-layout>
+    <script>
+        // Função global para abrir o offcanvas de contrato (novo/editar)
+        window.loadContractForm = async function(contractId) {
+            const form = document.getElementById('contractForm');
+            const offcanvasTitle = document.querySelector('#contract-offcanvas h2');
+            const methodInput = document.getElementById('contract_method');
+            
+            if (!form || !offcanvasTitle || !methodInput) {
+                console.error('Elementos do formulário de contrato não encontrados');
+                return;
+            }
+            
+            // Limpar formulário
+            form.reset();
+            if (window.clearContractErrors) window.clearContractErrors();
+            const fileInfo = document.getElementById('contract_file_info');
+            if (fileInfo) fileInfo.classList.add('hidden');
+            
+            // Carregar projetos e orçamentos
+            if (window.loadProjects) await window.loadProjects();
+            if (window.loadBudgets) await window.loadBudgets();
+            
+            if (contractId) {
+                // Modo edição
+                offcanvasTitle.textContent = 'Editar Contrato';
+                methodInput.value = 'PUT';
+                form.action = `/contracts/${contractId}`;
+                
+                try {
+                    const response = await fetch(`/contracts/${contractId}/edit`, {
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'Accept': 'application/json'
+                        }
+                    });
+                    
+                    if (response.ok) {
+                        const data = await response.json();
+                        const contract = data.contract;
+                        
+                        if (contract.client_id) document.getElementById('contract_client_id').value = contract.client_id;
+                        if (contract.project_id) document.getElementById('contract_project_id').value = contract.project_id;
+                        if (contract.budget_id) document.getElementById('contract_budget_id').value = contract.budget_id;
+                        if (contract.title) document.getElementById('contract_title').value = contract.title;
+                        if (contract.description) document.getElementById('contract_description').value = contract.description;
+                        if (contract.start_date) document.getElementById('contract_start_date').value = contract.start_date;
+                        if (contract.end_date) document.getElementById('contract_end_date').value = contract.end_date;
+                        if (contract.value) document.getElementById('contract_value').value = contract.value;
+                        if (contract.status) document.getElementById('contract_status').value = contract.status;
+                        if (contract.signed_at) document.getElementById('contract_signed_at').value = contract.signed_at;
+                        if (contract.notes) document.getElementById('contract_notes').value = contract.notes;
+                        
+                        if (contract.file_path) {
+                            const info = document.getElementById('contract_file_info');
+                            const link = document.getElementById('contract_file_link');
+                            if (info) info.classList.remove('hidden');
+                            if (link) link.href = `/contracts/${contractId}/download`;
+                        }
+                    } else {
+                        window.location.href = `/contracts/${contractId}/edit`;
+                        return;
+                    }
+                } catch (error) {
+                    console.error('Erro ao carregar contrato:', error);
+                    window.location.href = `/contracts/${contractId}/edit`;
+                    return;
+                }
+            } else {
+                // Modo criação
+                offcanvasTitle.textContent = 'Novo Contrato';
+                methodInput.value = 'POST';
+                form.action = '{{ route("contracts.store") }}';
+            }
+            
+            if (window.openOffcanvas) {
+                window.openOffcanvas('contract-offcanvas');
+            } else if (typeof openOffcanvas === 'function') {
+                openOffcanvas('contract-offcanvas');
+            }
+        };
+    </script>
     <x-slot name="header">
         <div class="flex justify-between items-center">
             <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
@@ -78,13 +159,40 @@
                                             </span>
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                            <a href="{{ route('contracts.show', $contract) }}" class="text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-300 mr-3 transition-colors">Ver</a>
-                                            @can('edit contracts')
-                                            <button onclick="loadContractForm({{ $contract->id }})" class="text-yellow-600 dark:text-yellow-400 hover:text-yellow-900 dark:hover:text-yellow-300 mr-3 transition-colors">Editar</button>
-                                            @endcan
-                                            @if($contract->file_path)
-                                                <a href="{{ route('contracts.download', $contract) }}" class="text-green-600 dark:text-green-400 hover:text-green-900 dark:hover:text-green-300 transition-colors">Download</a>
-                                            @endif
+                                            <div class="flex items-center justify-end space-x-3">
+                                                <a
+                                                    href="{{ route('contracts.show', $contract) }}"
+                                                    class="text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-300 transition-colors"
+                                                    title="Ver detalhes"
+                                                >
+                                                    <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                                    </svg>
+                                                </a>
+                                                @can('edit contracts')
+                                                <button
+                                                    type="button"
+                                                    onclick="loadContractForm({{ $contract->id }})"
+                                                    class="text-yellow-600 dark:text-yellow-400 hover:text-yellow-900 dark:hover:text-yellow-300 transition-colors"
+                                                    title="Editar contrato"
+                                                >
+                                                    <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                                    </svg>
+                                                </button>
+                                                @endcan
+                                                @if($contract->file_path)
+                                                    <a
+                                                        href="{{ route('contracts.download', $contract) }}"
+                                                        class="inline-flex items-center px-3 py-1.5 rounded-md bg-green-600 hover:bg-green-700 text-white text-xs font-medium transition-colors"
+                                                        title="Baixar contrato"
+                                                    >
+                                                        <i class="bi bi-download mr-1"></i>
+                                                        Download
+                                                    </a>
+                                                @endif
+                                            </div>
                                         </td>
                                     </tr>
                                 @empty
@@ -218,74 +326,6 @@
 
 @push('scripts')
 <script>
-    async function loadContractForm(contractId) {
-        const form = document.getElementById('contractForm');
-        const offcanvasTitle = document.querySelector('#contract-offcanvas h2');
-        const methodInput = document.getElementById('contract_method');
-        
-        // Limpar formulário
-        form.reset();
-        clearContractErrors();
-        document.getElementById('contract_file_info').classList.add('hidden');
-        
-        // Carregar projetos e orçamentos
-        await loadProjects();
-        await loadBudgets();
-        
-        if (contractId) {
-            // Modo edição
-            offcanvasTitle.textContent = 'Editar Contrato';
-            methodInput.value = 'PUT';
-            form.action = `/contracts/${contractId}`;
-            
-            try {
-                const response = await fetch(`/contracts/${contractId}/edit`, {
-                    headers: {
-                        'X-Requested-With': 'XMLHttpRequest',
-                        'Accept': 'application/json'
-                    }
-                });
-                
-                if (response.ok) {
-                    const data = await response.json();
-                    const contract = data.contract;
-                    
-                    // Preencher campos
-                    if (contract.client_id) document.getElementById('contract_client_id').value = contract.client_id;
-                    if (contract.project_id) document.getElementById('contract_project_id').value = contract.project_id;
-                    if (contract.budget_id) document.getElementById('contract_budget_id').value = contract.budget_id;
-                    if (contract.title) document.getElementById('contract_title').value = contract.title;
-                    if (contract.description) document.getElementById('contract_description').value = contract.description;
-                    if (contract.start_date) document.getElementById('contract_start_date').value = contract.start_date;
-                    if (contract.end_date) document.getElementById('contract_end_date').value = contract.end_date;
-                    if (contract.value) document.getElementById('contract_value').value = contract.value;
-                    if (contract.status) document.getElementById('contract_status').value = contract.status;
-                    if (contract.signed_at) document.getElementById('contract_signed_at').value = contract.signed_at;
-                    if (contract.notes) document.getElementById('contract_notes').value = contract.notes;
-                    
-                    if (contract.file_path) {
-                        document.getElementById('contract_file_info').classList.remove('hidden');
-                        document.getElementById('contract_file_link').href = `/contracts/${contractId}/download`;
-                    }
-                } else {
-                    window.location.href = `/contracts/${contractId}/edit`;
-                    return;
-                }
-            } catch (error) {
-                console.error('Erro ao carregar contrato:', error);
-                window.location.href = `/contracts/${contractId}/edit`;
-                return;
-            }
-        } else {
-            // Modo criação
-            offcanvasTitle.textContent = 'Novo Contrato';
-            methodInput.value = 'POST';
-            form.action = '{{ route("contracts.store") }}';
-        }
-        
-        openOffcanvas('contract-offcanvas');
-    }
-    
     async function loadProjects() {
         try {
             const response = await fetch('/contracts/create', {

@@ -8,6 +8,11 @@ use Illuminate\Support\Facades\Http;
 
 class SupplierForm extends Component
 {
+    protected $listeners = [
+        'edit-supplier' => 'loadSupplier',
+        'reset-supplier-form' => 'resetForm',
+    ];
+
     public $supplier;
     public $cnpj;
     public $company_name;

@@ -12,6 +12,11 @@ class EquipmentForm extends Component
 {
     use WithFileUploads;
 
+    protected $listeners = [
+        'edit-equipment' => 'loadEquipment',
+        'reset-equipment-form' => 'resetForm',
+    ];
+
     public $equipment;
     public $name;
     public $serial_number;

@@ -33,6 +33,9 @@ class Inspection extends Model
         'approved_by',
         'budget_id',
         'notes',
+        'client_decision',
+        'client_decision_at',
+        'client_comment',
     ];
 
     protected $casts = [

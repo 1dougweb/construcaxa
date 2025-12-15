@@ -43,8 +43,6 @@
         }
         const offcanvasTitle = document.querySelector('#employee-offcanvas h2');
         const methodInput = document.getElementById('employee_method');
-        const passwordField = document.getElementById('password_field');
-        const passwordConfirmationField = document.getElementById('password_confirmation_field');
         
         form.reset();
         if (typeof clearEmployeeErrors === 'function') clearEmployeeErrors();
@@ -80,8 +78,6 @@
             if (offcanvasTitle) offcanvasTitle.textContent = 'Editar Funcionário';
             if (methodInput) methodInput.value = 'PUT';
             form.action = `/employees/${employeeId}`;
-            if (passwordField) passwordField.style.display = 'none';
-            if (passwordConfirmationField) passwordConfirmationField.style.display = 'none';
             
             try {
                 const response = await fetch(`/employees/${employeeId}/edit`, {
@@ -183,12 +179,6 @@
             if (offcanvasTitle) offcanvasTitle.textContent = 'Novo Funcionário';
             if (methodInput) methodInput.value = 'POST';
             form.action = '{{ route("employees.store") }}';
-            if (passwordField) passwordField.style.display = 'block';
-            if (passwordConfirmationField) passwordConfirmationField.style.display = 'block';
-            const pwd = document.getElementById('employee_password');
-            const pwdConf = document.getElementById('employee_password_confirmation');
-            if (pwd) pwd.required = true;
-            if (pwdConf) pwdConf.required = true;
             
             // Garantir que a foto existente esteja escondida no modo create
             const existingPhotoDiv = document.getElementById('existing-photo-profile_photo');
@@ -466,7 +456,6 @@
                     <x-photo-upload-simple 
                         name="profile_photo"
                         label="Foto de Perfil"
-                        :required="true"
                         :existingPhotoPath="null"
                     />
                     <div id="profile_photo_error" class="hidden">
@@ -496,21 +485,6 @@
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                <div id="password_field">
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Senha *</label>
-                    <input type="password" name="password" id="employee_password" 
-                           class="w-full border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-indigo-500 focus:border-indigo-500">
-                    <div id="password_error" class="hidden">
-                        <p class="text-red-500 dark:text-red-400 text-xs mt-1"></p>
-                    </div>
-                </div>
-
-                <div id="password_confirmation_field">
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Confirmar Senha *</label>
-                    <input type="password" name="password_confirmation" id="employee_password_confirmation" 
-                           class="w-full border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-indigo-500 focus:border-indigo-500">
-                </div>
-
                 <div>
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Cargo *</label>
                     <input type="text" name="position" id="employee_position" required 

@@ -192,6 +192,7 @@ Route::middleware(['auth'])->group(function () {
         Route::delete('employees/{employee}/deductions/{deduction}', [EmployeeController::class, 'destroyDeduction'])->name('employees.deductions.destroy');
         Route::post('employees/{employee}/documents', [EmployeeController::class, 'storeDocument'])->name('employees.documents.store');
         Route::delete('employees/{employee}/documents/{document}', [EmployeeController::class, 'destroyDocument'])->name('employees.documents.destroy');
+        Route::post('employees/{employee}/resend-credentials', [EmployeeController::class, 'resendCredentials'])->name('employees.resend-credentials');
     });
 
     Route::middleware(['permission:delete employees'])->group(function () {
@@ -346,11 +347,14 @@ Route::middleware(['auth'])->group(function () {
         Route::post('inspections/{inspection}/link-budget', [\App\Http\Controllers\InspectionController::class, 'linkBudget'])->name('inspections.link-budget');
         Route::post('inspections/{inspection}/unlink-budget', [\App\Http\Controllers\InspectionController::class, 'unlinkBudget'])->name('inspections.unlink-budget');
         Route::post('inspections/{inspection}/complete', [\App\Http\Controllers\InspectionController::class, 'complete'])->name('inspections.complete');
+        Route::post('inspections/{inspection}/resend-email', [\App\Http\Controllers\InspectionController::class, 'resendEmail'])->name('inspections.resend-email');
     });
 
     // Visualização pública de vistorias (sem autenticação)
     Route::get('inspections/public/{token}', [\App\Http\Controllers\InspectionController::class, 'publicView'])->name('inspections.public');
     Route::post('inspections/public/{token}/request', [\App\Http\Controllers\InspectionController::class, 'storeClientRequest'])->name('inspections.public.request');
+    Route::post('inspections/public/{token}/approve', [\App\Http\Controllers\InspectionController::class, 'approveByClient'])->name('inspections.public.approve');
+    Route::post('inspections/public/{token}/contest', [\App\Http\Controllers\InspectionController::class, 'contestByClient'])->name('inspections.public.contest');
 
     // Relatórios (apenas admin/manager)
     Route::middleware(['permission:view reports'])->group(function () {
@@ -416,6 +420,11 @@ Route::middleware(['auth'])->group(function () {
         Route::get('dashboard', [\App\Http\Controllers\Client\ProjectController::class, 'dashboard'])->name('dashboard');
         Route::get('projects', [\App\Http\Controllers\Client\ProjectController::class, 'index'])->name('projects.index');
         Route::get('projects/{project}', [\App\Http\Controllers\Client\ProjectController::class, 'show'])->name('projects.show');
+        
+        // Ações de orçamento pelo cliente
+        Route::get('budgets/{budget}', [\App\Http\Controllers\ProjectController::class, 'budgetsShowForClient'])->whereNumber('budget')->name('budgets.show');
+        Route::patch('budgets/{budget}/approve', [\App\Http\Controllers\ProjectController::class, 'budgetsApproveByClient'])->whereNumber('budget')->name('budgets.approve');
+        Route::patch('budgets/{budget}/reject', [\App\Http\Controllers\ProjectController::class, 'budgetsRejectByClient'])->whereNumber('budget')->name('budgets.reject');
     });
 
     // Orçamentos
@@ -428,9 +437,13 @@ Route::middleware(['auth'])->group(function () {
         Route::post('budgets', [\App\Http\Controllers\ProjectController::class, 'budgetsStore'])->name('budgets.store');
         Route::get('budgets/{budget}/edit', [\App\Http\Controllers\ProjectController::class, 'budgetsEdit'])->whereNumber('budget')->name('budgets.edit');
         Route::put('budgets/{budget}', [\App\Http\Controllers\ProjectController::class, 'budgetsUpdate'])->whereNumber('budget')->name('budgets.update');
+        Route::post('budgets/{budget}/resend', [\App\Http\Controllers\ProjectController::class, 'budgetsResend'])->whereNumber('budget')->name('budgets.resend');
         Route::patch('budgets/{budget}/approve', [\App\Http\Controllers\ProjectController::class, 'budgetsApprove'])->whereNumber('budget')->name('budgets.approve');
         Route::patch('budgets/{budget}/reject', [\App\Http\Controllers\ProjectController::class, 'budgetsReject'])->whereNumber('budget')->name('budgets.reject');
         Route::patch('budgets/{budget}/cancel', [\App\Http\Controllers\ProjectController::class, 'budgetsCancel'])->whereNumber('budget')->name('budgets.cancel');
+        Route::get('clients/{client}/inspections', [\App\Http\Controllers\InspectionController::class, 'listByClient'])
+            ->whereNumber('client')
+            ->name('clients.inspections');
     });
 
     // Service Management Routes

@@ -99,14 +99,24 @@
             const title = offcanvas ? offcanvas.querySelector('h2') : null;
             if (title) title.textContent = 'Editar Fornecedor';
 
+            // Abrir offcanvas antes de carregar
             if (window.openOffcanvas) {
                 window.openOffcanvas('supplier-offcanvas');
             } else if (typeof openOffcanvas === 'function') {
                 openOffcanvas('supplier-offcanvas');
             }
 
-            const component = getSupplierFormComponent();
-            if (component) component.call('loadSupplier', supplierId);
+            // Aguardar o componente montar
+            setTimeout(() => {
+                const component = getSupplierFormComponent();
+                if (component) {
+                    component.call('loadSupplier', supplierId);
+                    // Fallback: emitir evento Livewire
+                    if (window.Livewire?.dispatch) {
+                        window.Livewire.dispatch('edit-supplier', { id: supplierId });
+                    }
+                }
+            }, 200);
         });
 
         document.addEventListener('click', (e) => {
@@ -116,7 +126,12 @@
                 if (title) title.textContent = 'Novo Fornecedor';
 
                 const component = getSupplierFormComponent();
-                if (component) component.call('resetForm');
+                if (component) {
+                    component.call('resetForm');
+                    if (window.Livewire?.dispatch) {
+                        window.Livewire.dispatch('reset-supplier-form');
+                    }
+                }
             }
         });
     })();

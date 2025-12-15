@@ -19,7 +19,23 @@ class ProjectBudget extends Model
     const STATUS_CANCELLED = 'cancelled';
 
     protected $fillable = [
-        'project_id', 'client_id', 'inspection_id', 'version', 'subtotal', 'discount', 'total', 'status', 'sent_at', 'approved_at', 'approved_by', 'notes', 'photos',
+        'project_id',
+        'client_id',
+        'inspection_id',
+        'version',
+        'address',
+        'subtotal',
+        'discount',
+        'total',
+        'status',
+        'sent_at',
+        'approved_at',
+        'approved_by',
+        'rejected_by',
+        'rejected_at',
+        'rejection_reason',
+        'notes',
+        'photos',
     ];
 
     protected $casts = [
@@ -28,6 +44,7 @@ class ProjectBudget extends Model
         'total' => 'decimal:2',
         'sent_at' => 'datetime',
         'approved_at' => 'datetime',
+        'rejected_at' => 'datetime',
         'photos' => 'array',
     ];
 
@@ -86,6 +103,11 @@ class ProjectBudget extends Model
     public function approver(): BelongsTo
     {
         return $this->belongsTo(User::class, 'approved_by');
+    }
+
+    public function rejector(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'rejected_by');
     }
 
     public function invoice()

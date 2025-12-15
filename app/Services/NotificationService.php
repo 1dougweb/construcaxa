@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\Notification;
 use App\Events\NotificationCreated;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 class NotificationService
 {
@@ -203,6 +204,121 @@ class NotificationService
         }
 
         return $notification;
+    }
+
+    /**
+     * Cria uma notificação quando orçamento é enviado para o cliente
+     */
+    public static function createBudgetSentNotification($budget)
+    {
+        $clientUserId = $budget->client?->user_id;
+        
+        if (!$clientUserId) {
+            return null;
+        }
+        
+        $notification = Notification::create([
+            'user_id' => $clientUserId,
+            'type' => 'budget_sent',
+            'title' => 'Novo Orçamento Disponível',
+            'message' => "Um novo orçamento #{$budget->id} v{$budget->version} foi enviado para você. Valor total: R$ " . number_format($budget->total, 2, ',', '.'),
+            'data' => [
+                'budget_id' => $budget->id,
+                'url' => route('client.budgets.show', $budget),
+            ],
+        ]);
+
+        try {
+            broadcast(new NotificationCreated($notification));
+        } catch (\Exception $e) {
+            \Log::error('Erro ao fazer broadcast de notificação de orçamento enviado: ' . $e->getMessage());
+        }
+
+        return $notification;
+    }
+
+    /**
+     * Cria notificação quando cliente aprova orçamento (notifica admins/gerentes)
+     */
+    public static function createBudgetApprovedByClientNotification($budget)
+    {
+        try {
+            $admins = \App\Models\User::role(['admin', 'manager'])->get();
+        } catch (\Exception $e) {
+            $admins = \App\Models\User::whereHas('roles', function ($query) {
+                $query->whereIn('name', ['admin', 'manager']);
+            })->get();
+        }
+
+        $notifications = [];
+        foreach ($admins as $admin) {
+            $notification = Notification::create([
+                'user_id' => $admin->id,
+                'type' => 'budget_approved_by_client',
+                'title' => 'Orçamento Aprovado pelo Cliente',
+                'message' => "O cliente {$budget->client?->name} aprovou o orçamento #{$budget->id} v{$budget->version}. Valor: R$ " . number_format($budget->total, 2, ',', '.'),
+                'data' => [
+                    'budget_id' => $budget->id,
+                    'client_id' => $budget->client_id,
+                    'url' => route('budgets.index', ['budget_id' => $budget->id]),
+                ],
+            ]);
+
+            try {
+                broadcast(new NotificationCreated($notification));
+            } catch (\Exception $e) {
+                \Log::error('Erro ao fazer broadcast de notificação de aprovação pelo cliente: ' . $e->getMessage());
+            }
+
+            $notifications[] = $notification;
+        }
+
+        return $notifications;
+    }
+
+    /**
+     * Cria notificação quando cliente rejeita orçamento (notifica admins/gerentes)
+     */
+    public static function createBudgetRejectedByClientNotification($budget)
+    {
+        try {
+            $admins = \App\Models\User::role(['admin', 'manager'])->get();
+        } catch (\Exception $e) {
+            $admins = \App\Models\User::whereHas('roles', function ($query) {
+                $query->whereIn('name', ['admin', 'manager']);
+            })->get();
+        }
+
+        $notifications = [];
+        foreach ($admins as $admin) {
+            $message = "O cliente {$budget->client?->name} rejeitou o orçamento #{$budget->id} v{$budget->version}.";
+            if ($budget->rejection_reason) {
+                $message .= " Motivo: " . Str::limit($budget->rejection_reason, 100);
+            }
+
+            $notification = Notification::create([
+                'user_id' => $admin->id,
+                'type' => 'budget_rejected_by_client',
+                'title' => 'Orçamento Rejeitado pelo Cliente',
+                'message' => $message,
+                'data' => [
+                    'budget_id' => $budget->id,
+                    'client_id' => $budget->client_id,
+                    'rejection_reason' => $budget->rejection_reason,
+                    'url' => route('budgets.index', ['budget_id' => $budget->id]),
+                ],
+            ]);
+
+            try {
+                broadcast(new NotificationCreated($notification));
+            } catch (\Exception $e) {
+                \Log::error('Erro ao fazer broadcast de notificação de rejeição pelo cliente: ' . $e->getMessage());
+            }
+
+            $notifications[] = $notification;
+        }
+
+        return $notifications;
     }
 
     /**
