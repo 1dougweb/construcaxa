@@ -14,6 +14,7 @@ class StockMovementForm extends Component
     public $notes;
     public $search = '';
     public $selectedProduct = null;
+    public $productId = null;
     public Collection $availableProducts;
 
     protected $rules = [
@@ -23,9 +24,17 @@ class StockMovementForm extends Component
         'selectedProduct' => 'required|exists:products,id',
     ];
 
-    public function mount()
+    public function mount($productId = null)
     {
         $this->availableProducts = collect();
+        if ($productId) {
+            $this->productId = $productId;
+            $this->selectedProduct = $productId;
+            $product = Product::find($productId);
+            if ($product) {
+                $this->search = $product->name;
+            }
+        }
     }
 
     public function updatedSearch()
@@ -42,7 +51,29 @@ class StockMovementForm extends Component
     public function selectProduct($productId)
     {
         $this->selectedProduct = $productId;
-        $this->search = Product::find($productId)->name;
+        $this->productId = $productId;
+        $product = Product::find($productId);
+        if ($product) {
+            $this->search = $product->name;
+        }
+        $this->availableProducts = collect();
+    }
+
+    public function loadProduct($productId)
+    {
+        $this->productId = $productId;
+        $this->selectedProduct = $productId;
+        $product = Product::find($productId);
+        if ($product) {
+            $this->search = $product->name;
+        }
+        $this->availableProducts = collect();
+    }
+
+    public function resetForm()
+    {
+        $this->reset(['type', 'quantity', 'notes', 'search', 'selectedProduct']);
+        $this->productId = null;
         $this->availableProducts = collect();
     }
 
@@ -74,10 +105,20 @@ class StockMovementForm extends Component
 
         $product->update(['stock' => $newStock]);
 
-        $this->emit('movementCreated');
-        $this->reset(['type', 'quantity', 'notes', 'search', 'selectedProduct']);
+        $this->dispatch('movementCreated');
+        $this->dispatch('stock-movement-saved', ['message' => 'Movimentação de estoque registrada com sucesso!']);
         
-        session()->flash('success', 'Movimentação de estoque registrada com sucesso!');
+        // Reset form but keep product if it was pre-selected
+        $this->reset(['type', 'quantity', 'notes']);
+        if (!$this->productId) {
+            $this->reset(['search', 'selectedProduct']);
+        } else {
+            $product = Product::find($this->productId);
+            if ($product) {
+                $this->search = $product->name;
+                $this->selectedProduct = $this->productId;
+            }
+        }
     }
 
     public function render()

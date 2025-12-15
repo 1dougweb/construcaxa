@@ -1,19 +1,17 @@
 <x-app-layout>
-    <x-slot name="header">
-        <div class="flex justify-between items-center">
-            <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-                {{ __('Relatório de Movimentações') }}
-            </h2>
-            <a href="{{ route('reports.movements', ['format' => 'pdf'] + request()->query()) }}" class="inline-flex items-center px-4 py-2 bg-gray-800 dark:bg-gray-700 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700 dark:hover:bg-gray-600">
-                Baixar PDF
-            </a>
-        </div>
-    </x-slot>
 
     <div class="py-6">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
+                    {{ __('Relatório de Movimentações') }}
+                </h2>
+                <a href="{{ route('reports.movements', ['format' => 'pdf'] + request()->query()) }}" class="inline-flex items-center px-4 py-2 bg-gray-800 dark:bg-gray-700 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700 dark:hover:bg-gray-600">
+                    Baixar PDF
+                </a>
+            </div>
             <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-xl sm:rounded-lg border border-gray-200 dark:border-gray-700">
-                <div class="p-6 sm:px-20 bg-white dark:bg-gray-800">
+                <div class="p-6 bg-white dark:bg-gray-800">
                     <!-- Filtros -->
                     <form method="GET" class="mb-6">
                         <div class="flex flex-col md:flex-row gap-4">
@@ -31,8 +29,8 @@
                                 <label for="type" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Tipo</label>
                                 <select name="type" id="type" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 focus:outline-none focus:ring-indigo-500 dark:focus:ring-indigo-400 focus:border-indigo-500 dark:focus:border-indigo-400 sm:text-sm rounded-md">
                                     <option value="">Todos</option>
-                                    <option value="in" {{ request('type') == 'in' ? 'selected' : '' }}>Entrada</option>
-                                    <option value="out" {{ request('type') == 'out' ? 'selected' : '' }}>Saída</option>
+                                    <option value="entrada" {{ request('type') == 'entrada' ? 'selected' : '' }}>Entrada</option>
+                                    <option value="saida" {{ request('type') == 'saida' ? 'selected' : '' }}>Saída</option>
                                 </select>
                             </div>
                             <div class="flex-1">
@@ -92,7 +90,7 @@
                                                         {{ $movement->product->name }}
                                                     </td>
                                                     <td class="px-6 py-4 whitespace-nowrap">
-                                                        @if($movement->type === 'in')
+                                                        @if($movement->type === 'entrada')
                                                             <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 dark:bg-green-900/50 text-green-800 dark:text-green-300">
                                                                 Entrada
                                                             </span>

@@ -9,8 +9,11 @@
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div><label class="block text-sm font-medium text-gray-700">Cliente *</label>
                                 <select name="client_id" required class="mt-1 block w-full border-gray-300 rounded-md shadow-sm">
+                                    <option value="">Selecione um cliente</option>
                                     @foreach($clients as $client)
-                                        <option value="{{ $client->id }}">{{ $client->name }}</option>
+                                        <option value="{{ $client->id }}" {{ old('client_id') == $client->id ? 'selected' : '' }}>
+                                            {{ $client->name ?? $client->trading_name }}
+                                        </option>
                                     @endforeach
                                 </select>
                             </div>

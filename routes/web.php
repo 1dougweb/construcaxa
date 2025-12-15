@@ -375,6 +375,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('reports', [ReportController::class, 'index'])->name('reports.index');
     Route::get('reports/stock', [ReportController::class, 'stock'])->name('reports.stock');
     Route::get('reports/movements', [ReportController::class, 'movements'])->name('reports.movements');
+    Route::get('reports/balance', [ReportController::class, 'balance'])->name('reports.balance');
     Route::get('reports/orders', [ReportController::class, 'orders'])->name('reports.orders');
     Route::get('reports/expenses', [ReportController::class, 'expenses'])->name('reports.expenses');
     });

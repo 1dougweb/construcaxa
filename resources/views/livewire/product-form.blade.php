@@ -172,6 +172,52 @@
             </div>
         </div>
 
+        <!-- Seção de Alimentação de Estoque (apenas para produtos existentes) -->
+        @if($product && $product->id)
+        <div class="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
+            <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">{{ __('Alimentar Estoque') }}</h3>
+            <div class="bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-200 dark:border-indigo-800 rounded-lg p-4">
+                <div class="flex gap-4 items-end">
+                    <div class="w-48">
+                        <x-label for="stockToAdd" value="{{ __('Quantidade a Adicionar') }}" />
+                        <div class="flex items-center mt-1">
+                            <x-input id="stockToAdd" class="block w-full" type="number" wire:model="stockToAdd" step="0.01" min="0.01" placeholder="0.00" />
+                            <span class="ml-2 text-gray-600 dark:text-gray-400">{{ $unit_label ?? 'un' }}</span>
+                        </div>
+                        @error('stockToAdd')
+                            <p class="text-red-500 dark:text-red-400 text-xs mt-1">{{ $message }}</p>
+                        @enderror
+                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                            Estoque atual: <strong>{{ $stock ?? 0 }} {{ $unit_label ?? 'un' }}</strong>
+                        </p>
+                    </div>
+                    <div>
+                        <button 
+                            type="button"
+                            wire:click="addStock"
+                            wire:loading.attr="disabled"
+                            class="inline-flex items-center justify-center px-4 py-2 bg-indigo-600 dark:bg-indigo-700 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-indigo-700 dark:hover:bg-indigo-600 focus:bg-indigo-700 active:bg-indigo-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition ease-in-out duration-150 disabled:opacity-50"
+                        >
+                            <span wire:loading.remove wire:target="addStock">
+                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                                </svg>
+                                Adicionar ao Estoque
+                            </span>
+                            <span wire:loading wire:target="addStock" class="inline-flex items-center">
+                                <svg class="animate-spin h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                                Adicionando...
+                            </span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        @endif
+
         <div class="flex items-center justify-end gap-4 mt-6 pt-4 border-t border-gray-200 dark:border-gray-700">
             <button 
                 type="button"

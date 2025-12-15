@@ -5,11 +5,13 @@ namespace App\Http\Livewire;
 use App\Models\Product;
 use App\Models\Category;
 use App\Models\Supplier;
+use App\Models\StockMovement;
 use App\Events\ProductChanged;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\DB;
 
 class ProductForm extends Component
 {
@@ -30,6 +32,7 @@ class ProductForm extends Component
     public $featured_photo;
     public $featured_photo_path;
     public $showDeleteModal = false;
+    public $stockToAdd = 0;
     
     public $categories;
     public $suppliers;
@@ -380,6 +383,61 @@ class ProductForm extends Component
         ]);
 
         $this->resetForm();
+    }
+
+    public function addStock()
+    {
+        if (!$this->product || !$this->product->id) {
+            session()->flash('error', 'É necessário salvar o produto antes de adicionar estoque.');
+            return;
+        }
+
+        $this->validate([
+            'stockToAdd' => 'required|numeric|min:0.01',
+        ], [
+            'stockToAdd.required' => 'A quantidade é obrigatória.',
+            'stockToAdd.numeric' => 'A quantidade deve ser um número.',
+            'stockToAdd.min' => 'A quantidade deve ser maior que zero.',
+        ]);
+
+        DB::beginTransaction();
+        try {
+            // Recarregar produto do banco para garantir dados atualizados
+            $this->product->refresh();
+            $previousStock = $this->product->stock;
+            
+            // Incrementar estoque
+            $this->product->increment('stock', $this->stockToAdd);
+            
+            // Criar registro de movimentação
+            StockMovement::create([
+                'product_id' => $this->product->id,
+                'user_id' => auth()->id(),
+                'type' => 'entrada',
+                'quantity' => $this->stockToAdd,
+                'previous_stock' => $previousStock,
+                'new_stock' => $this->product->stock,
+                'notes' => 'Alimentação de estoque via formulário',
+            ]);
+            
+            // Atualizar estoque no formulário
+            $this->stock = $this->product->stock;
+            
+            DB::commit();
+            
+            $message = "Estoque adicionado com sucesso! Novo estoque: {$this->product->stock} {$this->product->unit_label}";
+            session()->flash('success', $message);
+            
+            // Limpar campo
+            $this->stockToAdd = 0;
+            
+            // Disparar evento para atualizar lista
+            $this->dispatch('refresh-products')->to(ProductList::class);
+            
+        } catch (\Exception $e) {
+            DB::rollBack();
+            session()->flash('error', 'Erro ao adicionar estoque: ' . $e->getMessage());
+        }
     }
 
     public function render()

@@ -180,6 +180,12 @@
                                     <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                                 <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                             </th>
+                            <th class="px-6 py-3 bg-gray-50 dark:bg-gray-700/50 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                Estoque Disponível
+                            </th>
+                            <th class="px-6 py-3 bg-gray-50 dark:bg-gray-700/50 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                Valor Total
+                            </th>
                             <th wire:click="sortBy('price')" class="px-6 py-3 bg-gray-50 dark:bg-gray-700/50 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer">
                                 Preço
                                 <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($sortField === 'price'): ?>
@@ -365,6 +371,20 @@
                                         <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                                     </div>
                                 </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
+                                    <?php
+                                        $availableStock = $product->available_stock ?? $product->stock;
+                                    ?>
+                                    <span class="font-medium"><?php echo e(number_format($availableStock, 2, ',', '.')); ?> <?php echo e($product->unit_label); ?></span>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
+                                    <?php
+                                        $availableStock = $product->available_stock ?? $product->stock;
+                                        $unitPrice = $product->cost_price ?? $product->price ?? 0;
+                                        $totalValue = $availableStock * $unitPrice;
+                                    ?>
+                                    <span class="font-medium">R$ <?php echo e(number_format($totalValue, 2, ',', '.')); ?></span>
+                                </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                                     R$ <?php echo e(number_format($product->price, 2, ',', '.')); ?>
 
@@ -394,12 +414,44 @@
                             </tr>
                         <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
                             <tr>
-                                <td colspan="<?php echo e((auth()->user()->can('edit products') || auth()->user()->can('delete products')) ? '8' : '7'); ?>" class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400 text-center">
+                                <td colspan="<?php echo e((auth()->user()->can('edit products') || auth()->user()->can('delete products')) ? '10' : '9'); ?>" class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400 text-center">
                                     Nenhum produto encontrado.
                                 </td>
                             </tr>
                         <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                     </tbody>
+                    <tfoot class="bg-gray-50 dark:bg-gray-700/50">
+                        <tr>
+                            <td colspan="5" class="px-6 py-3 text-sm font-semibold text-gray-900 dark:text-gray-100 text-right">
+                                Totais:
+                            </td>
+                            <td class="px-6 py-3 text-sm font-semibold text-gray-900 dark:text-gray-100">
+                                <?php
+                                    $totalStock = 0;
+                                    $totalAvailableStock = 0;
+                                    $totalValue = 0;
+                                    foreach ($products as $product) {
+                                        $totalStock += $product->stock ?? 0;
+                                        $availableStock = $product->available_stock ?? $product->stock ?? 0;
+                                        $totalAvailableStock += $availableStock;
+                                        $unitPrice = $product->cost_price ?? $product->price ?? 0;
+                                        $totalValue += $availableStock * $unitPrice;
+                                    }
+                                ?>
+                                <span class="font-medium"><?php echo e(number_format($totalStock, 2, ',', '.')); ?></span>
+                            </td>
+                            <td class="px-6 py-3 text-sm font-semibold text-gray-900 dark:text-gray-100">
+                                <span class="font-medium"><?php echo e(number_format($totalAvailableStock, 2, ',', '.')); ?></span>
+                            </td>
+                            <td class="px-6 py-3 text-sm font-semibold text-gray-900 dark:text-gray-100">
+                                <span class="font-medium">R$ <?php echo e(number_format($totalValue, 2, ',', '.')); ?></span>
+                            </td>
+                            <td class="px-6 py-3 text-sm text-gray-500 dark:text-gray-400"></td>
+                            <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(auth()->user()->can('edit products') || auth()->user()->can('delete products')): ?>
+                            <td class="px-6 py-3 text-sm text-gray-500 dark:text-gray-400"></td>
+                            <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+                        </tr>
+                    </tfoot>
                 </table>
             </div>
 

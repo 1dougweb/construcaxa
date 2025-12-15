@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Invoice;
 use App\Models\Project;
 use App\Models\ProjectBudget;
-use App\Models\User;
+use App\Models\Client;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -24,9 +24,7 @@ class InvoiceController extends Controller
 
     public function create()
     {
-        $clients = User::whereHas('roles', function($q) {
-            $q->where('name', 'client');
-        })->orderBy('name')->get();
+        $clients = Client::active()->orderBy('name')->get();
         $projects = Project::orderBy('name')->get();
         $budgets = ProjectBudget::where('status', ProjectBudget::STATUS_APPROVED)
             ->with('project')
@@ -39,7 +37,7 @@ class InvoiceController extends Controller
     {
         $validated = $request->validate([
             'project_id' => 'nullable|exists:projects,id',
-            'client_id' => 'required|exists:users,id',
+            'client_id' => 'required|exists:clients,id',
             'budget_id' => 'nullable|exists:project_budgets,id',
             'issue_date' => 'required|date',
             'due_date' => 'required|date|after_or_equal:issue_date',
@@ -76,9 +74,7 @@ class InvoiceController extends Controller
 
     public function edit(Invoice $invoice)
     {
-        $clients = User::whereHas('roles', function($q) {
-            $q->where('name', 'client');
-        })->orderBy('name')->get();
+        $clients = Client::active()->orderBy('name')->get();
         $projects = Project::orderBy('name')->get();
         $budgets = ProjectBudget::where('status', ProjectBudget::STATUS_APPROVED)
             ->with('project')
@@ -91,7 +87,7 @@ class InvoiceController extends Controller
     {
         $validated = $request->validate([
             'project_id' => 'nullable|exists:projects,id',
-            'client_id' => 'required|exists:users,id',
+            'client_id' => 'required|exists:clients,id',
             'budget_id' => 'nullable|exists:project_budgets,id',
             'issue_date' => 'required|date',
             'due_date' => 'required|date|after_or_equal:issue_date',

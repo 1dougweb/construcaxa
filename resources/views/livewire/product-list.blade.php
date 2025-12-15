@@ -124,6 +124,12 @@
                                     @endif
                                 @endif
                             </th>
+                            <th class="px-6 py-3 bg-gray-50 dark:bg-gray-700/50 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                Estoque Disponível
+                            </th>
+                            <th class="px-6 py-3 bg-gray-50 dark:bg-gray-700/50 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                Valor Total
+                            </th>
                             <th wire:click="sortBy('price')" class="px-6 py-3 bg-gray-50 dark:bg-gray-700/50 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer">
                                 Preço
                                 @if ($sortField === 'price')
@@ -302,40 +308,106 @@
                                         @endif
                                     </div>
                                 </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
+                                    @php
+                                        $availableStock = $product->available_stock ?? $product->stock;
+                                    @endphp
+                                    <span class="font-medium">{{ number_format($availableStock, 2, ',', '.') }} {{ $product->unit_label }}</span>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
+                                    @php
+                                        $availableStock = $product->available_stock ?? $product->stock;
+                                        $unitPrice = $product->cost_price ?? $product->price ?? 0;
+                                        $totalValue = $availableStock * $unitPrice;
+                                    @endphp
+                                    <span class="font-medium">R$ {{ number_format($totalValue, 2, ',', '.') }}</span>
+                                </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                                     R$ {{ number_format($product->price, 2, ',', '.') }}
                                 </td>
-                                @if(auth()->user()->can('edit products') || auth()->user()->can('delete products'))
+                                @if(auth()->user()->can('edit products') || auth()->user()->can('delete products') || auth()->user()->can('view products'))
                                 <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                    @can('edit products')
-                                    <button 
-                                        onclick="if (typeof openProductOffcanvasForEdit === 'function') { openProductOffcanvasForEdit({{ $product->id }}); } else { openOffcanvas('product-offcanvas'); window.dispatchEvent(new CustomEvent('edit-product', { detail: { id: {{ $product->id }} } })); }" 
-                                        type="button" 
-                                        class="text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-300"
-                                    >
-                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
-                                        </svg>
-                                    </button>
-                                    @endcan
-                                    @can('delete products')
-                                    <button wire:click="confirmDelete({{ $product->id }})" type="button" class="ml-2 text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300">
-                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-                                        </svg>
-                                    </button>
-                                    @endcan
+                                    <div class="flex items-center justify-end space-x-2">
+                                        @can('view products')
+                                        <button 
+                                            onclick="openOffcanvas('stock-movement-offcanvas'); window.dispatchEvent(new CustomEvent('open-stock-movement', { detail: { productId: {{ $product->id }} } }));" 
+                                            type="button" 
+                                            class="inline-flex items-center justify-center w-8 h-8 text-blue-600 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-md transition-colors"
+                                            title="Movimentação de Estoque"
+                                        >
+                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+                                            </svg>
+                                        </button>
+                                        @endcan
+                                        @can('edit products')
+                                        <button 
+                                            onclick="if (typeof openProductOffcanvasForEdit === 'function') { openProductOffcanvasForEdit({{ $product->id }}); } else { openOffcanvas('product-offcanvas'); window.dispatchEvent(new CustomEvent('edit-product', { detail: { id: {{ $product->id }} } })); }" 
+                                            type="button" 
+                                            class="inline-flex items-center justify-center w-8 h-8 text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-300 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 rounded-md transition-colors"
+                                            title="Editar"
+                                        >
+                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                                            </svg>
+                                        </button>
+                                        @endcan
+                                        @can('delete products')
+                                        <button 
+                                            wire:click="confirmDelete({{ $product->id }})" 
+                                            type="button" 
+                                            class="inline-flex items-center justify-center w-8 h-8 text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-md transition-colors"
+                                            title="Excluir"
+                                        >
+                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                            </svg>
+                                        </button>
+                                        @endcan
+                                    </div>
                                 </td>
                                 @endif
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="{{ (auth()->user()->can('edit products') || auth()->user()->can('delete products')) ? '8' : '7' }}" class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400 text-center">
+                                <td colspan="{{ (auth()->user()->can('edit products') || auth()->user()->can('delete products') || auth()->user()->can('view products')) ? '10' : '9' }}" class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400 text-center">
                                     Nenhum produto encontrado.
                                 </td>
                             </tr>
                         @endforelse
                     </tbody>
+                    <tfoot class="bg-gray-50 dark:bg-gray-700/50">
+                        <tr>
+                            <td colspan="5" class="px-6 py-3 text-sm font-semibold text-gray-900 dark:text-gray-100 text-right">
+                                Totais:
+                            </td>
+                            <td class="px-6 py-3 text-sm font-semibold text-gray-900 dark:text-gray-100">
+                                @php
+                                    $totalStock = 0;
+                                    $totalAvailableStock = 0;
+                                    $totalValue = 0;
+                                    foreach ($products as $product) {
+                                        $totalStock += $product->stock ?? 0;
+                                        $availableStock = $product->available_stock ?? $product->stock ?? 0;
+                                        $totalAvailableStock += $availableStock;
+                                        $unitPrice = $product->cost_price ?? $product->price ?? 0;
+                                        $totalValue += $availableStock * $unitPrice;
+                                    }
+                                @endphp
+                                <span class="font-medium">{{ number_format($totalStock, 2, ',', '.') }}</span>
+                            </td>
+                            <td class="px-6 py-3 text-sm font-semibold text-gray-900 dark:text-gray-100">
+                                <span class="font-medium">{{ number_format($totalAvailableStock, 2, ',', '.') }}</span>
+                            </td>
+                            <td class="px-6 py-3 text-sm font-semibold text-gray-900 dark:text-gray-100">
+                                <span class="font-medium">R$ {{ number_format($totalValue, 2, ',', '.') }}</span>
+                            </td>
+                            <td class="px-6 py-3 text-sm text-gray-500 dark:text-gray-400"></td>
+                            @if(auth()->user()->can('edit products') || auth()->user()->can('delete products'))
+                            <td class="px-6 py-3 text-sm text-gray-500 dark:text-gray-400"></td>
+                            @endif
+                        </tr>
+                    </tfoot>
                 </table>
             </div>
 

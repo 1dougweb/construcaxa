@@ -1,9 +1,11 @@
 <x-app-layout>
-    <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">{{ __('Nova Nota Fiscal') }}</h2>
-    </x-slot>
     <div class="py-6">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
+                    {{ __('Nova Nota Fiscal') }}
+                </h2>
+            </div>
             <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg">
                 <div class="p-6">
                     <form method="POST" action="{{ route('financial.invoices.store') }}">
@@ -11,8 +13,11 @@
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div><label class="block text-sm font-medium text-gray-700">Cliente *</label>
                                 <select name="client_id" required class="mt-1 block w-full border-gray-300 rounded-md shadow-sm">
+                                    <option value="">Selecione um cliente</option>
                                     @foreach($clients as $client)
-                                        <option value="{{ $client->id }}">{{ $client->name }}</option>
+                                        <option value="{{ $client->id }}" {{ old('client_id') == $client->id ? 'selected' : '' }}>
+                                            {{ $client->name ?? $client->trading_name }}
+                                        </option>
                                     @endforeach
                                 </select>
                             </div>

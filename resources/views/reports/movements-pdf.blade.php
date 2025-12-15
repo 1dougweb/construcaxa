@@ -75,7 +75,7 @@
             </p>
         @endif
         @if(request('type'))
-            <p>Tipo: {{ request('type') === 'in' ? 'Entrada' : 'Saída' }}</p>
+            <p>Tipo: {{ request('type') === 'entrada' ? 'Entrada' : 'Saída' }}</p>
         @endif
         @if(request('product_id'))
             <p>Produto: {{ \App\Models\Product::find(request('product_id'))?->name }}</p>
@@ -99,7 +99,7 @@
                     <td>{{ $movement->created_at->format('d/m/Y H:i') }}</td>
                     <td>{{ $movement->product->name }}</td>
                     <td>
-                        @if($movement->type === 'in')
+                        @if($movement->type === 'entrada')
                             <span class="type type-in">Entrada</span>
                         @else
                             <span class="type type-out">Saída</span>

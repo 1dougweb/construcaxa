@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Receipt;
 use App\Models\Invoice;
 use App\Models\Project;
-use App\Models\User;
+use App\Models\Client;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -23,9 +23,7 @@ class ReceiptController extends Controller
 
     public function create()
     {
-        $clients = User::whereHas('roles', function($q) {
-            $q->where('name', 'client');
-        })->orderBy('name')->get();
+        $clients = Client::active()->orderBy('name')->get();
         $projects = Project::orderBy('name')->get();
         $invoices = Invoice::where('status', '!=', 'cancelled')
             ->with('client')
@@ -38,7 +36,7 @@ class ReceiptController extends Controller
     {
         $validated = $request->validate([
             'project_id' => 'nullable|exists:projects,id',
-            'client_id' => 'required|exists:users,id',
+            'client_id' => 'required|exists:clients,id',
             'invoice_id' => 'nullable|exists:invoices,id',
             'issue_date' => 'required|date',
             'amount' => 'required|numeric|min:0',
@@ -81,9 +79,7 @@ class ReceiptController extends Controller
 
     public function edit(Receipt $receipt)
     {
-        $clients = User::whereHas('roles', function($q) {
-            $q->where('name', 'client');
-        })->orderBy('name')->get();
+        $clients = Client::active()->orderBy('name')->get();
         $projects = Project::orderBy('name')->get();
         $invoices = Invoice::where('status', '!=', 'cancelled')
             ->with('client')
@@ -96,7 +92,7 @@ class ReceiptController extends Controller
     {
         $validated = $request->validate([
             'project_id' => 'nullable|exists:projects,id',
-            'client_id' => 'required|exists:users,id',
+            'client_id' => 'required|exists:clients,id',
             'invoice_id' => 'nullable|exists:invoices,id',
             'issue_date' => 'required|date',
             'amount' => 'required|numeric|min:0',

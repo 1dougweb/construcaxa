@@ -53,7 +53,9 @@ class ReportController extends Controller
         }
 
         if ($request->type) {
-            $query->where('type', $request->type);
+            // Converter 'in'/'out' para 'entrada'/'saida' se necessário
+            $type = $request->type === 'in' ? 'entrada' : ($request->type === 'out' ? 'saida' : $request->type);
+            $query->where('type', $type);
         }
 
         if ($request->product_id) {
@@ -124,5 +126,63 @@ class ReportController extends Controller
         }
 
         return view('reports.expenses', compact('expenses'));
+    }
+
+    public function balance(Request $request)
+    {
+        $query = StockMovement::with(['product', 'user']);
+
+        if ($request->start_date) {
+            $query->whereDate('created_at', '>=', $request->start_date);
+        }
+
+        if ($request->end_date) {
+            $query->whereDate('created_at', '<=', $request->end_date);
+        }
+
+        if ($request->product_id) {
+            $query->where('product_id', $request->product_id);
+        }
+
+        $movements = $query->orderBy('created_at', 'asc')->get();
+
+        // Calcular totais
+        $totalEntradas = 0;
+        $totalSaidas = 0;
+        $totalValorEntradas = 0;
+        $totalValorSaidas = 0;
+
+        foreach ($movements as $movement) {
+            $unitPrice = $movement->product->cost_price ?? $movement->product->price ?? 0;
+            $movementValue = $movement->quantity * $unitPrice;
+
+            if ($movement->type === 'entrada') {
+                $totalEntradas += $movement->quantity;
+                $totalValorEntradas += $movementValue;
+            } else {
+                $totalSaidas += $movement->quantity;
+                $totalValorSaidas += $movementValue;
+            }
+        }
+
+        $saldoQuantidade = $totalEntradas - $totalSaidas;
+        $saldoValor = $totalValorEntradas - $totalValorSaidas;
+
+        $summary = [
+            'total_entradas' => $totalEntradas,
+            'total_saidas' => $totalSaidas,
+            'saldo_quantidade' => $saldoQuantidade,
+            'total_valor_entradas' => $totalValorEntradas,
+            'total_valor_saidas' => $totalValorSaidas,
+            'saldo_valor' => $saldoValor,
+        ];
+
+        if ($request->format === 'pdf') {
+            $pdf = Pdf::loadView('reports.balance-pdf', compact('movements', 'summary'))
+                ->setPaper('a4', 'landscape');
+            return $pdf->download('relatorio-balanco-estoque.pdf');
+        }
+
+        return view('reports.balance', compact('movements', 'summary'));
     }
 }

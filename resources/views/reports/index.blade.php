@@ -80,6 +80,30 @@
                                 </div>
                             </div>
                         </div>
+
+                        <!-- Relatório de Balanço -->
+                        <div class="bg-white dark:bg-gray-800 shadow-xl rounded-lg border border-gray-200 dark:border-gray-700">
+                            <div class="p-5">
+                                <div class="flex items-center">
+                                    <div class="flex-shrink-0 bg-purple-500 rounded-md p-3">
+                                        <svg class="h-6 w-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                                        </svg>
+                                    </div>
+                                    <div class="ml-5">
+                                        <h3 class="text-lg leading-6 font-medium text-gray-900 dark:text-gray-100">Balanço de Estoque</h3>
+                                        <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">
+                                            Relatório completo de entradas e saídas com valores em R$.
+                                        </p>
+                                    </div>
+                                </div>
+                                <div class="mt-6">
+                                    <a href="{{ route('reports.balance') }}" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-purple-700 dark:text-purple-300 bg-purple-100 dark:bg-purple-900/50 hover:bg-purple-200 dark:hover:bg-purple-900/70">
+                                        Gerar Relatório
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
                     </div>
             </div>
         </div>

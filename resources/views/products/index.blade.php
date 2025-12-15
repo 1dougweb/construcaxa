@@ -39,6 +39,11 @@
     <x-offcanvas id="product-offcanvas" title="Novo Produto" width="w-full md:w-[600px]">
         @livewire('product-form', ['product' => null])
     </x-offcanvas>
+
+    <!-- Offcanvas para Movimentação de Estoque -->
+    <x-offcanvas id="stock-movement-offcanvas" title="Movimentação de Estoque" width="w-full md:w-[500px]">
+        @livewire('stock-movement-form', ['productId' => null], key('stock-movement-form'))
+    </x-offcanvas>
 </x-app-layout>
 
 @push('scripts')
@@ -166,6 +171,66 @@
 
                 const component = getProductFormComponent();
                 if (component) Livewire.dispatch('reset-product-form');
+            }
+        });
+
+        // Handler para abrir movimentação de estoque
+        window.addEventListener('open-stock-movement', (event) => {
+            const productId = event.detail?.productId;
+            if (productId) {
+                const offcanvas = document.getElementById('stock-movement-offcanvas');
+                if (offcanvas) {
+                    // Aguardar um pouco para garantir que o componente está disponível
+                    setTimeout(() => {
+                        const componentEl = offcanvas.querySelector('[wire\\:id]');
+                        if (componentEl) {
+                            const component = Livewire.find(componentEl.getAttribute('wire:id'));
+                            if (component) {
+                                // Carregar produto
+                                component.call('loadProduct', productId);
+                            }
+                        }
+                    }, 100);
+                }
+            }
+        });
+
+        // Listener para quando a movimentação for salva
+        window.addEventListener('stock-movement-saved', (event) => {
+            const offcanvas = document.getElementById('stock-movement-offcanvas');
+            if (offcanvas) {
+                const componentEl = offcanvas.querySelector('[wire\\:id]');
+                if (componentEl) {
+                    const component = Livewire.find(componentEl.getAttribute('wire:id'));
+                    if (component) {
+                        component.call('resetForm');
+                    }
+                }
+            }
+            closeOffcanvas('stock-movement-offcanvas');
+            if (window.Livewire) {
+                window.Livewire.dispatch('refresh-products');
+            }
+            if (event.detail?.message && window.showNotification) {
+                window.showNotification(event.detail.message, 'success', 4000);
+            }
+        });
+
+        // Resetar formulário quando o offcanvas for fechado
+        document.addEventListener('click', (e) => {
+            if (e.target.closest('[onclick*="closeOffcanvas"]') || e.target.closest('[id="stock-movement-offcanvas-backdrop"]')) {
+                const offcanvas = document.getElementById('stock-movement-offcanvas');
+                if (offcanvas && offcanvas.classList.contains('translate-x-0')) {
+                    setTimeout(() => {
+                        const componentEl = offcanvas.querySelector('[wire\\:id]');
+                        if (componentEl) {
+                            const component = Livewire.find(componentEl.getAttribute('wire:id'));
+                            if (component) {
+                                component.call('resetForm');
+                            }
+                        }
+                    }, 300);
+                }
             }
         });
     })();

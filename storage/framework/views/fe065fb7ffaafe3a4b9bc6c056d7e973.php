@@ -815,7 +815,7 @@ unset($__errorArgs, $__bag); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendB
                     if (filteredProducts.length > 0) {
                         let resultsHtml = '';
                         filteredProducts.slice(0, 10).forEach(product => {
-                            const photoUrl = product.photo ? `/storage/${product.photo}` : null;
+                            const photoUrl = product.photo ? `/${product.photo}` : null;
                             resultsHtml += `
                                 <div class="product-option p-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer border-b border-gray-200 dark:border-gray-700 last:border-b-0 flex items-center gap-3" 
                                      data-id="${product.id}" 

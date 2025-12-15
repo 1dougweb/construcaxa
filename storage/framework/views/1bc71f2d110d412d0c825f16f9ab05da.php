@@ -12,7 +12,7 @@
     <div class="flex items-end justify-between">
         <div>
             <h1 class="text-2xl font-semibold text-gray-900 dark:text-gray-100"><?php echo e($project->name); ?> 
-            <p class="text-lg text-gray-400 dark:text-gray-500">(<?php echo e($project->code); ?>)</p></h1>
+                <p class="text-lg text-gray-400 dark:text-gray-500">(<?php echo e($project->code); ?>)</p></h1>
             <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">Status: <?php echo e($project->status); ?> · Progresso: <?php echo e($project->progress_percentage); ?>%</p>
         </div>
         <div class="flex space-x-2">
