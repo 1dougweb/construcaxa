@@ -151,7 +151,7 @@
                                                     @if($item->photos->count() > 0)
                                                         <div class="grid grid-cols-4 gap-2 mt-2">
                                                             @foreach($item->photos as $photo)
-                                                                <img src="{{ asset('storage/' . $photo->photo_path) }}" alt="Foto" class="w-full h-24 object-cover rounded">
+                                                                <img src="/{{ ltrim($photo->photo_path, '/') }}" alt="Foto" class="w-full h-24 object-cover rounded">
                                                             @endforeach
                                                         </div>
                                                     @endif

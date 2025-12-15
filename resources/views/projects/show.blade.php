@@ -1,14 +1,9 @@
 <x-app-layout>
-    <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-            {{ __('Detalhes da Obra') }}
-        </h2>
-    </x-slot>
-
 <div class="p-4">
-    <div class="flex items-start justify-between">
+    <div class="flex items-end justify-between">
         <div>
-            <h1 class="text-2xl font-semibold text-gray-900 dark:text-gray-100">{{ $project->name }} <span class="text-gray-400 dark:text-gray-500">({{ $project->code }})</span></h1>
+            <h1 class="text-2xl font-semibold text-gray-900 dark:text-gray-100">{{ $project->name }} 
+                <p class="text-lg text-gray-400 dark:text-gray-500">({{ $project->code }})</p></h1>
             <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">Status: {{ $project->status }} · Progresso: {{ $project->progress_percentage }}%</p>
         </div>
         <div class="flex space-x-2">

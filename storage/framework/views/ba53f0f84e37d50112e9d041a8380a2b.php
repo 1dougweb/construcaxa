@@ -8,19 +8,11 @@
 <?php $attributes = $attributes->except(\Illuminate\View\AnonymousComponent::ignoredParameterNames()); ?>
 <?php endif; ?>
 <?php $component->withAttributes([]); ?>
-     <?php $__env->slot('header', null, []); ?> 
-        <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-            <?php echo e(__('Obras')); ?>
-
-        </h2>
-     <?php $__env->endSlot(); ?>
-
     <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 py-6">
         <!-- Cabeçalho com título e botão de criar -->
         <div class="flex items-center justify-between mb-6">
             <div>
-                <h1 class="text-3xl font-bold text-gray-900 dark:text-gray-100">Obras</h1>
-                <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Gerencie todas as obras do sistema</p>
+                <h1 class="text-2xl font-bold text-gray-900 dark:text-gray-100">Obras</h1>
             </div>
             <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(auth()->user()->can('create projects') || auth()->user()->hasAnyRole(['manager','admin'])): ?>
             
@@ -35,9 +27,7 @@
                         <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Total</p>
                         <p class="text-2xl font-bold text-gray-900 dark:text-gray-100 mt-1"><?php echo e($stats['total']); ?></p>
                     </div>
-                    <div class="p-3 bg-indigo-100 dark:bg-indigo-900/30 rounded-lg">
-                        <i class="bi bi-folder text-indigo-600 dark:text-indigo-400 text-xl"></i>
-                    </div>
+                        <i class="fi fi-rr-folder text-2xl text-indigo-600 dark:text-indigo-400"></i>
                 </div>
             </div>
             
@@ -47,9 +37,7 @@
                         <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Em Andamento</p>
                         <p class="text-2xl font-bold text-blue-600 dark:text-blue-400 mt-1"><?php echo e($stats['in_progress']); ?></p>
                     </div>
-                    <div class="p-3 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
-                        <i class="bi bi-play-circle text-blue-600 dark:text-blue-400 text-xl"></i>
-                    </div>
+                    <i class="fi fi-rr-play text-2xl text-blue-600 dark:text-blue-400"></i>
                 </div>
             </div>
             
@@ -59,9 +47,7 @@
                         <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Concluídas</p>
                         <p class="text-2xl font-bold text-green-600 dark:text-green-400 mt-1"><?php echo e($stats['completed']); ?></p>
                     </div>
-                    <div class="p-3 bg-green-100 dark:bg-green-900/30 rounded-lg">
-                        <i class="bi bi-check-circle text-green-600 dark:text-green-400 text-xl"></i>
-                    </div>
+                    <i class="fi fi-rr-check-circle text-2xl text-green-600 dark:text-green-400"></i>
                 </div>
             </div>
             
@@ -71,9 +57,7 @@
                         <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Planejadas</p>
                         <p class="text-2xl font-bold text-gray-600 dark:text-gray-400 mt-1"><?php echo e($stats['planned']); ?></p>
                     </div>
-                    <div class="p-3 bg-gray-100 dark:bg-gray-700 rounded-lg">
-                        <i class="bi bi-calendar text-gray-600 dark:text-gray-400 text-xl"></i>
-                    </div>
+                    <i class="fi fi-rr-calendar text-2xl text-gray-600 dark:text-gray-400"></i>
                 </div>
             </div>
             
@@ -83,9 +67,7 @@
                         <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Pausadas</p>
                         <p class="text-2xl font-bold text-yellow-600 dark:text-yellow-400 mt-1"><?php echo e($stats['paused']); ?></p>
                     </div>
-                    <div class="p-3 bg-yellow-100 dark:bg-yellow-900/30 rounded-lg">
-                        <i class="bi bi-pause-circle text-yellow-600 dark:text-yellow-400 text-xl"></i>
-                    </div>
+                    <i class="fi fi-rr-pause text-2xl text-yellow-600 dark:text-yellow-400"></i>
                 </div>
             </div>
             
@@ -95,9 +77,7 @@
                         <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Canceladas</p>
                         <p class="text-2xl font-bold text-red-600 dark:text-red-400 mt-1"><?php echo e($stats['cancelled']); ?></p>
                     </div>
-                    <div class="p-3 bg-red-100 dark:bg-red-900/30 rounded-lg">
-                        <i class="bi bi-x-circle text-red-600 dark:text-red-400 text-xl"></i>
-                    </div>
+                    <i class="fi fi-rr-cross-circle text-2xl text-red-600 dark:text-red-400"></i>
                 </div>
             </div>
         </div>

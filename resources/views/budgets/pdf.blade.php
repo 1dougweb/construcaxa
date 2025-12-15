@@ -266,7 +266,7 @@
                         @else
                             <div>Cliente não especificado</div>
                         @endif
-                    </div>
+        </div>
                 </td>
             </tr>
         </table>
@@ -282,16 +282,16 @@
             <span class="label">Número do Orçamento:</span>
             <span class="value">#{{ $budget->id }} - Versão {{ $budget->version }}</span>
         </div>
-        <div class="info-row">
+            <div class="info-row">
             <span class="label">Data de Criação:</span>
             <span class="value">{{ $budget->created_at->format('d/m/Y H:i') }}</span>
-        </div>
+            </div>
         @if($budget->approved_at)
             <div class="info-row">
                 <span class="label">Data de Aprovação:</span>
                 <span class="value">{{ $budget->approved_at->format('d/m/Y H:i') }}</span>
-            </div>
-        @endif
+                </div>
+            @endif
         @if($budget->approver)
             <div class="info-row">
                 <span class="label">Aprovado por:</span>

@@ -8,12 +8,13 @@
 <?php $attributes = $attributes->except(\Illuminate\View\AnonymousComponent::ignoredParameterNames()); ?>
 <?php endif; ?>
 <?php $component->withAttributes([]); ?>
-     <?php $__env->slot('header', null, []); ?> 
-        <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-            <?php echo e(__('Dashboard')); ?>
 
-        </h2>
-     <?php $__env->endSlot(); ?>
+    <style>
+        .bg-green-600 {
+            background:rgb(195, 194, 211)
+        }
+    </style>
+</style>
 
     <div class="py-6">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
@@ -93,7 +94,7 @@
                         ?>
 
                         <!-- Total a Receber -->
-                        <div class="bg-green-600 rounded-lg shadow-lg p-6">
+                        <div class="bg-green-500 rounded-lg shadow-lg p-6">
                             <div class="flex justify-between items-center">
                                 <div>
                                     <h3 class="text-white text-lg font-semibold">A Receber</h3>

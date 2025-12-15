@@ -127,7 +127,7 @@
             }
         </style>
         
-        <!-- Script inline para prevenir flash branco no dark mode -->
+        <!-- Script inline para prevenir flash branco no dark mode e sidebar -->
         <script>
             (function() {
                 // Aplicar tema ANTES de qualquer renderização
@@ -140,6 +140,28 @@
                 } else {
                     document.documentElement.classList.remove('dark');
                 }
+                
+                // Aplicar estado do sidebar ANTES de qualquer renderização
+                const sidebarCollapsed = localStorage.getItem('sidebarCollapsed') === 'true';
+                if (sidebarCollapsed) {
+                    // Adicionar estilos inline diretamente no head para aplicar antes do render
+                    const style = document.createElement('style');
+                    style.id = 'sidebar-collapsed-styles';
+                    style.textContent = `
+                        @media (min-width: 1024px) {
+                            .sidebar-container {
+                                transform: translateX(-100%) !important;
+                            }
+                            .topbar-container {
+                                left: 0 !important;
+                            }
+                            .content-container {
+                                margin-left: 0 !important;
+                            }
+                        }
+                    `;
+                    document.head.appendChild(style);
+                }
             })();
         </script>
     </head>
@@ -149,7 +171,11 @@
 
         <div class="min-h-screen bg-gray-100 dark:bg-gray-900 transition-colors duration-200" 
              x-data="{ 
-                sidebarOpen: false, 
+                sidebarOpen: false,
+                sidebarCollapsed: (() => {
+                    const stored = localStorage.getItem('sidebarCollapsed');
+                    return stored === 'true';
+                })(),
                 userMenuOpen: false,
                 darkMode: (() => {
                     const stored = localStorage.getItem('darkMode');
@@ -169,6 +195,42 @@
                 updateDarkMode() {
                     localStorage.setItem('darkMode', this.darkMode);
                     document.documentElement.classList.toggle('dark', this.darkMode);
+                },
+                toggleSidebar() {
+                    this.sidebarCollapsed = !this.sidebarCollapsed;
+                    localStorage.setItem('sidebarCollapsed', this.sidebarCollapsed);
+                    
+                    // Atualizar estilos dinamicamente
+                    let styleEl = document.getElementById('sidebar-collapsed-styles');
+                    if (this.sidebarCollapsed) {
+                        document.body.setAttribute('data-sidebar-collapsed', 'true');
+                        if (!styleEl) {
+                            styleEl = document.createElement('style');
+                            styleEl.id = 'sidebar-collapsed-styles';
+                            document.head.appendChild(styleEl);
+                        }
+                        styleEl.textContent = `
+                            @media (min-width: 1024px) {
+                                .sidebar-container {
+                                    transform: translateX(-100%) !important;
+                                }
+                                .topbar-container {
+                                    left: 0 !important;
+                                }
+                                .content-container {
+                                    margin-left: 0 !important;
+                                }
+                            }
+                        `;
+                    } else {
+                        document.body.removeAttribute('data-sidebar-collapsed');
+                        if (styleEl) {
+                            styleEl.remove();
+                        }
+                    }
+                },
+                init() {
+                    // Sincronizar estado inicial - não precisa fazer nada pois os estilos já foram aplicados
                 }
              }">
             <!-- Mobile top bar -->
@@ -370,8 +432,18 @@
             </div>
 
             <!-- Sidebar -->
-            <aside class="fixed inset-y-0 left-0 w-64 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 z-40 transform transition-transform duration-200 ease-in-out -translate-x-full lg:translate-x-0 flex flex-col" :class="{ '-translate-x-full': !sidebarOpen, 'translate-x-0': sidebarOpen }" @keydown.window.escape="sidebarOpen = false">
-                <div class="h-16 px-6 flex items-center border-b border-gray-200 dark:border-gray-700 flex-shrink-0" x-cloak>
+            <aside class="sidebar-container fixed inset-y-0 left-0 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 z-40 transform transition-all duration-200 ease-in-out flex flex-col" 
+                   :class="{ 
+                       '-translate-x-full': !sidebarOpen, 
+                       'translate-x-0': sidebarOpen,
+                       'lg:translate-x-0': !sidebarCollapsed,
+                       'lg:-translate-x-full': sidebarCollapsed
+                   }" 
+                   style="width: 16rem;"
+                   @keydown.window.escape="sidebarOpen = false">
+                <div class="h-16 px-6 flex items-center border-b border-gray-200 dark:border-gray-700 flex-shrink-0" 
+                     x-cloak
+                     :class="{ 'lg:hidden': sidebarCollapsed }">
                     <div class="flex-1 flex items-center justify-center lg:justify-start">
                         <!-- Logo modo claro -->
                         <div x-show="!darkMode">
@@ -387,7 +459,9 @@
                         </div>
                     </div>
                 </div>
-                <nav class="flex-1 overflow-y-auto sidebar-scroll p-4 space-y-1" x-data="{ 
+                <nav class="flex-1 overflow-y-auto sidebar-scroll p-4 space-y-1" 
+                     :class="{ 'lg:hidden': sidebarCollapsed }"
+                     x-data="{ 
                     estoqueOpen: <?php echo e(request()->routeIs('products.*') || request()->routeIs('equipment.*') || request()->routeIs('material-requests.*') || request()->routeIs('equipment-requests.*') || request()->routeIs('suppliers.*') ? 'true' : 'false'); ?>,
                     gestaoOpen: <?php echo e(request()->routeIs('employees.*') || request()->routeIs('attendance.manage') || request()->routeIs('budgets.*') || request()->routeIs('inspections.*') || (request()->routeIs('projects.*') && !request()->routeIs('client.projects.*')) || request()->routeIs('services.*') || request()->routeIs('labor-types.*') || request()->routeIs('service-categories.*') || request()->routeIs('map.*') || request()->routeIs('clients.*') || request()->routeIs('contracts.*') ? 'true' : 'false'); ?>,
                     financeiroOpen: <?php echo e(request()->routeIs('financial.*') ? 'true' : 'false'); ?>,
@@ -705,16 +779,27 @@
                  aria-hidden="true"></div>
 
             <!-- Top Header Bar -->
-            <header class="fixed top-0 right-0 left-0 lg:left-64 h-16 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 z-30 transition-all duration-200 lg:block hidden">
+            <header class="topbar-container fixed top-0 right-0 h-16 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 z-30 transition-all duration-200 lg:block hidden lg:left-64" 
+                    :class="{ 'lg:left-64': !sidebarCollapsed, 'lg:left-0': sidebarCollapsed }">
                 <div class="h-full px-4 sm:px-6 lg:px-6 flex items-center justify-between">
-                    <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(isset($header)): ?>
-                        <div class="flex-1">
-                            <?php echo e($header); ?>
+                    <div class="flex items-center gap-3">
+                        <!-- Toggle Sidebar Button -->
+                        <button 
+                            @click="toggleSidebar()"
+                            class="p-2 rounded-md text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                            aria-label="Toggle sidebar">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                            </svg>
+                        </button>
+                        
+                        <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(isset($header)): ?>
+                            <div class="flex-1">
+                                <?php echo e($header); ?>
 
-                        </div>
-                    <?php else: ?>
-                        <div></div>
-                    <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+                            </div>
+                        <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+                    </div>
                     
                     <!-- User Menu and Theme Toggle -->
                     <div class="flex items-center gap-3 ml-6">
@@ -875,7 +960,8 @@
             </header>
 
             <!-- Content -->
-            <div class="lg:ml-64 pt-16 lg:pt-16">
+            <div class="content-container pt-16 lg:pt-16 lg:ml-64 transition-all duration-200" 
+                 :class="{ 'lg:ml-64': !sidebarCollapsed, 'lg:ml-0': sidebarCollapsed }">
                 <main class="p-4 sm:p-4">
                     <?php echo e($slot); ?>
 

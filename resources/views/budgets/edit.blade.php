@@ -1,9 +1,4 @@
 <x-app-layout>
-    <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            {{ __('Editar Orçamento') }}
-        </h2>
-    </x-slot>
 
     <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
         @if (session('error'))
@@ -17,7 +12,7 @@
 
             <div class="bg-white shadow rounded-md p-6 space-y-6">
                 <!-- Informações básicas -->
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Cliente *</label>
                         <select name="client_id" id="client_id" required class="w-full border-gray-300 rounded-md">
@@ -514,7 +509,7 @@
                     if (filteredProducts.length > 0) {
                         let resultsHtml = '';
                         filteredProducts.slice(0, 10).forEach(product => {
-                            const photoUrl = product.photo ? `/storage/${product.photo}` : null;
+                            const photoUrl = product.photo ? `/${product.photo}` : null;
                             resultsHtml += `
                                 <div class="product-option p-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer border-b border-gray-200 dark:border-gray-700 last:border-b-0 flex items-center gap-3" 
                                      data-id="${product.id}" 

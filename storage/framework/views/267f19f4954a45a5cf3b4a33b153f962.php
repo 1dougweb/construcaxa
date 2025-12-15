@@ -1,5 +1,5 @@
 <div>
-    <div class="mb-4 bg-white dark:bg-gray-800 rounded-lg shadow-lx p-8">
+    <div class="mb-4 bg-white dark:bg-gray-800 rounded-lg shadow-lx pt-8 px-8">
         <div class="flex flex-wrap gap-2">
             <!-- Busca -->
             <div class="flex-1 min-w-[200px] flex gap-2">
@@ -68,35 +68,12 @@
                 </select>
             </div>
         </div>
-
-        <!-- Filtros de Estoque -->
-        <div class="mt-4">
-            <div class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Status do Estoque</div>
-            <div class="flex flex-wrap gap-2">
-                <button wire:click="toggleStockFilter('all')" 
-                    class="px-4 py-2 text-sm rounded-md <?php echo e(!$lowStock && !$outOfStock ? 'bg-indigo-100 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300' : 'bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300'); ?> border dark:border-gray-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/30">
-                    Todos
-                </button>
-                <button wire:click="toggleStockFilter('low')" 
-                    class="px-4 py-2 text-sm rounded-md <?php echo e($lowStock && !$outOfStock ? 'bg-yellow-100 dark:bg-yellow-900/50 text-yellow-700 dark:text-yellow-300' : 'bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300'); ?> border dark:border-gray-600 hover:bg-yellow-50 dark:hover:bg-yellow-900/30">
-                    Estoque Baixo
-                </button>
-                <button wire:click="toggleStockFilter('out')" 
-                    class="px-4 py-2 text-sm rounded-md <?php echo e($outOfStock && !$lowStock ? 'bg-red-100 dark:bg-red-900/50 text-red-700 dark:text-red-300' : 'bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300'); ?> border dark:border-gray-600 hover:bg-red-50 dark:hover:bg-red-900/30">
-                    Sem Estoque
-                </button>
-                <button wire:click="toggleStockFilter('both')" 
-                    class="px-4 py-2 text-sm rounded-md <?php echo e($lowStock && $outOfStock ? 'bg-orange-100 dark:bg-orange-900/50 text-orange-700 dark:text-orange-300' : 'bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300'); ?> border dark:border-gray-600 hover:bg-orange-50 dark:hover:bg-orange-900/30">
-                    Baixo + Sem Estoque
-                </button>
-            </div>
-        </div>
     </div>
 
     <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-xl sm:rounded-lg">
         <div class="p-6 lg:p-8 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
-            <div class="flex justify-between items-center mb-4">
-                <div class="flex gap-2">
+            <div class="flex flex-wrap justify-between items-center gap-4 mb-4">
+                <div class="flex gap-2 items-center">
                     <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($searchTerm): ?>
                         <?php if (isset($component)) { $__componentOriginald0f1fd2689e4bb7060122a5b91fe8561 = $component; } ?>
 <?php if (isset($attributes)) { $__attributesOriginald0f1fd2689e4bb7060122a5b91fe8561 = $attributes; } ?>
@@ -123,6 +100,28 @@
 <?php unset($__componentOriginald0f1fd2689e4bb7060122a5b91fe8561); ?>
 <?php endif; ?>
                     <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+                    
+                    <!-- Filtros de Estoque -->
+                    <div class="flex items-center gap-2">
+                        <div class="flex flex-wrap gap-2">
+                            <button wire:click="toggleStockFilter('all')" 
+                                class="px-3 py-1.5 text-xs rounded-md <?php echo e(!$lowStock && !$outOfStock ? 'bg-indigo-100 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300' : 'bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300'); ?> border dark:border-gray-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/30">
+                                Todos
+                            </button>
+                            <button wire:click="toggleStockFilter('low')" 
+                                class="px-3 py-1.5 text-xs rounded-md <?php echo e($lowStock && !$outOfStock ? 'bg-yellow-100 dark:bg-yellow-900/50 text-yellow-700 dark:text-yellow-300' : 'bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300'); ?> border dark:border-gray-600 hover:bg-yellow-50 dark:hover:bg-yellow-900/30">
+                                Baixo
+                            </button>
+                            <button wire:click="toggleStockFilter('out')" 
+                                class="px-3 py-1.5 text-xs rounded-md <?php echo e($outOfStock && !$lowStock ? 'bg-red-100 dark:bg-red-900/50 text-red-700 dark:text-red-300' : 'bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300'); ?> border dark:border-gray-600 hover:bg-red-50 dark:hover:bg-red-900/30">
+                                Sem Estoque
+                            </button>
+                            <button wire:click="toggleStockFilter('both')" 
+                                class="px-3 py-1.5 text-xs rounded-md <?php echo e($lowStock && $outOfStock ? 'bg-orange-100 dark:bg-orange-900/50 text-orange-700 dark:text-orange-300' : 'bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300'); ?> border dark:border-gray-600 hover:bg-orange-50 dark:hover:bg-orange-900/30">
+                                Ambos
+                            </button>
+                        </div>
+                    </div>
                 </div>
                 <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('create products')): ?>
                 <button 

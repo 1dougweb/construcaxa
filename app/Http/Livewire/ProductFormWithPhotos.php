@@ -8,6 +8,7 @@ use App\Models\Supplier;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\File;
 
 class ProductFormWithPhotos extends Component
 {
@@ -125,7 +126,10 @@ class ProductFormWithPhotos extends Component
     {
         if (isset($this->existingPhotos[$index])) {
             // Deletar foto do storage
-            Storage::disk('public')->delete($this->existingPhotos[$index]);
+            $filePath = public_path($this->existingPhotos[$index]);
+            if (File::exists($filePath)) {
+                File::delete($filePath);
+            }
             
             // Remover do array
             unset($this->existingPhotos[$index]);
@@ -167,10 +171,20 @@ class ProductFormWithPhotos extends Component
         try {
             $allPhotos = $this->existingPhotos;
             
-            // Upload das novas fotos
+            // Upload das novas fotos - salvar em public/images/products
             if ($this->photos) {
+                $directory = public_path('images/products');
+                if (!File::exists($directory)) {
+                    File::makeDirectory($directory, 0755, true);
+                }
+                
                 foreach ($this->photos as $photo) {
-                    $path = $photo->store('products/photos', 'public');
+                    $filename = time() . '_' . uniqid() . '.' . $photo->getClientOriginalExtension();
+                    $destinationPath = $directory . '/' . $filename;
+                    
+                    // Copiar arquivo do temporário para o destino
+                    File::copy($photo->getRealPath(), $destinationPath);
+                    $path = 'images/products/' . $filename;
                     $allPhotos[] = $path;
                 }
             }

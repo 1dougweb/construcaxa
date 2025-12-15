@@ -157,7 +157,7 @@
                                     @endphp
                                     <div class="flex items-start">
                                         @if($item->equipment->photos && count($item->equipment->photos) > 0)
-                                            <img src="{{ asset('storage/' . $item->equipment->photos[0]) }}" 
+                                            <img src="/{{ ltrim($item->equipment->photos[0], '/') }}" 
                                                  alt="{{ $item->equipment->name }}" 
                                                  class="h-16 w-16 rounded-lg object-cover mr-3 flex-shrink-0">
                                         @else

@@ -14,6 +14,7 @@ use Livewire\WithFileUploads;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\File;
 
 class InspectionForm extends Component
 {
@@ -130,7 +131,7 @@ class InspectionForm extends Component
                         $this->itemPhotos[$itemKey][] = [
                             'id' => $photo->id,
                             'path' => $photo->photo_path,
-                            'url' => asset('storage/' . $photo->photo_path),
+                            'url' => '/' . ltrim($photo->photo_path, '/'),
                         ];
                     }
                     
@@ -349,7 +350,15 @@ class InspectionForm extends Component
         } elseif (!$isTemp && isset($this->itemPhotos[$itemKey][$photoIndex])) {
             $photo = $this->itemPhotos[$itemKey][$photoIndex];
             if (isset($photo['id'])) {
-                InspectionItemPhoto::find($photo['id'])->delete();
+                $photoModel = InspectionItemPhoto::find($photo['id']);
+                if ($photoModel) {
+                    // Deletar arquivo físico
+                    $filePath = public_path($photoModel->photo_path);
+                    if (File::exists($filePath)) {
+                        File::delete($filePath);
+                    }
+                    $photoModel->delete();
+                }
             }
             unset($this->itemPhotos[$itemKey][$photoIndex]);
             $this->itemPhotos[$itemKey] = array_values($this->itemPhotos[$itemKey]);
@@ -484,14 +493,25 @@ class InspectionForm extends Component
                         ]);
                     }
 
-                    // Salvar fotos temporárias
+                    // Salvar fotos temporárias - salvar em public/images/inspections
                     if (isset($this->tempPhotos[$itemKey]) && is_array($this->tempPhotos[$itemKey])) {
                         $existingPhotosCount = InspectionItemPhoto::where('inspection_environment_item_id', $environmentItem->id)->count();
+                        
+                        $directory = public_path('images/inspections');
+                        if (!File::exists($directory)) {
+                            File::makeDirectory($directory, 0755, true);
+                        }
                         
                         foreach ($this->tempPhotos[$itemKey] as $photoIndex => $photo) {
                             if ($photo && $photo->isValid()) {
                                 try {
-                                    $path = $photo->store('inspections', 'public');
+                                    $filename = time() . '_' . uniqid() . '.' . $photo->getClientOriginalExtension();
+                                    $destinationPath = $directory . '/' . $filename;
+                                    
+                                    // Copiar arquivo do temporário para o destino
+                                    File::copy($photo->getRealPath(), $destinationPath);
+                                    $path = 'images/inspections/' . $filename;
+                                    
                                     InspectionItemPhoto::create([
                                         'inspection_environment_item_id' => $environmentItem->id,
                                         'photo_path' => $path,

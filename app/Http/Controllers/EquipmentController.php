@@ -8,6 +8,7 @@ use App\Models\Employee;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\File;
 
 class EquipmentController extends Controller
 {
@@ -58,9 +59,16 @@ class EquipmentController extends Controller
             $photos = [];
             
             if ($request->hasFile('photos')) {
+                $directory = public_path('images/equipment');
+                if (!File::exists($directory)) {
+                    File::makeDirectory($directory, 0755, true);
+                }
+                
                 foreach ($request->file('photos') as $photo) {
-                    $path = $photo->store('equipment/photos', 'public');
-                    $photos[] = $path;
+                    $filename = time() . '_' . uniqid() . '.' . $photo->getClientOriginalExtension();
+                    $destinationPath = $directory . '/' . $filename;
+                    $photo->move($directory, $filename);
+                    $photos[] = 'images/equipment/' . $filename;
                 }
             }
 
@@ -118,9 +126,16 @@ class EquipmentController extends Controller
             $photos = $equipment->photos ?? [];
             
             if ($request->hasFile('photos')) {
+                $directory = public_path('images/equipment');
+                if (!File::exists($directory)) {
+                    File::makeDirectory($directory, 0755, true);
+                }
+                
                 foreach ($request->file('photos') as $photo) {
-                    $path = $photo->store('equipment/photos', 'public');
-                    $photos[] = $path;
+                    $filename = time() . '_' . uniqid() . '.' . $photo->getClientOriginalExtension();
+                    $destinationPath = $directory . '/' . $filename;
+                    $photo->move($directory, $filename);
+                    $photos[] = 'images/equipment/' . $filename;
                 }
             }
 
@@ -160,7 +175,10 @@ class EquipmentController extends Controller
             // Deletar fotos do storage
             if ($equipment->photos) {
                 foreach ($equipment->photos as $photo) {
-                    Storage::disk('public')->delete($photo);
+                    $filePath = public_path($photo);
+                    if (File::exists($filePath)) {
+                        File::delete($filePath);
+                    }
                 }
             }
 
@@ -183,7 +201,10 @@ class EquipmentController extends Controller
         
         if (isset($photos[$photoIndex])) {
             // Deletar foto do storage
-            Storage::disk('public')->delete($photos[$photoIndex]);
+            $filePath = public_path($photos[$photoIndex]);
+            if (File::exists($filePath)) {
+                File::delete($filePath);
+            }
             
             // Remover foto do array
             unset($photos[$photoIndex]);

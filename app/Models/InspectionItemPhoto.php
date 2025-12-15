@@ -23,6 +23,7 @@ class InspectionItemPhoto extends Model
 
     public function getUrlAttribute(): string
     {
-        return asset('storage/' . $this->photo_path);
+        // Retornar URL direta de /images/inspections
+        return '/' . ltrim($this->photo_path, '/');
     }
 }

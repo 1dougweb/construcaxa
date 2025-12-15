@@ -138,7 +138,7 @@ unset($__defined_vars); ?>
                     </div>
                 <?php elseif($photoPath): ?>
                     <div class="relative w-full h-full group">
-                        <img src="<?php echo e(asset('storage/' . $photoPath)); ?>" alt="Foto" class="w-full h-full object-cover">
+                        <img src="/<?php echo e(ltrim($photoPath, '/')); ?>" alt="Foto" class="w-full h-full object-cover">
                         <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 transition-all duration-200 flex items-center justify-center">
                             <span class="text-white opacity-0 group-hover:opacity-100 text-sm font-medium">Clique para trocar</span>
                         </div>

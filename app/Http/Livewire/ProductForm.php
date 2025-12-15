@@ -9,6 +9,7 @@ use App\Events\ProductChanged;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\File;
 
 class ProductForm extends Component
 {
@@ -167,7 +168,10 @@ class ProductForm extends Component
         if ($this->featured_photo_path) {
             // Se é um produto existente, deletar do storage e atualizar
             if ($this->product) {
-                Storage::disk('public')->delete($this->featured_photo_path);
+                $filePath = public_path($this->featured_photo_path);
+                if (File::exists($filePath)) {
+                    File::delete($filePath);
+                }
                 
                 // Remover do array de fotos
                 $photos = $this->product->photos ?? [];
@@ -257,8 +261,18 @@ class ProductForm extends Component
         // Upload da foto destacada
         // IMPORTANTE: Sempre trabalhar com o produto atual do banco, não com estado em memória
         if ($this->featured_photo) {
-            // Nova foto foi enviada
-            $photoPath = $this->featured_photo->store('products/photos', 'public');
+            // Nova foto foi enviada - salvar em public/images/products
+            $directory = public_path('images/products');
+            if (!File::exists($directory)) {
+                File::makeDirectory($directory, 0755, true);
+            }
+            
+            $filename = time() . '_' . uniqid() . '.' . $this->featured_photo->getClientOriginalExtension();
+            $destinationPath = $directory . '/' . $filename;
+            
+            // Copiar arquivo do temporário para o destino
+            File::copy($this->featured_photo->getRealPath(), $destinationPath);
+            $photoPath = 'images/products/' . $filename;
             
             // Se é atualização e havia foto antiga, deletar do storage
             if ($this->product && $this->product->id) {
@@ -268,7 +282,10 @@ class ProductForm extends Component
                 
                 // Deletar foto antiga se existir e for diferente da nova
                 if ($this->featured_photo_path && $this->featured_photo_path !== $photoPath) {
-                    Storage::disk('public')->delete($this->featured_photo_path);
+                    $oldPath = public_path($this->featured_photo_path);
+                    if (File::exists($oldPath)) {
+                        File::delete($oldPath);
+                    }
                     // Remover do array também
                     $currentPhotos = array_filter($currentPhotos, function($photo) {
                         return $photo !== $this->featured_photo_path;
@@ -290,8 +307,8 @@ class ProductForm extends Component
             if ($this->featured_photo_path) {
                 // Se há featured_photo_path definido, garantir que está no início
                 $currentPhotos = array_filter($currentPhotos, function($photo) {
-                    return $photo !== $this->featured_photo_path;
-                });
+                return $photo !== $this->featured_photo_path;
+            });
                 array_unshift($currentPhotos, $this->featured_photo_path);
                 $validatedData['photos'] = array_values($currentPhotos);
             } elseif (!empty($currentPhotos)) {

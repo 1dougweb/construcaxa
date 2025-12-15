@@ -200,8 +200,9 @@ class InspectionController extends Controller
         foreach ($inspection->environments as $environment) {
             foreach ($environment->items as $item) {
                 foreach ($item->photos as $photo) {
-                    if (Storage::disk('public')->exists($photo->photo_path)) {
-                        Storage::disk('public')->delete($photo->photo_path);
+                    $filePath = public_path($photo->photo_path);
+                    if (\Illuminate\Support\Facades\File::exists($filePath)) {
+                        \Illuminate\Support\Facades\File::delete($filePath);
                     }
                 }
             }

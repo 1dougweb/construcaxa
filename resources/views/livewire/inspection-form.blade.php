@@ -235,7 +235,7 @@
                                                                         value="good"
                                                                         class="form-radio h-4 w-4 text-blue-600"
                                                                     >
-                                                                    <span class="ml-1 text-sm text-gray-700 dark:text-gray-300">Bom</span>
+                                                                    <span class="ml-1 text-sm text-gray-700 dark:text-gray-300">Regular</span>
                                                                 </label>
                                                                 <label class="inline-flex items-center">
                                                                     <input 
@@ -264,25 +264,63 @@
                                         @endif
                                     </div>
 
-                                    <!-- Upload de Imagens -->
+                                    <!-- Upload de Imagens com Drag and Drop -->
                                     <div>
                                         <x-label :for="'photos_' . $itemKey" value="Fotos" />
-                                        <input 
-                                            type="file" 
-                                            :id="'photos_' . $itemKey"
-                                            wire:model="tempPhotos.{{ $itemKey }}"
-                                            multiple
-                                            accept="image/*"
-                                            capture="environment"
-                                            class="mt-1 block w-full text-sm text-gray-500 dark:text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100"
-                                        />
-                                        <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                                            <svg class="inline w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
-                                            </svg>
-                                            Em dispositivos móveis, a câmera será aberta automaticamente
-                                        </p>
+                                        
+                                        <!-- Área de Drag and Drop -->
+                                        <div 
+                                            x-data="{ 
+                                                isDragging: false,
+                                                itemKey: '{{ $itemKey }}',
+                                                handleFiles(files) {
+                                                    if (!files || files.length === 0) return;
+                                                    // Atualizar o input file com os arquivos
+                                                    const input = this.$refs.fileInput;
+                                                    const dt = new DataTransfer();
+                                                    Array.from(files).forEach(file => dt.items.add(file));
+                                                    input.files = dt.files;
+                                                    // Disparar evento change para o Livewire processar
+                                                    input.dispatchEvent(new Event('change', { bubbles: true }));
+                                                }
+                                            }"
+                                            @dragover.prevent="isDragging = true"
+                                            @dragleave.prevent="isDragging = false"
+                                            @drop.prevent="isDragging = false; handleFiles($event.dataTransfer.files)"
+                                            :class="{ 'border-indigo-500 bg-indigo-50 dark:bg-indigo-900/20': isDragging }"
+                                            class="mt-1 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-6 text-center transition-colors cursor-pointer hover:border-indigo-400 dark:hover:border-indigo-500"
+                                            @click="$refs.fileInput.click()"
+                                        >
+                                            <input 
+                                                type="file" 
+                                                x-ref="fileInput"
+                                                :id="'photos_' . $itemKey"
+                                                wire:model="tempPhotos.{{ $itemKey }}"
+                                                multiple
+                                                accept="image/*"
+                                                capture="environment"
+                                                class="hidden"
+                                            />
+                                            <div class="space-y-2">
+                                                <svg class="mx-auto h-12 w-12 text-gray-400 dark:text-gray-500" stroke="currentColor" fill="none" viewBox="0 0 48 48">
+                                                    <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                                                </svg>
+                                                <div class="text-sm text-gray-600 dark:text-gray-400">
+                                                    <span class="font-medium text-indigo-600 dark:text-indigo-400">Clique para selecionar</span>
+                                                    ou arraste e solte
+                                                </div>
+                                                <p class="text-xs text-gray-500 dark:text-gray-400">
+                                                    PNG, JPG, GIF até 5MB cada (múltiplas fotos permitidas)
+                                                </p>
+                                                <p class="text-xs text-gray-500 dark:text-gray-400">
+                                                    <svg class="inline w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+                                                    </svg>
+                                                    Em dispositivos móveis, a câmera será aberta automaticamente
+                                                </p>
+                                            </div>
+                                        </div>
                                         <x-input-error :for="'tempPhotos.' . $itemKey" class="mt-2" />
                                         
                                         <!-- Preview de fotos temporárias -->

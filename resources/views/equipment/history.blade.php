@@ -21,7 +21,7 @@
                     <div class="mb-6 p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg border border-gray-200 dark:border-gray-700">
                         <div class="flex items-center">
                             @if($equipment->photos && count($equipment->photos) > 0)
-                                <img src="{{ asset('storage/' . $equipment->photos[0]) }}" 
+                                <img src="/{{ ltrim($equipment->photos[0], '/') }}" 
                                      alt="{{ $equipment->name }}" 
                                      class="h-16 w-16 rounded-lg object-cover border border-gray-200 dark:border-gray-600 mr-4">
                             @else

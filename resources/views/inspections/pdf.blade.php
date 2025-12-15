@@ -302,7 +302,7 @@
                                 <div class="photo-grid">
                                     @foreach($item->photos as $photo)
                                         @php
-                                            $imagePath = storage_path('app/public/' . $photo->photo_path);
+                                            $imagePath = public_path($photo->photo_path);
                                             $imageUrl = file_exists($imagePath) ? 'file://' . str_replace('\\', '/', $imagePath) : null;
                                         @endphp
                                         @if($imageUrl)

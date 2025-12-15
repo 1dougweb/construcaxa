@@ -1,9 +1,11 @@
 <x-app-layout>
-    <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-            {{ __('Dashboard') }}
-        </h2>
-    </x-slot>
+
+    <style>
+        .bg-green-600 {
+            background:rgb(195, 194, 211)
+        }
+    </style>
+</style>
 
     <div class="py-6">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
@@ -83,7 +85,7 @@
                         @endphp
 
                         <!-- Total a Receber -->
-                        <div class="bg-green-600 rounded-lg shadow-lg p-6">
+                        <div class="bg-green-500 rounded-lg shadow-lg p-6">
                             <div class="flex justify-between items-center">
                                 <div>
                                     <h3 class="text-white text-lg font-semibold">A Receber</h3>

@@ -16,6 +16,25 @@
 
 ## Como Fazer Deploy
 
+### ⚠️ IMPORTANTE: Migração de Dados (Primeira vez ou se perdeu dados)
+
+Se você já tem fotos/arquivos em produção e vai usar volumes persistentes pela primeira vez:
+
+```bash
+# 1. Executar script de migração (copia dados locais para volumes)
+bash docker-migrate-storage.sh
+
+# OU manualmente:
+# Criar volumes primeiro
+docker-compose -f docker-compose.prod.yml up -d --no-start
+
+# Copiar dados existentes para volume (se houver)
+docker run --rm \
+  -v "$(pwd)/storage/app/public:/source:ro" \
+  -v stock-master_storage_public:/dest \
+  alpine sh -c "cp -r /source/* /dest/ 2>/dev/null || true"
+```
+
 ### Primeira vez (setup inicial):
 
 ```bash
@@ -43,12 +62,13 @@ docker-compose -f docker-compose.prod.yml exec app php artisan view:cache
 
 ```bash
 # 1. Rebuild apenas se necessário (Docker usa cache automaticamente)
-docker-compose -f docker-compose.prod.yml build --no-cache app
-
-# OU se só mudou código (não dependências), use cache:
+# Se mudou apenas código, use cache (muito mais rápido):
 docker-compose -f docker-compose.prod.yml build app
 
-# 2. Recriar container (volumes persistem automaticamente)
+# Se mudou dependências (composer.json, package.json), force rebuild:
+docker-compose -f docker-compose.prod.yml build --no-cache app
+
+# 2. Recriar container (volumes persistem automaticamente - FOTOS SÃO PRESERVADAS)
 docker-compose -f docker-compose.prod.yml up -d --force-recreate app
 
 # 3. Executar migrations se necessário
@@ -61,6 +81,29 @@ docker-compose -f docker-compose.prod.yml exec app php artisan view:clear
 docker-compose -f docker-compose.prod.yml exec app php artisan config:cache
 docker-compose -f docker-compose.prod.yml exec app php artisan route:cache
 docker-compose -f docker-compose.prod.yml exec app php artisan view:cache
+```
+
+### ⚠️ PRESERVAÇÃO DE FOTOS E ARQUIVOS
+
+**IMPORTANTE**: Com `docker-compose.prod.yml`, as fotos e arquivos são preservados automaticamente entre rebuilds porque estão em volumes persistentes:
+
+- `storage_public` → contém todas as fotos de produtos
+- `storage_framework` → cache, sessões, views
+- `storage_logs` → logs da aplicação
+
+**NUNCA** faça:
+```bash
+# ❌ NÃO FAÇA ISSO (remove volumes e perde dados):
+docker-compose -f docker-compose.prod.yml down -v
+```
+
+**Para verificar se dados estão preservados:**
+```bash
+# Ver conteúdo do volume de fotos
+docker run --rm -v stock-master_storage_public:/data alpine ls -la /data/products/photos
+
+# Ver tamanho do volume
+docker volume inspect stock-master_storage_public
 ```
 
 ### Verificar status:

@@ -119,7 +119,7 @@
                                                 <div x-data="{ 
                                                     open: false, 
                                                     currentIndex: 0,
-                                                    images: @js(array_map(function($photo) { return asset('storage/' . $photo); }, $photos)),
+                                                    images: @js(array_map(function($photo) { return '/' . ltrim($photo, '/'); }, $photos)),
                                                     openLightbox(index) {
                                                         this.currentIndex = index;
                                                         this.open = true;
@@ -138,7 +138,7 @@
                                                 }" @keydown.escape="closeLightbox()" @keydown.arrow-left="prevImage()" @keydown.arrow-right="nextImage()">
                                                     <div class="w-16 h-16 rounded overflow-hidden cursor-pointer hover:opacity-80 transition-opacity">
                                                         <img 
-                                                            src="{{ asset('storage/' . $photos[0]) }}" 
+                                                            src="/{{ ltrim($photos[0], '/') }}" 
                                                             alt="{{ $item->name }}"
                                                             class="w-full h-full object-cover border border-gray-200 dark:border-gray-700 rounded-md"
                                                             @click="openLightbox(0)"

@@ -266,7 +266,7 @@
                         <?php else: ?>
                             <div>Cliente não especificado</div>
                         <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
-                    </div>
+        </div>
                 </td>
             </tr>
         </table>
@@ -282,16 +282,16 @@
             <span class="label">Número do Orçamento:</span>
             <span class="value">#<?php echo e($budget->id); ?> - Versão <?php echo e($budget->version); ?></span>
         </div>
-        <div class="info-row">
+            <div class="info-row">
             <span class="label">Data de Criação:</span>
             <span class="value"><?php echo e($budget->created_at->format('d/m/Y H:i')); ?></span>
-        </div>
+            </div>
         <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($budget->approved_at): ?>
             <div class="info-row">
                 <span class="label">Data de Aprovação:</span>
                 <span class="value"><?php echo e($budget->approved_at->format('d/m/Y H:i')); ?></span>
-            </div>
-        <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+                </div>
+            <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
         <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($budget->approver): ?>
             <div class="info-row">
                 <span class="label">Aprovado por:</span>
@@ -386,6 +386,14 @@
                     <td class="text-right">
                         <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($item->item_type === 'labor'): ?>
                             <?php echo e($item->laborType ? $item->laborType->formatted_hourly_rate : 'R$ ' . number_format($item->unit_price, 2, ',', '.') . '/h'); ?>
+
+                        <?php elseif($item->item_type === 'product' && $item->product): ?>
+                            <?php
+                                // Priorizar preço de revenda do produto (sale_price);
+                                // se não houver, usar o preço unitário do item (valor do orçamento).
+                                $unitPrice = $item->product->sale_price ?? $item->unit_price;
+                            ?>
+                            R$ <?php echo e(number_format($unitPrice, 2, ',', '.')); ?>
 
                         <?php else: ?>
                             R$ <?php echo e(number_format($item->unit_price, 2, ',', '.')); ?>

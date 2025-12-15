@@ -128,6 +128,29 @@ class Equipment extends Model
         return null;
     }
 
+    // Método para obter URLs das fotos
+    public function getPhotoUrlsAttribute(): array
+    {
+        if (!$this->photos || !is_array($this->photos)) {
+            return [];
+        }
+
+        return array_map(function ($photo) {
+            if (empty($photo)) {
+                return null;
+            }
+            // Retornar URL direta de /images/equipment
+            return '/' . ltrim($photo, '/');
+        }, $this->photos);
+    }
+
+    // Método para obter a URL da primeira foto
+    public function getFirstPhotoUrlAttribute(): ?string
+    {
+        $urls = $this->photo_urls;
+        return !empty($urls) ? $urls[0] : null;
+    }
+
     // Método para verificar se está emprestado
     public function isBorrowed()
     {

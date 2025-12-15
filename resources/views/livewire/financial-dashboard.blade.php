@@ -22,7 +22,7 @@
     <!-- Cards de Resumo -->
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
         <!-- Total a Receber (Saldo em aberto de obras) -->
-        <div class="bg-green-600 rounded-lg shadow-lg p-6 text-white">
+        <div class="bg-green-500 rounded-lg shadow-lg p-6 text-white">
             <div class="flex items-center justify-between">
                 <div>
                     <p class="text-green-100 text-sm font-medium">Total a Receber</p>

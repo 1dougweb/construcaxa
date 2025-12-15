@@ -66,7 +66,7 @@ unset($__defined_vars); ?>
     <span class="button-text"><?php echo e($slot); ?></span>
 </button>
 
-<?php if (! $__env->hasRenderedOnce('27b98960-bcc2-464c-9efa-12bee82b7f1b')): $__env->markAsRenderedOnce('27b98960-bcc2-464c-9efa-12bee82b7f1b'); ?>
+<?php if (! $__env->hasRenderedOnce('2fb7267a-15ce-4164-aff1-8db492eb7f63')): $__env->markAsRenderedOnce('2fb7267a-15ce-4164-aff1-8db492eb7f63'); ?>
 <?php $__env->startPush('scripts'); ?>
 <script>
     document.addEventListener('DOMContentLoaded', function() {

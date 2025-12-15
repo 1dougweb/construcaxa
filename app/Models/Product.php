@@ -118,8 +118,8 @@ class Product extends Model
             if (empty($photo)) {
                 return null;
             }
-            // Usar Storage::url() que é mais confiável em produção
-            return Storage::disk('public')->url($photo);
+            // Retornar URL direta de /images/products
+            return '/' . ltrim($photo, '/');
         }, $this->photos);
     }
 

@@ -8,13 +8,6 @@
 <?php $attributes = $attributes->except(\Illuminate\View\AnonymousComponent::ignoredParameterNames()); ?>
 <?php endif; ?>
 <?php $component->withAttributes([]); ?>
-     <?php $__env->slot('header', null, []); ?> 
-        <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-            <?php echo e(__('Editar Obra')); ?>
-
-        </h2>
-     <?php $__env->endSlot(); ?>
-
 <div class="p-4 max-w-4xl">
     <div class="bg-white dark:bg-gray-800 shadow rounded-lg p-6 border border-gray-200 dark:border-gray-700">
         <form action="<?php echo e(route('projects.update', $project)); ?>" method="POST">

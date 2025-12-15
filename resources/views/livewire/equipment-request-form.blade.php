@@ -117,7 +117,7 @@
                                 class="w-full text-left px-4 py-2 hover:bg-indigo-50 dark:hover:bg-indigo-900/50 hover:text-indigo-900 dark:hover:text-indigo-300 cursor-pointer flex items-center"
                             >
                                 @if($equipment->photos && count($equipment->photos) > 0)
-                                    <img src="{{ asset('storage/' . $equipment->photos[0]) }}" alt="{{ $equipment->name }}" class="h-8 w-8 rounded object-cover mr-3">
+                                    <img src="/{{ ltrim($equipment->photos[0], '/') }}" alt="{{ $equipment->name }}" class="h-8 w-8 rounded object-cover mr-3">
                                 @else
                                     <div class="h-8 w-8 rounded bg-gray-200 dark:bg-gray-700 mr-3 flex items-center justify-center">
                                         <svg class="w-5 h-5 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -145,7 +145,7 @@
                         <div class="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
                             <div class="flex items-center flex-1">
                                 @if(isset($equipment['photo']) && $equipment['photo'])
-                                    <img src="{{ asset('storage/' . $equipment['photo']) }}" alt="{{ $equipment['name'] }}" class="h-12 w-12 rounded object-cover mr-4">
+                                    <img src="/{{ ltrim($equipment['photo'], '/') }}" alt="{{ $equipment['name'] }}" class="h-12 w-12 rounded object-cover mr-4">
                                 @else
                                     <div class="h-12 w-12 rounded bg-gray-200 dark:bg-gray-600 mr-4 flex items-center justify-center">
                                         <svg class="w-6 h-6 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">

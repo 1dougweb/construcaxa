@@ -28,7 +28,7 @@
 
                 <div class="bg-white dark:bg-gray-800 shadow rounded-md p-6 space-y-6 border border-gray-200 dark:border-gray-700">
                 <!-- Informações básicas -->
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
                         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Cliente *</label>
                         <select name="client_id" id="client_id" required class="w-full border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 rounded-md">

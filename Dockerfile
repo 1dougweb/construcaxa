@@ -244,6 +244,10 @@ RUN echo '#!/bin/bash' > /usr/local/bin/docker-entrypoint.sh && \
     echo '    fi' >> /usr/local/bin/docker-entrypoint.sh && \
     echo 'fi' >> /usr/local/bin/docker-entrypoint.sh && \
     echo '' >> /usr/local/bin/docker-entrypoint.sh && \
+    echo '# IMPORTANTE: Em produção com volumes persistentes, os dados JÁ estão no volume' >> /usr/local/bin/docker-entrypoint.sh && \
+    echo '# O volume montado em /var/www/storage/app/public preserva dados entre rebuilds' >> /usr/local/bin/docker-entrypoint.sh && \
+    echo '# Apenas garantir que diretórios existam e tenham permissões corretas' >> /usr/local/bin/docker-entrypoint.sh && \
+    echo '' >> /usr/local/bin/docker-entrypoint.sh && \
     echo '# Ensure storage directories exist and have correct permissions' >> /usr/local/bin/docker-entrypoint.sh && \
     echo 'mkdir -p /var/www/storage/app/public/products/photos' >> /usr/local/bin/docker-entrypoint.sh && \
     echo 'mkdir -p /var/www/storage/app/public/uploads' >> /usr/local/bin/docker-entrypoint.sh && \
@@ -308,7 +312,7 @@ RUN echo '#!/bin/bash' > /usr/local/bin/docker-entrypoint.sh && \
     echo '    fi' >> /usr/local/bin/docker-entrypoint.sh && \
     echo 'fi' >> /usr/local/bin/docker-entrypoint.sh && \
     echo '' >> /usr/local/bin/docker-entrypoint.sh && \
-    echo '# Wait for Laravel to be ready before starting Reverb' >> /usr/local/bin/docker-entrypoint.sh && \
+        echo '# Wait for Laravel to be ready before starting Reverb' >> /usr/local/bin/docker-entrypoint.sh && \
     echo 'echo "Waiting for Laravel to be ready..."' >> /usr/local/bin/docker-entrypoint.sh && \
     echo 'cd /var/www' >> /usr/local/bin/docker-entrypoint.sh && \
     echo 'if [ ! -f /var/www/vendor/autoload.php ]; then' >> /usr/local/bin/docker-entrypoint.sh && \

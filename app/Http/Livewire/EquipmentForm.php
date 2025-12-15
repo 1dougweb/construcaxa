@@ -7,6 +7,7 @@ use App\Models\EquipmentCategory;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\File;
 
 class EquipmentForm extends Component
 {
@@ -149,7 +150,10 @@ class EquipmentForm extends Component
         if ($this->featured_photo_path) {
             // Se é um equipamento existente, deletar do storage e atualizar
             if ($this->equipment) {
-                Storage::disk('public')->delete($this->featured_photo_path);
+                $filePath = public_path($this->featured_photo_path);
+                if (File::exists($filePath)) {
+                    File::delete($filePath);
+                }
                 
                 // Remover do array de fotos
                 $photos = $this->equipment->photos ?? [];
@@ -191,13 +195,26 @@ class EquipmentForm extends Component
                 'status' => $this->status,
             ];
 
-            // Upload da foto destacada
+            // Upload da foto destacada - salvar em public/images/equipment
             if ($this->featured_photo) {
-                $photoPath = $this->featured_photo->store('equipment/photos', 'public');
+                $directory = public_path('images/equipment');
+                if (!File::exists($directory)) {
+                    File::makeDirectory($directory, 0755, true);
+                }
+                
+                $filename = time() . '_' . uniqid() . '.' . $this->featured_photo->getClientOriginalExtension();
+                $destinationPath = $directory . '/' . $filename;
+                
+                // Copiar arquivo do temporário para o destino
+                File::copy($this->featured_photo->getRealPath(), $destinationPath);
+                $photoPath = 'images/equipment/' . $filename;
                 
                 // Se já existe foto destacada, deletar a antiga
                 if ($this->featured_photo_path) {
-                    Storage::disk('public')->delete($this->featured_photo_path);
+                    $oldPath = public_path($this->featured_photo_path);
+                    if (File::exists($oldPath)) {
+                        File::delete($oldPath);
+                    }
                 }
                 
                 // Adicionar foto ao array de fotos

@@ -1,10 +1,4 @@
 <x-app-layout>
-    <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-            {{ __('Orçamentos') }}
-        </h2>
-    </x-slot>
-
     @push('styles')
     <style>
         /* Budget Status Animations */
@@ -92,21 +86,79 @@
     </style>
     @endpush
 
+
     <div class="py-6">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <div class="flex items-center justify-between mb-6">
                 <h1 class="text-2xl font-semibold text-gray-900 dark:text-gray-100">Orçamentos</h1>
-                @can('manage budgets')
-                <a href="{{ route('budgets.create') }}" class="inline-flex items-center px-4 py-2 bg-indigo-600 dark:bg-indigo-700 text-white rounded-md hover:bg-indigo-700 dark:hover:bg-indigo-600">
-                    <i class="bi bi-plus-circle mr-2"></i>
-                    Novo Orçamento
-                </a>
-                @endcan
+                <div class="flex items-center gap-3">
+                    <!-- Layout Switcher -->
+                    <div class="flex items-center bg-gray-100 dark:bg-gray-700 rounded-lg p-1" 
+                         x-data="{ 
+                            layout: (() => {
+                                const stored = localStorage.getItem('budgetsLayout');
+                                return stored || 'grid';
+                            })(),
+                            init() {
+                                this.updateLayout();
+                            },
+                            updateLayout() {
+                                const layout = this.layout;
+                                localStorage.setItem('budgetsLayout', layout);
+                                
+                                const gridContainer = document.getElementById('grid-container');
+                                const gridView = document.getElementById('grid-view');
+                                const tableView = document.getElementById('table-view');
+                                const gridPagination = document.getElementById('grid-pagination');
+                                const tablePagination = document.getElementById('table-pagination');
+                                
+                                if (layout === 'grid') {
+                                    if (gridContainer) gridContainer.classList.remove('hidden');
+                                    if (gridView) gridView.classList.remove('hidden');
+                                    if (tableView) tableView.classList.add('hidden');
+                                    if (gridPagination) gridPagination.classList.remove('hidden');
+                                    if (tablePagination) tablePagination.classList.add('hidden');
+                                } else {
+                                    if (gridContainer) gridContainer.classList.add('hidden');
+                                    if (gridView) gridView.classList.add('hidden');
+                                    if (tableView) tableView.classList.remove('hidden');
+                                    if (gridPagination) gridPagination.classList.add('hidden');
+                                    if (tablePagination) tablePagination.classList.remove('hidden');
+                                }
+                            }
+                         }">
+                        <button 
+                            @click="layout = 'grid'; updateLayout();"
+                            :class="{ 'bg-white dark:bg-gray-600 shadow-sm text-gray-900 dark:text-gray-100': layout === 'grid', 'text-gray-400 dark:text-gray-500': layout !== 'grid' }"
+                            class="p-2 rounded-md transition-all"
+                            title="Visualização em Cards">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+                            </svg>
+                        </button>
+                        <button 
+                            @click="layout = 'table'; updateLayout();"
+                            :class="{ 'bg-white dark:bg-gray-600 shadow-sm text-gray-900 dark:text-gray-100': layout === 'table', 'text-gray-400 dark:text-gray-500': layout !== 'table' }"
+                            class="p-2 rounded-md transition-all"
+                            title="Visualização em Tabela">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M3 14h18m-9-4v8m-7 0h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                            </svg>
+                        </button>
+                    </div>
+                    
+                    @can('manage budgets')
+                    <a href="{{ route('budgets.create') }}" class="inline-flex items-center px-3 py-2 bg-indigo-600 dark:bg-indigo-700 text-white rounded-md text-sm hover:bg-indigo-700 dark:hover:bg-indigo-600">
+                        <i class="bi bi-plus-circle mr-2"></i>
+                        Novo Orçamento
+                    </a>
+                    @endcan
+                </div>
             </div>
 
             <!-- Budget Grid -->
-            <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-xl sm:rounded-lg border border-gray-200 dark:border-gray-700 p-6">
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-8">
+            <div id="grid-container" class="bg-white dark:bg-gray-800 overflow-hidden shadow-xl sm:rounded-lg border border-gray-200 dark:border-gray-700 p-6">
+            <div id="grid-view" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-8">
             @forelse($budgets as $budget)
                 <div class="budget-card status-{{ $budget->status }} bg-white dark:bg-gray-800 rounded-lg shadow-md border-2 {{ $budget->status_color }} dark:border-gray-700 hover:shadow-lg transition-shadow duration-200">
                     <div class="p-6">
@@ -181,13 +233,13 @@
                         <div class="space-y-2">
                             <div class="flex space-x-2">
                                 <a href="{{ route('budgets.edit', $budget) }}" 
-                                   class="action-button flex-1 text-center px-3 py-2 text-sm bg-indigo-600 dark:bg-indigo-700 text-white rounded-md hover:bg-indigo-700 dark:hover:bg-indigo-600 transition-colors">
+                                   class="action-button flex-1 align-middle text-center px-3 py-3 text-sm bg-indigo-600 dark:bg-indigo-700 text-white rounded-md hover:bg-indigo-700 dark:hover:bg-indigo-600 transition-colors">
                                     Editar
                                 </a>
                                 <a href="{{ route('budgets.pdf', $budget) }}" 
-                                   class="action-button px-3 py-2 text-sm bg-gray-600 dark:bg-gray-700 text-white rounded-md hover:bg-gray-700 dark:hover:bg-gray-600 transition-colors"
+                                   class="justify-center align-middle pt-1 text-red-500 hover:text-red-700 rounded-md transition-colors"
                                    target="_blank" title="Baixar PDF">
-                                    📄
+                                   <i class="fi fi-sr-file-pdf text-3xl"></i>
                                 </a>
                             </div>
                             
@@ -252,69 +304,77 @@
 
             <!-- Pagination -->
             @if($budgets->hasPages())
-                <div class="mt-6">{{ $budgets->links() }}</div>
+                <div class="mt-6" id="grid-pagination">{{ $budgets->links() }}</div>
             @endif
-
-            <!-- Optional: Toggle between grid and table view -->
-            <div class="mt-8 border-t border-gray-200 dark:border-gray-700 pt-6">
-                <details class="group">
-                    <summary class="cursor-pointer text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100">
-                        Ver como tabela
-                    </summary>
-                    <div class="mt-4 bg-white dark:bg-gray-800 shadow overflow-hidden sm:rounded-md border border-gray-200 dark:border-gray-700">
-                        <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                            <thead class="bg-gray-50 dark:bg-gray-700">
-                                <tr>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Obra</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Versão</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Status</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Total</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Criado em</th>
-                                    @can('manage budgets')
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Ações</th>
-                                    @endcan
-                                </tr>
-                            </thead>
-                            <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                                @foreach($budgets as $budget)
-                                <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/50">
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        @if($budget->project)
-                                            <a href="{{ route('projects.show', $budget->project) }}" class="text-sm font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-300">
-                                                {{ $budget->project->name }}
-                                            </a>
-                                        @elseif($budget->client)
-                                            <span class="text-sm font-medium text-gray-700 dark:text-gray-300">{{ $budget->client->name }}</span>
-                                        @else
-                                            <span class="text-sm font-medium text-gray-500 dark:text-gray-400">N/A</span>
-                                        @endif
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
-                                        v{{ $budget->version }}
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <span class="px-2 py-1 text-xs font-semibold rounded-full border {{ $budget->status_color }}">
-                                            {{ $budget->status_label }}
-                                        </span>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100">
-                                        R$ {{ number_format($budget->total, 2, ',', '.') }}
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                                        {{ $budget->created_at->format('d/m/Y H:i') }}
-                                    </td>
-                                    @can('manage budgets')
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                        <a href="{{ route('budgets.edit', $budget) }}" class="text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-300">Editar</a>
-                                    </td>
-                                    @endcan
-                                </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
-                    </div>
-                </details>
             </div>
+
+            <!-- Table View -->
+            <div id="table-view" class="bg-white dark:bg-gray-800 overflow-hidden shadow-xl sm:rounded-lg border border-gray-200 dark:border-gray-700 hidden">
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                        <thead class="bg-gray-50 dark:bg-gray-700">
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Obra</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Versão</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Status</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Total</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Criado em</th>
+                                @can('manage budgets')
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Ações</th>
+                                @endcan
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                            @foreach($budgets as $budget)
+                            <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/50">
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    @if($budget->project)
+                                        <a href="{{ route('projects.show', $budget->project) }}" class="text-sm font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-300">
+                                            {{ $budget->project->name }}
+                                        </a>
+                                    @elseif($budget->client)
+                                        <span class="text-sm font-medium text-gray-700 dark:text-gray-300">{{ $budget->client->name }}</span>
+                                    @else
+                                        <span class="text-sm font-medium text-gray-500 dark:text-gray-400">N/A</span>
+                                    @endif
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
+                                    v{{ $budget->version }}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <span class="px-2 py-1 text-xs font-semibold rounded-full border {{ $budget->status_color }}">
+                                        {{ $budget->status_label }}
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100">
+                                    R$ {{ number_format($budget->total, 2, ',', '.') }}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                                    {{ $budget->created_at->format('d/m/Y H:i') }}
+                                </td>
+                                @can('manage budgets')
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                    <div class="flex items-center gap-3">
+                                        <a href="{{ route('budgets.edit', $budget) }}" class="text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-300">Editar</a>
+                                        <a href="{{ route('budgets.pdf', $budget) }}" 
+                                           class="text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300"
+                                           target="_blank" 
+                                           title="Baixar PDF">
+                                            <i class="fi fi-sr-file-pdf text-lg"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                                @endcan
+                            </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+                
+                <!-- Pagination for Table -->
+                @if($budgets->hasPages())
+                    <div class="p-6 border-t border-gray-200 dark:border-gray-700" id="table-pagination">{{ $budgets->links() }}</div>
+                @endif
             </div>
         </div>
     </div>

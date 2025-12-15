@@ -121,7 +121,7 @@
             <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
                 @foreach($existingPhotos as $index => $photo)
                     <div class="relative">
-                        <img src="{{ asset('storage/' . $photo) }}" alt="Foto do produto" 
+                        <img src="/{{ ltrim($photo, '/') }}" alt="Foto do produto" 
                              class="w-full h-24 object-cover rounded-lg">
                         <button type="button" wire:click="removeExistingPhoto({{ $index }})" 
                                 class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-red-600">

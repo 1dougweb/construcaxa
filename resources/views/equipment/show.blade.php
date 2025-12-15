@@ -36,17 +36,22 @@
                 <div class="lg:col-span-2 bg-white dark:bg-gray-800 overflow-hidden shadow-xl sm:rounded-lg">
                     <div class="p-6 lg:p-8 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
                         <!-- Fotos -->
-                        @if($equipment->photos && count($equipment->photos) > 0)
+                        @php
+                            $photoUrls = $equipment->photo_urls ?? [];
+                        @endphp
+                        @if(!empty($photoUrls))
                         <div class="mb-6">
                             <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-3">Fotos</h3>
                             <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
-                                @foreach($equipment->photos as $photo)
-                                    <div class="aspect-w-1 aspect-h-1">
-                                        <img src="{{ asset('storage/' . $photo) }}" 
-                                             alt="{{ $equipment->name }}" 
-                                             class="w-full h-32 object-cover rounded-lg border border-gray-200 dark:border-gray-700 cursor-pointer hover:opacity-75 transition-opacity"
-                                             onclick="openImageModal('{{ asset('storage/' . $photo) }}')">
-                                    </div>
+                                @foreach($photoUrls as $photoUrl)
+                                    @if($photoUrl)
+                                        <div class="aspect-w-1 aspect-h-1">
+                                            <img src="{{ $photoUrl }}" 
+                                                 alt="{{ $equipment->name }}" 
+                                                 class="w-full h-32 object-cover rounded-lg border border-gray-200 dark:border-gray-700 cursor-pointer hover:opacity-75 transition-opacity"
+                                                 onclick="openImageModal('{{ $photoUrl }}')">
+                                        </div>
+                                    @endif
                                 @endforeach
                             </div>
                         </div>
