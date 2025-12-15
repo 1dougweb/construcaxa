@@ -9,13 +9,9 @@ services:
     volumes:
       - .:/var/www
       - ./php/local.ini:/usr/local/etc/php/conf.d/local.ini
-      # Volumes persistentes para dados (não sobrescrevem, apenas persistem)
-      # NOTA: Em desenvolvimento, o bind mount ".:/var/www" sobrescreve vendor/node_modules
-      # O entrypoint detecta isso e reinstala automaticamente se necessário
-      # Em produção, use docker-compose.prod.yml (sem bind mount)
-      - storage_public:/var/www/storage/app/public
-      - storage_framework:/var/www/storage/framework
-      - storage_logs:/var/www/storage/logs
+      # NOTA: Em desenvolvimento com bind mount, não usar volumes nomeados para storage
+      # O bind mount já gerencia os arquivos. Volumes nomeados só em produção.
+      # Em produção, use docker-compose.prod.yml (sem bind mount, com volumes nomeados)
     ports:
       - "8080:8080"
       - "8000:80"
@@ -61,12 +57,7 @@ networks:
 volumes:
   dbdata:
     driver: local
-  # Volumes persistentes para dados da aplicação (fotos, arquivos, cache)
-  # Estes volumes persistem entre rebuilds do container
-  storage_public:
-    driver: local
-  storage_framework:
-    driver: local
-  storage_logs:
-    driver: local
+  # NOTA: Volumes de storage removidos para desenvolvimento
+  # Em desenvolvimento, o bind mount ".:/var/www" já gerencia storage
+  # Em produção, use docker-compose.prod.yml que tem volumes persistentes
 

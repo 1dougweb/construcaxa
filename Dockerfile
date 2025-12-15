@@ -279,13 +279,32 @@ RUN echo '#!/bin/bash' > /usr/local/bin/docker-entrypoint.sh && \
     echo '' >> /usr/local/bin/docker-entrypoint.sh && \
     echo '' >> /usr/local/bin/docker-entrypoint.sh && \
     echo '# Create storage symlink if it does not exist' >> /usr/local/bin/docker-entrypoint.sh && \
-    echo 'if [ ! -L /var/www/public/storage ] && [ -f /var/www/vendor/autoload.php ]; then' >> /usr/local/bin/docker-entrypoint.sh && \
-    echo '    echo "Creating storage symlink..."' >> /usr/local/bin/docker-entrypoint.sh && \
+    echo 'if [ -f /var/www/vendor/autoload.php ]; then' >> /usr/local/bin/docker-entrypoint.sh && \
     echo '    cd /var/www' >> /usr/local/bin/docker-entrypoint.sh && \
-    echo '    php artisan storage:link 2>&1 || echo "Storage link already exists or failed"' >> /usr/local/bin/docker-entrypoint.sh && \
+    echo '    if [ ! -L /var/www/public/storage ]; then' >> /usr/local/bin/docker-entrypoint.sh && \
+    echo '        echo "Creating storage symlink..."' >> /usr/local/bin/docker-entrypoint.sh && \
+    echo '        # Remover diretório se existir (não pode ser symlink se for diretório)' >> /usr/local/bin/docker-entrypoint.sh && \
+    echo '        if [ -d /var/www/public/storage ] && [ ! -L /var/www/public/storage ]; then' >> /usr/local/bin/docker-entrypoint.sh && \
+    echo '            rm -rf /var/www/public/storage' >> /usr/local/bin/docker-entrypoint.sh && \
+    echo '        fi' >> /usr/local/bin/docker-entrypoint.sh && \
+    echo '        php artisan storage:link 2>&1 || echo "Storage link command failed"' >> /usr/local/bin/docker-entrypoint.sh && \
+    echo '    fi' >> /usr/local/bin/docker-entrypoint.sh && \
+    echo '    # Verificar se symlink foi criado e aponta para o lugar certo' >> /usr/local/bin/docker-entrypoint.sh && \
     echo '    if [ -L /var/www/public/storage ]; then' >> /usr/local/bin/docker-entrypoint.sh && \
-    echo '        chown -R www:www /var/www/public/storage || true' >> /usr/local/bin/docker-entrypoint.sh && \
-    echo '        chmod -R 755 /var/www/public/storage || true' >> /usr/local/bin/docker-entrypoint.sh && \
+    echo '        echo "✓ Storage symlink exists"' >> /usr/local/bin/docker-entrypoint.sh && \
+    echo '        chown -h www:www /var/www/public/storage || true' >> /usr/local/bin/docker-entrypoint.sh && \
+    echo '        # Verificar se o destino existe e tem permissões corretas' >> /usr/local/bin/docker-entrypoint.sh && \
+    echo '        LINK_TARGET=$(readlink -f /var/www/public/storage 2>/dev/null || echo "")' >> /usr/local/bin/docker-entrypoint.sh && \
+    echo '        if [ -n "$LINK_TARGET" ] && [ -d "$LINK_TARGET" ]; then' >> /usr/local/bin/docker-entrypoint.sh && \
+    echo '            echo "✓ Storage symlink target exists: $LINK_TARGET"' >> /usr/local/bin/docker-entrypoint.sh && \
+    echo '            chown -R www:www "$LINK_TARGET" || true' >> /usr/local/bin/docker-entrypoint.sh && \
+    echo '            chmod -R 755 "$LINK_TARGET" || true' >> /usr/local/bin/docker-entrypoint.sh && \
+    echo '        else' >> /usr/local/bin/docker-entrypoint.sh && \
+    echo '            echo "⚠ Storage symlink target does not exist: $LINK_TARGET"' >> /usr/local/bin/docker-entrypoint.sh && \
+    echo '        fi' >> /usr/local/bin/docker-entrypoint.sh && \
+    echo '    else' >> /usr/local/bin/docker-entrypoint.sh && \
+    echo '        echo "⚠ Storage symlink was not created"' >> /usr/local/bin/docker-entrypoint.sh && \
+    echo '        ls -la /var/www/public/ | grep storage || echo "No storage in public directory"' >> /usr/local/bin/docker-entrypoint.sh && \
     echo '    fi' >> /usr/local/bin/docker-entrypoint.sh && \
     echo 'fi' >> /usr/local/bin/docker-entrypoint.sh && \
     echo '' >> /usr/local/bin/docker-entrypoint.sh && \
