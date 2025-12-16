@@ -295,7 +295,15 @@ unset($__errorArgs, $__bag); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendB
 <?php unset($__componentOriginald8ba2b4c22a13c55321e34443c386276); ?>
 <?php endif; ?>
                 <div class="flex items-center">
-                    <x-input id="stock" class="block mt-1 w-full" type="number" wire:model="stock" step="1" min="0" <?php if(!$product || !$product->id): ?> required <?php endif; ?> />
+                    <input 
+                        id="stock" 
+                        type="number" 
+                        wire:model="stock" 
+                        step="1" 
+                        min="0" 
+                        <?php if(!$product || !$product->id): ?> required <?php endif; ?>
+                        class="border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 focus:border-indigo-500 focus:ring-indigo-500 dark:focus:border-indigo-400 dark:focus:ring-indigo-400 rounded-md shadow-sm block mt-1 w-full"
+                    />
                     <span class="ml-2 text-gray-600 dark:text-gray-400">UN</span>
                 </div>
                 <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php $__errorArgs = ['stock'];
@@ -332,7 +340,15 @@ unset($__errorArgs, $__bag); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendB
 <?php unset($__componentOriginald8ba2b4c22a13c55321e34443c386276); ?>
 <?php endif; ?>
                 <div class="flex items-center">
-                    <x-input id="min_stock" class="block mt-1 w-full" type="number" wire:model="min_stock" step="1" min="0" <?php if(!$product || !$product->id): ?> required <?php endif; ?> />
+                    <input 
+                        id="min_stock" 
+                        type="number" 
+                        wire:model="min_stock" 
+                        step="1" 
+                        min="0" 
+                        <?php if(!$product || !$product->id): ?> required <?php endif; ?>
+                        class="border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 focus:border-indigo-500 focus:ring-indigo-500 dark:focus:border-indigo-400 dark:focus:ring-indigo-400 rounded-md shadow-sm block mt-1 w-full"
+                    />
                     <span class="ml-2 text-gray-600 dark:text-gray-400">UN</span>
                 </div>
                 <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php $__errorArgs = ['min_stock'];
@@ -371,7 +387,15 @@ unset($__errorArgs, $__bag); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendB
 <?php unset($__componentOriginald8ba2b4c22a13c55321e34443c386276); ?>
 <?php endif; ?>
                 <div class="flex items-center">
-                    <x-input id="stock" class="block mt-1 w-full" type="number" wire:model="stock" step="1" min="0" <?php if(!$product || !$product->id): ?> required <?php endif; ?> />
+                    <input 
+                        id="stock" 
+                        type="number" 
+                        wire:model="stock" 
+                        step="0.01" 
+                        min="0" 
+                        <?php if(!$product || !$product->id): ?> required <?php endif; ?>
+                        class="border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 focus:border-indigo-500 focus:ring-indigo-500 dark:focus:border-indigo-400 dark:focus:ring-indigo-400 rounded-md shadow-sm block mt-1 w-full"
+                    />
                     <span class="ml-2 text-gray-600 dark:text-gray-400">KG</span>
                 </div>
                 <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php $__errorArgs = ['stock'];
@@ -408,7 +432,15 @@ unset($__errorArgs, $__bag); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendB
 <?php unset($__componentOriginald8ba2b4c22a13c55321e34443c386276); ?>
 <?php endif; ?>
                 <div class="flex items-center">
-                    <x-input id="min_stock" class="block mt-1 w-full" type="number" wire:model="min_stock" step="1" min="0" <?php if(!$product || !$product->id): ?> required <?php endif; ?> />
+                    <input 
+                        id="min_stock" 
+                        type="number" 
+                        wire:model="min_stock" 
+                        step="0.01" 
+                        min="0" 
+                        <?php if(!$product || !$product->id): ?> required <?php endif; ?>
+                        class="border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 focus:border-indigo-500 focus:ring-indigo-500 dark:focus:border-indigo-400 dark:focus:ring-indigo-400 rounded-md shadow-sm block mt-1 w-full"
+                    />
                     <span class="ml-2 text-gray-600 dark:text-gray-400">KG</span>
                 </div>
                 <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php $__errorArgs = ['min_stock'];
@@ -447,7 +479,15 @@ unset($__errorArgs, $__bag); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendB
 <?php unset($__componentOriginald8ba2b4c22a13c55321e34443c386276); ?>
 <?php endif; ?>
                 <div class="flex items-center">
-                    <x-input id="stock" class="block mt-1 w-full" type="number" wire:model="stock" step="1" min="0" <?php if(!$product || !$product->id): ?> required <?php endif; ?> />
+                    <input 
+                        id="stock" 
+                        type="number" 
+                        wire:model="stock" 
+                        step="0.01" 
+                        min="0" 
+                        <?php if(!$product || !$product->id): ?> required <?php endif; ?>
+                        class="border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 focus:border-indigo-500 focus:ring-indigo-500 dark:focus:border-indigo-400 dark:focus:ring-indigo-400 rounded-md shadow-sm block mt-1 w-full"
+                    />
                     <span class="ml-2 text-gray-600 dark:text-gray-400">M</span>
                 </div>
                 <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php $__errorArgs = ['stock'];
@@ -484,7 +524,15 @@ unset($__errorArgs, $__bag); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendB
 <?php unset($__componentOriginald8ba2b4c22a13c55321e34443c386276); ?>
 <?php endif; ?>
                 <div class="flex items-center">
-                    <x-input id="min_stock" class="block mt-1 w-full" type="number" wire:model="min_stock" step="1" min="0" <?php if(!$product || !$product->id): ?> required <?php endif; ?> />
+                    <input 
+                        id="min_stock" 
+                        type="number" 
+                        wire:model="min_stock" 
+                        step="0.01" 
+                        min="0" 
+                        <?php if(!$product || !$product->id): ?> required <?php endif; ?>
+                        class="border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 focus:border-indigo-500 focus:ring-indigo-500 dark:focus:border-indigo-400 dark:focus:ring-indigo-400 rounded-md shadow-sm block mt-1 w-full"
+                    />
                     <span class="ml-2 text-gray-600 dark:text-gray-400">M</span>
                 </div>
                 <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php $__errorArgs = ['min_stock'];

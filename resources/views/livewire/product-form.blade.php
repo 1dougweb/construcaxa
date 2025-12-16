@@ -75,7 +75,15 @@
             <div>
                 <x-label for="stock" value="{{ __('Quantidade em Estoque') }}" />
                 <div class="flex items-center">
-                    <x-input id="stock" class="block mt-1 w-full" type="number" wire:model="stock" step="1" min="0" @if(!$product || !$product->id) required @endif />
+                    <input 
+                        id="stock" 
+                        type="number" 
+                        wire:model="stock" 
+                        step="1" 
+                        min="0" 
+                        @if(!$product || !$product->id) required @endif
+                        class="border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 focus:border-indigo-500 focus:ring-indigo-500 dark:focus:border-indigo-400 dark:focus:ring-indigo-400 rounded-md shadow-sm block mt-1 w-full"
+                    />
                     <span class="ml-2 text-gray-600 dark:text-gray-400">UN</span>
                 </div>
                 @error('stock')
@@ -86,7 +94,15 @@
             <div>
                 <x-label for="min_stock" value="{{ __('Quantidade Mínima') }}" />
                 <div class="flex items-center">
-                    <x-input id="min_stock" class="block mt-1 w-full" type="number" wire:model="min_stock" step="1" min="0" @if(!$product || !$product->id) required @endif />
+                    <input 
+                        id="min_stock" 
+                        type="number" 
+                        wire:model="min_stock" 
+                        step="1" 
+                        min="0" 
+                        @if(!$product || !$product->id) required @endif
+                        class="border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 focus:border-indigo-500 focus:ring-indigo-500 dark:focus:border-indigo-400 dark:focus:ring-indigo-400 rounded-md shadow-sm block mt-1 w-full"
+                    />
                     <span class="ml-2 text-gray-600 dark:text-gray-400">UN</span>
                 </div>
                 @error('min_stock')
@@ -99,7 +115,15 @@
             <div>
                 <x-label for="stock" value="{{ __('Peso em Estoque') }}" />
                 <div class="flex items-center">
-                    <x-input id="stock" class="block mt-1 w-full" type="number" wire:model="stock" step="1" min="0" @if(!$product || !$product->id) required @endif />
+                    <input 
+                        id="stock" 
+                        type="number" 
+                        wire:model="stock" 
+                        step="0.01" 
+                        min="0" 
+                        @if(!$product || !$product->id) required @endif
+                        class="border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 focus:border-indigo-500 focus:ring-indigo-500 dark:focus:border-indigo-400 dark:focus:ring-indigo-400 rounded-md shadow-sm block mt-1 w-full"
+                    />
                     <span class="ml-2 text-gray-600 dark:text-gray-400">KG</span>
                 </div>
                 @error('stock')
@@ -110,7 +134,15 @@
             <div>
                 <x-label for="min_stock" value="{{ __('Peso Mínimo') }}" />
                 <div class="flex items-center">
-                    <x-input id="min_stock" class="block mt-1 w-full" type="number" wire:model="min_stock" step="1" min="0" @if(!$product || !$product->id) required @endif />
+                    <input 
+                        id="min_stock" 
+                        type="number" 
+                        wire:model="min_stock" 
+                        step="0.01" 
+                        min="0" 
+                        @if(!$product || !$product->id) required @endif
+                        class="border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 focus:border-indigo-500 focus:ring-indigo-500 dark:focus:border-indigo-400 dark:focus:ring-indigo-400 rounded-md shadow-sm block mt-1 w-full"
+                    />
                     <span class="ml-2 text-gray-600 dark:text-gray-400">KG</span>
                 </div>
                 @error('min_stock')
@@ -123,7 +155,15 @@
             <div>
                 <x-label for="stock" value="{{ __('Metragem em Estoque') }}" />
                 <div class="flex items-center">
-                    <x-input id="stock" class="block mt-1 w-full" type="number" wire:model="stock" step="1" min="0" @if(!$product || !$product->id) required @endif />
+                    <input 
+                        id="stock" 
+                        type="number" 
+                        wire:model="stock" 
+                        step="0.01" 
+                        min="0" 
+                        @if(!$product || !$product->id) required @endif
+                        class="border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 focus:border-indigo-500 focus:ring-indigo-500 dark:focus:border-indigo-400 dark:focus:ring-indigo-400 rounded-md shadow-sm block mt-1 w-full"
+                    />
                     <span class="ml-2 text-gray-600 dark:text-gray-400">M</span>
                 </div>
                 @error('stock')
@@ -134,7 +174,15 @@
             <div>
                 <x-label for="min_stock" value="{{ __('Metragem Mínima') }}" />
                 <div class="flex items-center">
-                    <x-input id="min_stock" class="block mt-1 w-full" type="number" wire:model="min_stock" step="1" min="0" @if(!$product || !$product->id) required @endif />
+                    <input 
+                        id="min_stock" 
+                        type="number" 
+                        wire:model="min_stock" 
+                        step="0.01" 
+                        min="0" 
+                        @if(!$product || !$product->id) required @endif
+                        class="border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 focus:border-indigo-500 focus:ring-indigo-500 dark:focus:border-indigo-400 dark:focus:ring-indigo-400 rounded-md shadow-sm block mt-1 w-full"
+                    />
                     <span class="ml-2 text-gray-600 dark:text-gray-400">M</span>
                 </div>
                 @error('min_stock')
