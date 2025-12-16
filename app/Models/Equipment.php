@@ -139,8 +139,12 @@ class Equipment extends Model
             if (empty($photo)) {
                 return null;
             }
-            // Retornar URL direta de /images/equipment
-            return '/' . ltrim($photo, '/');
+            // Se for caminho antigo (images/equipment), manter compatibilidade
+            if (strpos($photo, 'images/equipment/') === 0) {
+                return '/' . ltrim($photo, '/');
+            }
+            // Se for caminho do storage (equipment/...), usar asset()
+            return asset('storage/' . $photo);
         }, $this->photos);
     }
 

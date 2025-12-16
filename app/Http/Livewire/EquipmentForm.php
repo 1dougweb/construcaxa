@@ -151,9 +151,16 @@ class EquipmentForm extends Component
         if ($this->featured_photo_path) {
             // Se é um equipamento existente, deletar do storage e atualizar
             if ($this->equipment) {
-                $filePath = public_path($this->featured_photo_path);
-                if (File::exists($filePath)) {
-                    File::delete($filePath);
+                // Verificar se é caminho antigo (public/images) ou novo (storage)
+                if (strpos($this->featured_photo_path, 'images/equipment/') === 0) {
+                    // Caminho antigo - deletar de public
+                    $filePath = public_path($this->featured_photo_path);
+                    if (File::exists($filePath)) {
+                        File::delete($filePath);
+                    }
+                } else {
+                    // Caminho novo - deletar do storage
+                    Storage::disk('public')->delete($this->featured_photo_path);
                 }
                 
                 // Remover do array de fotos
@@ -197,31 +204,23 @@ class EquipmentForm extends Component
                 'status' => $this->status,
             ];
 
-            // Upload da foto destacada - salvar em public/images/equipment
+            // Upload da foto destacada - salvar usando Storage do Laravel
             if ($this->featured_photo) {
-                $directory = public_path('images/equipment');
-                if (!File::exists($directory)) {
-                    File::makeDirectory($directory, 0755, true);
-                }
-                
                 $filename = time() . '_' . uniqid() . '.' . $this->featured_photo->getClientOriginalExtension();
-                $destinationPath = $directory . '/' . $filename;
-                
-                // Copiar arquivo do temporário para o destino
-                $sourcePath = $this->featured_photo->getRealPath();
-                if (!File::exists($sourcePath)) {
-                    throw new \Exception('Arquivo temporário não encontrado');
-                }
-                if (!File::copy($sourcePath, $destinationPath)) {
-                    throw new \Exception('Erro ao copiar arquivo de imagem');
-                }
-                $photoPath = 'images/equipment/' . $filename;
+                $photoPath = $this->featured_photo->storeAs('equipment', $filename, 'public');
                 
                 // Se já existe foto destacada, deletar a antiga
                 if ($this->featured_photo_path) {
-                    $oldPath = public_path($this->featured_photo_path);
-                    if (File::exists($oldPath)) {
-                        File::delete($oldPath);
+                    // Verificar se é caminho antigo (public/images) ou novo (storage)
+                    if (strpos($this->featured_photo_path, 'images/equipment/') === 0) {
+                        // Caminho antigo - deletar de public
+                        $oldPath = public_path($this->featured_photo_path);
+                        if (File::exists($oldPath)) {
+                            File::delete($oldPath);
+                        }
+                    } else {
+                        // Caminho novo - deletar do storage
+                        Storage::disk('public')->delete($this->featured_photo_path);
                     }
                 }
                 

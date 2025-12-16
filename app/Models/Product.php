@@ -118,8 +118,12 @@ class Product extends Model
             if (empty($photo)) {
                 return null;
             }
-            // Retornar URL direta de /images/products
-            return '/' . ltrim($photo, '/');
+            // Se for caminho antigo (images/products), manter compatibilidade
+            if (strpos($photo, 'images/products/') === 0) {
+                return '/' . ltrim($photo, '/');
+            }
+            // Se for caminho do storage (products/...), usar asset() com /storage/
+            return asset('storage/' . $photo);
         }, $this->photos);
     }
 

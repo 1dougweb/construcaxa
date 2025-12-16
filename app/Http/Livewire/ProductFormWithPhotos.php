@@ -125,10 +125,19 @@ class ProductFormWithPhotos extends Component
     public function removeExistingPhoto($index)
     {
         if (isset($this->existingPhotos[$index])) {
+            $photoPath = $this->existingPhotos[$index];
+            
             // Deletar foto do storage
-            $filePath = public_path($this->existingPhotos[$index]);
-            if (File::exists($filePath)) {
-                File::delete($filePath);
+            // Verificar se é caminho antigo (public/images) ou novo (storage)
+            if (strpos($photoPath, 'images/products/') === 0) {
+                // Caminho antigo - deletar de public
+                $filePath = public_path($photoPath);
+                if (File::exists($filePath)) {
+                    File::delete($filePath);
+                }
+            } else {
+                // Caminho novo - deletar do storage
+                Storage::disk('public')->delete($photoPath);
             }
             
             // Remover do array
@@ -171,20 +180,11 @@ class ProductFormWithPhotos extends Component
         try {
             $allPhotos = $this->existingPhotos;
             
-            // Upload das novas fotos - salvar em public/images/products
+            // Upload das novas fotos - salvar usando Storage do Laravel
             if ($this->photos) {
-                $directory = public_path('images/products');
-                if (!File::exists($directory)) {
-                    File::makeDirectory($directory, 0755, true);
-                }
-                
                 foreach ($this->photos as $photo) {
                     $filename = time() . '_' . uniqid() . '.' . $photo->getClientOriginalExtension();
-                    $destinationPath = $directory . '/' . $filename;
-                    
-                    // Copiar arquivo do temporário para o destino
-                    File::copy($photo->getRealPath(), $destinationPath);
-                    $path = 'images/products/' . $filename;
+                    $path = $photo->storeAs('products', $filename, 'public');
                     $allPhotos[] = $path;
                 }
             }

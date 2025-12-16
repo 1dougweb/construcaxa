@@ -59,16 +59,10 @@ class EquipmentController extends Controller
             $photos = [];
             
             if ($request->hasFile('photos')) {
-                $directory = public_path('images/equipment');
-                if (!File::exists($directory)) {
-                    File::makeDirectory($directory, 0755, true);
-                }
-                
                 foreach ($request->file('photos') as $photo) {
                     $filename = time() . '_' . uniqid() . '.' . $photo->getClientOriginalExtension();
-                    $destinationPath = $directory . '/' . $filename;
-                    $photo->move($directory, $filename);
-                    $photos[] = 'images/equipment/' . $filename;
+                    $path = $photo->storeAs('equipment', $filename, 'public');
+                    $photos[] = $path;
                 }
             }
 
@@ -126,16 +120,10 @@ class EquipmentController extends Controller
             $photos = $equipment->photos ?? [];
             
             if ($request->hasFile('photos')) {
-                $directory = public_path('images/equipment');
-                if (!File::exists($directory)) {
-                    File::makeDirectory($directory, 0755, true);
-                }
-                
                 foreach ($request->file('photos') as $photo) {
                     $filename = time() . '_' . uniqid() . '.' . $photo->getClientOriginalExtension();
-                    $destinationPath = $directory . '/' . $filename;
-                    $photo->move($directory, $filename);
-                    $photos[] = 'images/equipment/' . $filename;
+                    $path = $photo->storeAs('equipment', $filename, 'public');
+                    $photos[] = $path;
                 }
             }
 
@@ -175,9 +163,16 @@ class EquipmentController extends Controller
             // Deletar fotos do storage
             if ($equipment->photos) {
                 foreach ($equipment->photos as $photo) {
-                    $filePath = public_path($photo);
-                    if (File::exists($filePath)) {
-                        File::delete($filePath);
+                    // Verificar se é caminho antigo (public/images) ou novo (storage)
+                    if (strpos($photo, 'images/equipment/') === 0) {
+                        // Caminho antigo - deletar de public
+                        $filePath = public_path($photo);
+                        if (File::exists($filePath)) {
+                            File::delete($filePath);
+                        }
+                    } else {
+                        // Caminho novo - deletar do storage
+                        Storage::disk('public')->delete($photo);
                     }
                 }
             }
@@ -200,10 +195,19 @@ class EquipmentController extends Controller
         $photos = $equipment->photos ?? [];
         
         if (isset($photos[$photoIndex])) {
+            $photoPath = $photos[$photoIndex];
+            
             // Deletar foto do storage
-            $filePath = public_path($photos[$photoIndex]);
-            if (File::exists($filePath)) {
-                File::delete($filePath);
+            // Verificar se é caminho antigo (public/images) ou novo (storage)
+            if (strpos($photoPath, 'images/equipment/') === 0) {
+                // Caminho antigo - deletar de public
+                $filePath = public_path($photoPath);
+                if (File::exists($filePath)) {
+                    File::delete($filePath);
+                }
+            } else {
+                // Caminho novo - deletar do storage
+                Storage::disk('public')->delete($photoPath);
             }
             
             // Remover foto do array

@@ -493,24 +493,15 @@ class InspectionForm extends Component
                         ]);
                     }
 
-                    // Salvar fotos temporárias - salvar em public/images/inspections
+                    // Salvar fotos temporárias - salvar usando Storage do Laravel
                     if (isset($this->tempPhotos[$itemKey]) && is_array($this->tempPhotos[$itemKey])) {
                         $existingPhotosCount = InspectionItemPhoto::where('inspection_environment_item_id', $environmentItem->id)->count();
-                        
-                        $directory = public_path('images/inspections');
-                        if (!File::exists($directory)) {
-                            File::makeDirectory($directory, 0755, true);
-                        }
                         
                         foreach ($this->tempPhotos[$itemKey] as $photoIndex => $photo) {
                             if ($photo && $photo->isValid()) {
                                 try {
                                     $filename = time() . '_' . uniqid() . '.' . $photo->getClientOriginalExtension();
-                                    $destinationPath = $directory . '/' . $filename;
-                                    
-                                    // Copiar arquivo do temporário para o destino
-                                    File::copy($photo->getRealPath(), $destinationPath);
-                                    $path = 'images/inspections/' . $filename;
+                                    $path = $photo->storeAs('inspections', $filename, 'public');
                                     
                                     InspectionItemPhoto::create([
                                         'inspection_environment_item_id' => $environmentItem->id,

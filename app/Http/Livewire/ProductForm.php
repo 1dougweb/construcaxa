@@ -184,9 +184,16 @@ class ProductForm extends Component
         if ($this->featured_photo_path) {
             // Se é um produto existente, deletar do storage e atualizar
             if ($this->product) {
-                $filePath = public_path($this->featured_photo_path);
-                if (File::exists($filePath)) {
-                    File::delete($filePath);
+                // Verificar se é caminho antigo (public/images) ou novo (storage)
+                if (strpos($this->featured_photo_path, 'images/products/') === 0) {
+                    // Caminho antigo - deletar de public
+                    $filePath = public_path($this->featured_photo_path);
+                    if (File::exists($filePath)) {
+                        File::delete($filePath);
+                    }
+                } else {
+                    // Caminho novo - deletar do storage
+                    Storage::disk('public')->delete($this->featured_photo_path);
                 }
                 
                 // Remover do array de fotos
@@ -292,24 +299,12 @@ class ProductForm extends Component
             // Upload da foto destacada
             // IMPORTANTE: Sempre trabalhar com o produto atual do banco, não com estado em memória
             if ($this->featured_photo) {
-                // Nova foto foi enviada - salvar em public/images/products
-                $directory = public_path('images/products');
-                if (!File::exists($directory)) {
-                    File::makeDirectory($directory, 0755, true);
-                }
-                
+                // Nova foto foi enviada - salvar usando Storage do Laravel
                 $filename = time() . '_' . uniqid() . '.' . $this->featured_photo->getClientOriginalExtension();
-                $destinationPath = $directory . '/' . $filename;
+                $path = $this->featured_photo->storeAs('products', $filename, 'public');
                 
-                // Copiar arquivo do temporário para o destino
-                $sourcePath = $this->featured_photo->getRealPath();
-                if (!File::exists($sourcePath)) {
-                    throw new \Exception('Arquivo temporário não encontrado');
-                }
-                if (!File::copy($sourcePath, $destinationPath)) {
-                    throw new \Exception('Erro ao copiar arquivo de imagem');
-                }
-                $photoPath = 'images/products/' . $filename;
+                // Caminho relativo para salvar no banco (storage/products/filename.jpg)
+                $photoPath = $path;
                 
                 // Se é atualização e havia foto antiga, deletar do storage
                 if ($this->product && $this->product->id) {
@@ -319,9 +314,16 @@ class ProductForm extends Component
                 
                 // Deletar foto antiga se existir e for diferente da nova
                 if ($this->featured_photo_path && $this->featured_photo_path !== $photoPath) {
-                    $oldPath = public_path($this->featured_photo_path);
-                    if (File::exists($oldPath)) {
-                        File::delete($oldPath);
+                    // Verificar se é caminho antigo (public/images) ou novo (storage)
+                    if (strpos($this->featured_photo_path, 'images/products/') === 0) {
+                        // Caminho antigo - deletar de public
+                        $oldPath = public_path($this->featured_photo_path);
+                        if (File::exists($oldPath)) {
+                            File::delete($oldPath);
+                        }
+                    } else {
+                        // Caminho novo - deletar do storage
+                        Storage::disk('public')->delete($this->featured_photo_path);
                     }
                     // Remover do array também
                     $currentPhotos = array_filter($currentPhotos, function($photo) {
