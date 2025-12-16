@@ -32,7 +32,7 @@ class ProductForm extends Component
     public $featured_photo;
     public $featured_photo_path;
     public $showDeleteModal = false;
-    public $stockToAdd = 0;
+    public $stockToAdd = null;
     
     public $categories;
     public $suppliers;
@@ -478,7 +478,7 @@ class ProductForm extends Component
             session()->flash('success', $message);
             
             // Limpar campo
-            $this->stockToAdd = 0;
+            $this->stockToAdd = null;
             
             // Atualizar estoque no formulário
             $this->stock = $this->product->stock;
