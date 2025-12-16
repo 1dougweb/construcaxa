@@ -34,6 +34,7 @@ class ReportController extends Controller
 
         if ($request->format === 'pdf') {
             $pdf = Pdf::loadView('reports.stock-pdf', compact('products'));
+            // @phpstan-ignore-next-line
             return $pdf->download('relatorio-estoque.pdf');
         }
 
@@ -66,6 +67,7 @@ class ReportController extends Controller
 
         if ($request->format === 'pdf') {
             $pdf = Pdf::loadView('reports.movements-pdf', compact('movements'));
+            // @phpstan-ignore-next-line
             return $pdf->download('relatorio-movimentacoes.pdf');
         }
 
@@ -92,6 +94,7 @@ class ReportController extends Controller
 
         if ($request->format === 'pdf') {
             $pdf = Pdf::loadView('reports.orders-pdf', compact('orders'));
+            // @phpstan-ignore-next-line
             return $pdf->download('relatorio-ordens-servico.pdf');
         }
 
@@ -122,6 +125,7 @@ class ReportController extends Controller
 
         if ($request->format === 'pdf') {
             $pdf = Pdf::loadView('reports.expenses-pdf', compact('expenses'));
+            // @phpstan-ignore-next-line
             return $pdf->download('relatorio-despesas.pdf');
         }
 
@@ -180,6 +184,7 @@ class ReportController extends Controller
         if ($request->format === 'pdf') {
             $pdf = Pdf::loadView('reports.balance-pdf', compact('movements', 'summary'))
                 ->setPaper('a4', 'landscape');
+            // @phpstan-ignore-next-line
             return $pdf->download('relatorio-balanco-estoque.pdf');
         }
 

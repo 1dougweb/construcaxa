@@ -21,6 +21,7 @@ use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\ReceiptController;
 use App\Http\Controllers\FinancialDashboardController;
 use App\Http\Controllers\ProjectFinancialBalanceController;
+use App\Http\Controllers\SearchController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 
@@ -44,6 +45,9 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/notifications/read-all', [\App\Http\Controllers\NotificationController::class, 'markAllAsRead'])->name('notifications.read-all');
     Route::post('/notifications/test', [\App\Http\Controllers\NotificationController::class, 'sendTest'])->name('notifications.test');
     Route::delete('/notifications/{notification}', [\App\Http\Controllers\NotificationController::class, 'destroy'])->name('notifications.destroy');
+
+    // Pesquisa Global
+    Route::get('/api/search', [SearchController::class, 'search'])->name('search');
 
     // Produtos - Criação (deve vir antes das rotas com parâmetros)
     Route::middleware(['permission:create products'])->group(function () {
@@ -532,17 +536,21 @@ Route::middleware(['auth'])->group(function () {
 
         // Contas a Pagar
         Route::resource('accounts-payable', AccountPayableController::class);
+        Route::get('accounts-payable/{accountPayable}/edit-data', [AccountPayableController::class, 'editData'])->name('accounts-payable.edit-data');
 
         // Contas a Receber
         Route::resource('accounts-receivable', AccountReceivableController::class);
+        Route::get('accounts-receivable/{accountReceivable}/edit-data', [AccountReceivableController::class, 'editData'])->name('accounts-receivable.edit-data');
 
         // Notas Fiscais
         Route::resource('invoices', InvoiceController::class);
         Route::get('invoices/{invoice}/pdf', [InvoiceController::class, 'generatePDF'])->name('invoices.pdf');
+        Route::get('invoices/{invoice}/edit-data', [InvoiceController::class, 'editData'])->name('invoices.edit-data');
 
         // Recibos
         Route::resource('receipts', ReceiptController::class);
         Route::get('receipts/{receipt}/pdf', [ReceiptController::class, 'generatePDF'])->name('receipts.pdf');
+        Route::get('receipts/{receipt}/edit-data', [ReceiptController::class, 'editData'])->name('receipts.edit-data');
     });
 });
 

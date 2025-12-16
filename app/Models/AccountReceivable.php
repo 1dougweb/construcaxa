@@ -26,6 +26,7 @@ class AccountReceivable extends Model
         'received_date',
         'status',
         'notes',
+        'document_file',
         'user_id',
     ];
 
@@ -66,7 +67,7 @@ class AccountReceivable extends Model
 
     public function client(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'client_id');
+        return $this->belongsTo(Client::class);
     }
 
     public function project(): BelongsTo

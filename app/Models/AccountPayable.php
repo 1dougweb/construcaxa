@@ -27,6 +27,7 @@ class AccountPayable extends Model
         'paid_date',
         'status',
         'notes',
+        'document_file',
         'user_id',
     ];
 

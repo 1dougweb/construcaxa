@@ -16,7 +16,7 @@
             <div class="flex-1 space-y-4">
         <div>
             <x-label for="name" value="{{ __('Nome') }}" />
-            <x-input id="name" class="block mt-1 w-full" type="text" wire:model="name" required autofocus />
+            <x-input id="name" class="block mt-1 w-full" type="text" wire:model="name" min-value="1" autofocus />
             @error('name')
                 <p class="text-red-500 dark:text-red-400 text-xs mt-1">{{ $message }}</p>
             @enderror
@@ -75,7 +75,7 @@
             <div>
                 <x-label for="stock" value="{{ __('Quantidade em Estoque') }}" />
                 <div class="flex items-center">
-                    <x-input id="stock" class="block mt-1 w-full" type="number" wire:model="stock" step="1" min="0" required />
+                    <x-input id="stock" class="block mt-1 w-full" type="number" wire:model="stock" step="1" min="0" @if(!$product || !$product->id) required @endif />
                     <span class="ml-2 text-gray-600 dark:text-gray-400">UN</span>
                 </div>
                 @error('stock')
@@ -86,7 +86,7 @@
             <div>
                 <x-label for="min_stock" value="{{ __('Quantidade Mínima') }}" />
                 <div class="flex items-center">
-                    <x-input id="min_stock" class="block mt-1 w-full" type="number" wire:model="min_stock" step="1" min="0" required />
+                    <x-input id="min_stock" class="block mt-1 w-full" type="number" wire:model="min_stock" step="1" min="0" @if(!$product || !$product->id) required @endif />
                     <span class="ml-2 text-gray-600 dark:text-gray-400">UN</span>
                 </div>
                 @error('min_stock')
@@ -99,7 +99,7 @@
             <div>
                 <x-label for="stock" value="{{ __('Peso em Estoque') }}" />
                 <div class="flex items-center">
-                    <x-input id="stock" class="block mt-1 w-full" type="number" wire:model="stock" step="1" min="0" required />
+                    <x-input id="stock" class="block mt-1 w-full" type="number" wire:model="stock" step="1" min="0" @if(!$product || !$product->id) required @endif />
                     <span class="ml-2 text-gray-600 dark:text-gray-400">KG</span>
                 </div>
                 @error('stock')
@@ -110,7 +110,7 @@
             <div>
                 <x-label for="min_stock" value="{{ __('Peso Mínimo') }}" />
                 <div class="flex items-center">
-                    <x-input id="min_stock" class="block mt-1 w-full" type="number" wire:model="min_stock" step="1" min="0" required />
+                    <x-input id="min_stock" class="block mt-1 w-full" type="number" wire:model="min_stock" step="1" min="0" @if(!$product || !$product->id) required @endif />
                     <span class="ml-2 text-gray-600 dark:text-gray-400">KG</span>
                 </div>
                 @error('min_stock')
@@ -123,7 +123,7 @@
             <div>
                 <x-label for="stock" value="{{ __('Metragem em Estoque') }}" />
                 <div class="flex items-center">
-                    <x-input id="stock" class="block mt-1 w-full" type="number" wire:model="stock" step="1" min="0" required />
+                    <x-input id="stock" class="block mt-1 w-full" type="number" wire:model="stock" step="1" min="0" @if(!$product || !$product->id) required @endif />
                     <span class="ml-2 text-gray-600 dark:text-gray-400">M</span>
                 </div>
                 @error('stock')
@@ -134,7 +134,7 @@
             <div>
                 <x-label for="min_stock" value="{{ __('Metragem Mínima') }}" />
                 <div class="flex items-center">
-                    <x-input id="min_stock" class="block mt-1 w-full" type="number" wire:model="min_stock" step="1" min="0" required />
+                    <x-input id="min_stock" class="block mt-1 w-full" type="number" wire:model="min_stock" step="1" min="0" @if(!$product || !$product->id) required @endif />
                     <span class="ml-2 text-gray-600 dark:text-gray-400">M</span>
                 </div>
                 @error('min_stock')
@@ -178,38 +178,35 @@
             <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">{{ __('Alimentar Estoque') }}</h3>
             <div class="bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-200 dark:border-indigo-800 rounded-lg p-4">
                 <div class="flex gap-4 items-end">
-                    <div class="w-48">
+                    <div class="flex-1 min-w-[200px]">
                         <x-label for="stockToAdd" value="{{ __('Quantidade a Adicionar') }}" />
                         <div class="flex items-center mt-1">
-                            <x-input id="stockToAdd" class="block w-full" type="number" wire:model="stockToAdd" step="0.01" min="0.01" placeholder="0.00" />
-                            <span class="ml-2 text-gray-600 dark:text-gray-400">{{ $unit_label ?? 'un' }}</span>
+                            <x-input id="stockToAdd" class="block w-full" type="number" wire:model="stockToAdd" step="any" min="0.01" placeholder="0.00" />
+                            <span class="ml-2 text-gray-600 dark:text-gray-400 whitespace-nowrap">{{ $unit_label ?? 'un' }}</span>
                         </div>
                         @error('stockToAdd')
                             <p class="text-red-500 dark:text-red-400 text-xs mt-1">{{ $message }}</p>
                         @enderror
-                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                            Estoque atual: <strong>{{ $stock ?? 0 }} {{ $unit_label ?? 'un' }}</strong>
-                        </p>
                     </div>
                     <div>
                         <button 
                             type="button"
                             wire:click="addStock"
                             wire:loading.attr="disabled"
-                            class="inline-flex items-center justify-center px-4 py-2 bg-indigo-600 dark:bg-indigo-700 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-indigo-700 dark:hover:bg-indigo-600 focus:bg-indigo-700 active:bg-indigo-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition ease-in-out duration-150 disabled:opacity-50"
+                            class="inline-flex items-center justify-center px-4 py-2 bg-indigo-600 dark:bg-indigo-700 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-indigo-700 dark:hover:bg-indigo-600 focus:bg-indigo-700 active:bg-indigo-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition ease-in-out duration-150 disabled:opacity-50 whitespace-nowrap"
                         >
-                            <span wire:loading.remove wire:target="addStock">
-                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <span wire:loading.remove wire:target="addStock" class="inline-flex items-center whitespace-nowrap">
+                                <svg class="w-4 h-4 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
                                 </svg>
-                                Adicionar ao Estoque
+                                <span class="whitespace-nowrap">Adicionar ao Estoque</span>
                             </span>
-                            <span wire:loading wire:target="addStock" class="inline-flex items-center">
-                                <svg class="animate-spin h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24">
+                            <span wire:loading wire:target="addStock" class="inline-flex items-center whitespace-nowrap">
+                                <svg class="animate-spin h-4 w-4 mr-2 flex-shrink-0" fill="none" viewBox="0 0 24 24">
                                     <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                                     <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                                 </svg>
-                                Adicionando...
+                                <span class="whitespace-nowrap">Adicionando...</span>
                             </span>
                         </button>
                     </div>
@@ -226,7 +223,7 @@
             >
                 {{ __('Cancelar') }}
             </button>
-            <x-button-loading>
+            <x-button-loading wire:target="save">
                 {{ $product ? __('Atualizar') : __('Salvar') }}
             </x-button-loading>
         </div>

@@ -197,6 +197,21 @@ class WebSocketNotificationManager {
                     this.handleStockMovement(data);
                 });
 
+            // Canal financeiro
+            this.echo.channel('financial')
+                .listen('.account-payable.changed', (data) => {
+                    this.handleAccountPayableChanged(data);
+                })
+                .listen('.account-receivable.changed', (data) => {
+                    this.handleAccountReceivableChanged(data);
+                })
+                .listen('.invoice.changed', (data) => {
+                    this.handleInvoiceChanged(data);
+                })
+                .listen('.receipt.changed', (data) => {
+                    this.handleReceiptChanged(data);
+                });
+
             // Canal privado para notificações do usuário (se autenticado)
             if (window.Laravel && window.Laravel.user) {
                 this.echo.private(`user.${window.Laravel.user.id}`)
@@ -280,6 +295,145 @@ class WebSocketNotificationManager {
         // Atualizar listas de produtos em tempo real (sem duplicar notificações)
         if (window.Livewire) {
             window.Livewire.dispatch('refresh-products');
+        }
+    }
+
+    handleAccountPayableChanged(data) {
+        const message = `💰 ${data.message}`;
+        if (window.showNotification) {
+            window.showNotification(message, 'success', 4000);
+        }
+        
+        // Atualizar tabela suavemente
+        this.updateAccountPayableTable(data);
+        
+        // Disparar evento Livewire se necessário
+        if (window.Livewire) {
+            window.Livewire.dispatch('account-payable-changed', data);
+        }
+    }
+
+    handleAccountReceivableChanged(data) {
+        const message = `💵 ${data.message}`;
+        if (window.showNotification) {
+            window.showNotification(message, 'success', 4000);
+        }
+        
+        // Atualizar tabela suavemente
+        this.updateAccountReceivableTable(data);
+        
+        // Disparar evento Livewire se necessário
+        if (window.Livewire) {
+            window.Livewire.dispatch('account-receivable-changed', data);
+        }
+    }
+
+    handleInvoiceChanged(data) {
+        const message = `📄 ${data.message}`;
+        if (window.showNotification) {
+            window.showNotification(message, 'success', 4000);
+        }
+        
+        // Atualizar tabela suavemente
+        this.updateInvoiceTable(data);
+        
+        // Disparar evento Livewire se necessário
+        if (window.Livewire) {
+            window.Livewire.dispatch('invoice-changed', data);
+        }
+    }
+
+    handleReceiptChanged(data) {
+        const message = `🧾 ${data.message}`;
+        if (window.showNotification) {
+            window.showNotification(message, 'success', 4000);
+        }
+        
+        // Atualizar tabela suavemente
+        this.updateReceiptTable(data);
+        
+        // Disparar evento Livewire se necessário
+        if (window.Livewire) {
+            window.Livewire.dispatch('receipt-changed', data);
+        }
+    }
+
+    updateAccountPayableTable(data) {
+        const table = document.getElementById('account-payables-table');
+        if (!table) return;
+
+        const row = table.querySelector(`tr[data-id="${data.accountPayableId}"]`);
+        
+        if (data.action === 'created') {
+            // Recarregar página para mostrar novo item (ou fazer fetch)
+            setTimeout(() => {
+                window.location.reload();
+            }, 500);
+        } else if (data.action === 'updated' && row) {
+            // Atualizar linha existente com animação
+            row.classList.add('bg-indigo-50', 'dark:bg-indigo-900/20');
+            setTimeout(() => {
+                row.classList.remove('bg-indigo-50', 'dark:bg-indigo-900/20');
+                // Recarregar para pegar dados atualizados
+                window.location.reload();
+            }, 1000);
+        }
+    }
+
+    updateAccountReceivableTable(data) {
+        const table = document.getElementById('account-receivables-table');
+        if (!table) return;
+
+        const row = table.querySelector(`tr[data-id="${data.accountReceivableId}"]`);
+        
+        if (data.action === 'created') {
+            setTimeout(() => {
+                window.location.reload();
+            }, 500);
+        } else if (data.action === 'updated' && row) {
+            row.classList.add('bg-indigo-50', 'dark:bg-indigo-900/20');
+            setTimeout(() => {
+                row.classList.remove('bg-indigo-50', 'dark:bg-indigo-900/20');
+                window.location.reload();
+            }, 1000);
+        }
+    }
+
+    updateInvoiceTable(data) {
+        const table = document.getElementById('invoices-table');
+        if (!table) return;
+
+        const row = table.querySelector(`tr[data-id="${data.invoiceId}"]`);
+        
+        if (data.action === 'created') {
+            setTimeout(() => {
+                window.location.reload();
+            }, 500);
+        } else if (data.action === 'updated' && row) {
+            row.classList.add('bg-indigo-50', 'dark:bg-indigo-900/20');
+            setTimeout(() => {
+                row.classList.remove('bg-indigo-50', 'dark:bg-indigo-900/20');
+                window.location.reload();
+            }, 1000);
+        }
+    }
+
+    updateReceiptTable(data) {
+        const table = document.getElementById('receipts-table');
+        if (!table) return;
+
+        const row = table.querySelector(`tr[data-id="${data.receiptId}"]`);
+        
+        if (data.action === 'created') {
+            setTimeout(() => {
+                window.location.reload();
+            }, 500);
+        } else if (data.action === 'updated' && row) {
+            row.classList.add('bg-indigo-50', 'dark:bg-indigo-900/20');
+            setTimeout(() => {
+                row.classList.remove('bg-indigo-50', 'dark:bg-indigo-900/20');
+                window.location.reload();
+            }, 1000);
         }
     }
 }

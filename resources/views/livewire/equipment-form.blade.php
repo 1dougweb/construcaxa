@@ -107,7 +107,7 @@
             >
                 {{ __('Cancelar') }}
             </button>
-            <x-button-loading>
+            <x-button-loading wire:target="save">
                 {{ $equipment ? __('Atualizar') : __('Salvar') }}
             </x-button-loading>
         </div>

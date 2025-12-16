@@ -8,6 +8,7 @@ use Livewire\Component;
 use Livewire\WithFileUploads;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\DB;
 
 class EquipmentForm extends Component
 {
@@ -181,9 +182,10 @@ class EquipmentForm extends Component
 
     public function save()
     {
-        $this->validate();
-
         try {
+            DB::beginTransaction();
+            
+            $this->validate();
             $validatedData = [
                 'name' => $this->name,
                 'serial_number' => $this->serial_number,
@@ -206,7 +208,13 @@ class EquipmentForm extends Component
                 $destinationPath = $directory . '/' . $filename;
                 
                 // Copiar arquivo do temporário para o destino
-                File::copy($this->featured_photo->getRealPath(), $destinationPath);
+                $sourcePath = $this->featured_photo->getRealPath();
+                if (!File::exists($sourcePath)) {
+                    throw new \Exception('Arquivo temporário não encontrado');
+                }
+                if (!File::copy($sourcePath, $destinationPath)) {
+                    throw new \Exception('Erro ao copiar arquivo de imagem');
+                }
                 $photoPath = 'images/equipment/' . $filename;
                 
                 // Se já existe foto destacada, deletar a antiga
@@ -236,21 +244,55 @@ class EquipmentForm extends Component
                 $validatedData['photos'] = array_values($photos);
             }
 
+            $message = '';
             if ($this->equipment) {
                 $this->equipment->update($validatedData);
-                session()->flash('success', 'Equipamento atualizado com sucesso.');
+                $message = 'Equipamento atualizado com sucesso.';
+                session()->flash('success', $message);
             } else {
                 Equipment::create($validatedData);
-                session()->flash('success', 'Equipamento criado com sucesso.');
+                $message = 'Equipamento criado com sucesso.';
+                session()->flash('success', $message);
             }
+            
+            DB::commit();
 
-            // Emitir evento para fechar o offcanvas e atualizar a lista
-            $this->dispatch('equipmentSaved');
+            // Executar JavaScript diretamente para garantir fechamento e notificação
+            $escapedMessage = addslashes($message);
+            $this->js("
+                (function() {
+                    if (typeof closeOffcanvas === 'function') {
+                        closeOffcanvas('equipment-offcanvas');
+                    }
+                    if (typeof window.showNotification === 'function') {
+                        window.showNotification('{$escapedMessage}', 'success', 4000);
+                    }
+                    if (typeof window.Livewire !== 'undefined') {
+                        window.Livewire.dispatch('refresh-equipment');
+                    }
+                })();
+            ");
+
+            // Emitir evento para outros listeners (fallback)
+            $this->dispatch('equipment-saved', [
+                'message' => $message,
+                'type' => 'success'
+            ]);
+
             $this->resetForm();
                 
         } catch (\Exception $e) {
+            DB::rollBack();
+            \Log::error('Erro ao salvar equipamento: ' . $e->getMessage());
+            \Log::error('Stack trace: ' . $e->getTraceAsString());
             session()->flash('error', 'Erro ao salvar equipamento: ' . $e->getMessage());
-            return null;
+            $this->js("
+                (function() {
+                    if (typeof window.showNotification === 'function') {
+                        window.showNotification('Erro ao salvar equipamento. Verifique os logs.', 'error', 5000);
+                    }
+                })();
+            ");
         }
     }
 

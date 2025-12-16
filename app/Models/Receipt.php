@@ -29,6 +29,7 @@ class Receipt extends Model
         'payment_method',
         'description',
         'notes',
+        'document_file',
         'user_id',
     ];
 

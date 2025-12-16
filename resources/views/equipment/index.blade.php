@@ -1,6 +1,6 @@
 <x-app-layout>
-    <div class="py-6">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+    <div class="p-6">
+       <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
         <div class="flex justify-between items-center mb-6">
             <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
                 {{ __('Equipamentos') }}
@@ -28,7 +28,7 @@
             </div>
         </div>
             <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-xl sm:rounded-lg">
-                <div class="p-6 lg:p-8 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+                <div class="p-6 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
                     <!-- Filtros -->
                     <div class="mb-6">
                         <form method="GET" class="flex flex-wrap gap-4">
@@ -314,9 +314,19 @@
         };
 
         document.addEventListener('livewire:init', () => {
-            Livewire.on('equipmentSaved', () => {
+            Livewire.on('equipment-saved', (data) => {
                 closeOffcanvas('equipment-offcanvas');
+                if (data && data.message && typeof window.showNotification === 'function') {
+                    window.showNotification(data.message, 'success', 4000);
+                }
                 // Recarregar a página para atualizar a lista
+                setTimeout(() => {
+                    window.location.reload();
+                }, 500);
+            });
+            
+            // Escutar evento de refresh
+            window.addEventListener('refresh-equipment', () => {
                 window.location.reload();
             });
         });

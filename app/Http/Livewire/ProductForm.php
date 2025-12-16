@@ -43,19 +43,32 @@ class ProductForm extends Component
         'reset-product-form' => 'resetForm',
     ];
 
-    protected $rules = [
-        'name' => 'required|max:255',
-        'description' => 'nullable',
-        'price' => 'nullable|numeric|min:0', // Mantido para compatibilidade, mas não obrigatório
-        'cost_price' => 'nullable|numeric|min:0',
-        'sale_price' => 'nullable|numeric|min:0',
-        'stock' => 'required|numeric|min:0',
-        'min_stock' => 'required|numeric|min:0',
-        'category_id' => 'required|exists:categories,id',
-        'supplier_id' => 'required|exists:suppliers,id',
-        'measurement_unit' => 'required|in:unit,weight,length',
-        'featured_photo' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp,avif|max:2048',
-    ];
+    protected function rules()
+    {
+        $rules = [
+            'name' => 'required|max:255',
+            'description' => 'nullable',
+            'price' => 'nullable|numeric|min:0',
+            'cost_price' => 'nullable|numeric|min:0',
+            'sale_price' => 'nullable|numeric|min:0',
+            'category_id' => 'required|exists:categories,id',
+            'supplier_id' => 'required|exists:suppliers,id',
+            'measurement_unit' => 'required|in:unit,weight,length',
+            'featured_photo' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp,avif|max:2048',
+        ];
+        
+        // Stock e min_stock são obrigatórios apenas na criação
+        if (!$this->product || !$this->product->id) {
+            $rules['stock'] = 'required|numeric|min:0';
+            $rules['min_stock'] = 'required|numeric|min:0';
+        } else {
+            // Na edição, são opcionais (mantém o valor atual se não informado)
+            $rules['stock'] = 'nullable|numeric|min:0';
+            $rules['min_stock'] = 'nullable|numeric|min:0';
+        }
+        
+        return $rules;
+    }
 
     protected $messages = [
         'featured_photo.image' => 'O arquivo deve ser uma imagem válida.',
@@ -256,29 +269,50 @@ class ProductForm extends Component
 
     public function save()
     {
-        $validatedData = $this->validate();
-        
-        // Define a unidade padrão baseada no tipo selecionado
-        $validatedData['unit_label'] = Product::UNIT_TYPES[$validatedData['measurement_unit']]['unit'];
-        
-        // Upload da foto destacada
-        // IMPORTANTE: Sempre trabalhar com o produto atual do banco, não com estado em memória
-        if ($this->featured_photo) {
-            // Nova foto foi enviada - salvar em public/images/products
-            $directory = public_path('images/products');
-            if (!File::exists($directory)) {
-                File::makeDirectory($directory, 0755, true);
+        try {
+            DB::beginTransaction();
+            
+            $validatedData = $this->validate();
+            
+            // Define a unidade padrão baseada no tipo selecionado
+            $validatedData['unit_label'] = Product::UNIT_TYPES[$validatedData['measurement_unit']]['unit'];
+            
+            // Se estiver editando e stock/min_stock não foram informados, manter valores atuais
+            if ($this->product && $this->product->id) {
+                if (!isset($validatedData['stock']) || $validatedData['stock'] === null) {
+                    $this->product->refresh();
+                    $validatedData['stock'] = $this->product->stock;
+                }
+                if (!isset($validatedData['min_stock']) || $validatedData['min_stock'] === null) {
+                    $this->product->refresh();
+                    $validatedData['min_stock'] = $this->product->min_stock;
+                }
             }
             
-            $filename = time() . '_' . uniqid() . '.' . $this->featured_photo->getClientOriginalExtension();
-            $destinationPath = $directory . '/' . $filename;
-            
-            // Copiar arquivo do temporário para o destino
-            File::copy($this->featured_photo->getRealPath(), $destinationPath);
-            $photoPath = 'images/products/' . $filename;
-            
-            // Se é atualização e havia foto antiga, deletar do storage
-            if ($this->product && $this->product->id) {
+            // Upload da foto destacada
+            // IMPORTANTE: Sempre trabalhar com o produto atual do banco, não com estado em memória
+            if ($this->featured_photo) {
+                // Nova foto foi enviada - salvar em public/images/products
+                $directory = public_path('images/products');
+                if (!File::exists($directory)) {
+                    File::makeDirectory($directory, 0755, true);
+                }
+                
+                $filename = time() . '_' . uniqid() . '.' . $this->featured_photo->getClientOriginalExtension();
+                $destinationPath = $directory . '/' . $filename;
+                
+                // Copiar arquivo do temporário para o destino
+                $sourcePath = $this->featured_photo->getRealPath();
+                if (!File::exists($sourcePath)) {
+                    throw new \Exception('Arquivo temporário não encontrado');
+                }
+                if (!File::copy($sourcePath, $destinationPath)) {
+                    throw new \Exception('Erro ao copiar arquivo de imagem');
+                }
+                $photoPath = 'images/products/' . $filename;
+                
+                // Se é atualização e havia foto antiga, deletar do storage
+                if ($this->product && $this->product->id) {
                 // Recarregar produto do banco para garantir dados atualizados
                 $this->product->refresh();
                 $currentPhotos = $this->product->photos ?? [];
@@ -326,63 +360,78 @@ class ProductForm extends Component
         $action = $this->product ? 'updated' : 'created';
         $productName = $this->product ? $this->product->name : $validatedData['name'];
 
-        if ($this->product) {
-            // Atualização
-            $this->product->update($validatedData);
-            $message = 'Produto atualizado com sucesso.';
-            session()->flash('success', $message);
-        } else {
-            // Criação
-            // Gera o SKU automaticamente apenas para novos produtos
-            $validatedData['sku'] = $this->generateSKU($validatedData['name']);
-            $this->product = Product::create($validatedData);
-            $productName = $this->product->name;
-            $message = 'Produto criado com sucesso.';
-            session()->flash('success', $message);
-        }
-        
-        if ($this->product && $this->product->id) {
-            // Disparar evento de broadcast de forma síncrona
-            // Usar try-catch para evitar erros se o WebSocket não estiver disponível
-            try {
-                broadcast(new ProductChanged(
-                    $this->product->id,
-                    $action,
-                    $message,
-                    $productName
-                ));
-            } catch (\Exception $e) {
-                // Log do erro mas não interromper o fluxo
-                \Log::warning('Erro ao fazer broadcast de ProductChanged: ' . $e->getMessage());
+            if ($this->product) {
+                // Atualização
+                $this->product->update($validatedData);
+                $message = 'Produto atualizado com sucesso.';
+                session()->flash('success', $message);
+            } else {
+                // Criação
+                // Gera o SKU automaticamente apenas para novos produtos
+                $validatedData['sku'] = $this->generateSKU($validatedData['name']);
+                $this->product = Product::create($validatedData);
+                $productName = $this->product->name;
+                $message = 'Produto criado com sucesso.';
+                session()->flash('success', $message);
             }
+            
+            DB::commit();
+            
+            if ($this->product && $this->product->id) {
+                // Disparar evento de broadcast de forma síncrona
+                // Usar try-catch para evitar erros se o WebSocket não estiver disponível
+                try {
+                    broadcast(new ProductChanged(
+                        $this->product->id,
+                        $action,
+                        $message,
+                        $productName
+                    ));
+                } catch (\Exception $e) {
+                    // Log do erro mas não interromper o fluxo
+                    \Log::warning('Erro ao fazer broadcast de ProductChanged: ' . $e->getMessage());
+                }
+            }
+
+            // Atualizar lista em tempo real via Livewire
+            $this->dispatch('refresh-products')->to(ProductList::class);
+
+            // Executar JavaScript diretamente para garantir fechamento e notificação
+            $escapedMessage = addslashes($message);
+            $this->js("
+                (function() {
+                    if (typeof closeOffcanvas === 'function') {
+                        closeOffcanvas('product-offcanvas');
+                    }
+                    if (typeof window.showNotification === 'function') {
+                        window.showNotification('{$escapedMessage}', 'success', 4000);
+                    }
+                    if (typeof window.Livewire !== 'undefined') {
+                        window.Livewire.dispatch('refresh-products');
+                    }
+                })();
+            ");
+
+            // Emitir evento para outros listeners (fallback)
+            $this->dispatch('product-saved', [
+                'message' => $message,
+                'type' => 'success'
+            ]);
+
+            $this->resetForm();
+        } catch (\Exception $e) {
+            DB::rollBack();
+            \Log::error('Erro ao salvar produto: ' . $e->getMessage());
+            \Log::error('Stack trace: ' . $e->getTraceAsString());
+            session()->flash('error', 'Erro ao salvar produto: ' . $e->getMessage());
+            $this->js("
+                (function() {
+                    if (typeof window.showNotification === 'function') {
+                        window.showNotification('Erro ao salvar produto. Verifique os logs.', 'error', 5000);
+                    }
+                })();
+            ");
         }
-
-        // Atualizar lista em tempo real via Livewire
-        $this->dispatch('refresh-products')->to(ProductList::class);
-
-        // Executar JavaScript diretamente para garantir fechamento e notificação
-        $escapedMessage = addslashes($message);
-        $this->js("
-            (function() {
-                if (typeof closeOffcanvas === 'function') {
-                    closeOffcanvas('product-offcanvas');
-                }
-                if (typeof window.showNotification === 'function') {
-                    window.showNotification('{$escapedMessage}', 'success', 4000);
-                }
-                if (typeof window.Livewire !== 'undefined') {
-                    window.Livewire.dispatch('refresh-products');
-                }
-            })();
-        ");
-
-        // Emitir evento para outros listeners (fallback)
-        $this->dispatch('product-saved', [
-            'message' => $message,
-            'type' => 'success'
-        ]);
-
-        $this->resetForm();
     }
 
     public function addStock()
@@ -431,12 +480,35 @@ class ProductForm extends Component
             // Limpar campo
             $this->stockToAdd = 0;
             
+            // Atualizar estoque no formulário
+            $this->stock = $this->product->stock;
+            
             // Disparar evento para atualizar lista
             $this->dispatch('refresh-products')->to(ProductList::class);
             
+            // Mostrar notificação
+            $escapedMessage = addslashes($message);
+            $this->js("
+                (function() {
+                    if (typeof window.showNotification === 'function') {
+                        window.showNotification('{$escapedMessage}', 'success', 4000);
+                    }
+                })();
+            ");
+            
         } catch (\Exception $e) {
             DB::rollBack();
-            session()->flash('error', 'Erro ao adicionar estoque: ' . $e->getMessage());
+            \Log::error('Erro ao adicionar estoque: ' . $e->getMessage());
+            \Log::error('Stack trace: ' . $e->getTraceAsString());
+            $errorMessage = 'Erro ao adicionar estoque: ' . $e->getMessage();
+            session()->flash('error', $errorMessage);
+            $this->js("
+                (function() {
+                    if (typeof window.showNotification === 'function') {
+                        window.showNotification('{$errorMessage}', 'error', 5000);
+                    }
+                })();
+            ");
         }
     }
 

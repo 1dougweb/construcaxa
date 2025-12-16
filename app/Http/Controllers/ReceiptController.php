@@ -6,7 +6,9 @@ use App\Models\Receipt;
 use App\Models\Invoice;
 use App\Models\Project;
 use App\Models\Client;
+use App\Events\ReceiptChanged;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Support\Facades\File;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -47,8 +49,22 @@ class ReceiptController extends Controller
 
         DB::beginTransaction();
         try {
+            $documentPath = null;
+            if ($request->hasFile('document_file')) {
+                $file = $request->file('document_file');
+                $directory = public_path('documents/receipts');
+                if (!File::exists($directory)) {
+                    File::makeDirectory($directory, 0755, true);
+                }
+                $filename = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
+                $destinationPath = $directory . '/' . $filename;
+                File::copy($file->getRealPath(), $destinationPath);
+                $documentPath = 'documents/receipts/' . $filename;
+            }
+
             $receipt = Receipt::create([
                 ...$validated,
+                'document_file' => $documentPath,
                 'number' => (new Receipt())->generateNumber(),
                 'user_id' => auth()->id(),
             ]);
@@ -62,6 +78,20 @@ class ReceiptController extends Controller
             }
 
             DB::commit();
+            
+            // Broadcast event
+            event(new ReceiptChanged(
+                $receipt->id,
+                'created',
+                'Novo recibo criado',
+                [
+                    'number' => $receipt->number,
+                    'client_id' => $receipt->client_id,
+                    'amount' => $receipt->amount,
+                    'payment_method' => $receipt->payment_method,
+                ]
+            ));
+            
             return redirect()->route('financial.receipts.index')
                 ->with('success', 'Recibo criado com sucesso!');
 
@@ -88,6 +118,28 @@ class ReceiptController extends Controller
         return view('financial.receipts.edit', compact('receipt', 'clients', 'projects', 'invoices'));
     }
 
+    public function editData(Receipt $receipt)
+    {
+        try {
+            return response()->json([
+                'id' => $receipt->id,
+                'client_id' => $receipt->client_id,
+                'project_id' => $receipt->project_id,
+                'invoice_id' => $receipt->invoice_id,
+                'issue_date' => $receipt->issue_date ? $receipt->issue_date->format('Y-m-d') : null,
+                'amount' => $receipt->amount,
+                'payment_method' => $receipt->payment_method,
+                'description' => $receipt->description,
+                'notes' => $receipt->notes,
+                'document_file' => $receipt->document_file,
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => 'Erro ao carregar dados: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
     public function update(Request $request, Receipt $receipt)
     {
         $validated = $request->validate([
@@ -99,10 +151,44 @@ class ReceiptController extends Controller
             'payment_method' => 'required|in:cash,pix,credit_card,debit_card,bank_transfer,check,other',
             'description' => 'nullable|string|max:255',
             'notes' => 'nullable|string',
+            'document_file' => 'nullable|file|mimes:pdf,doc,docx,xls,xlsx,jpg,jpeg,png,zip,rar|max:10240',
         ]);
 
         DB::beginTransaction();
         try {
+            // Remover documento se solicitado
+            if ($request->has('remove_document_file') && $request->remove_document_file == '1') {
+                if ($receipt->document_file) {
+                    $oldPath = public_path($receipt->document_file);
+                    if (File::exists($oldPath)) {
+                        File::delete($oldPath);
+                    }
+                }
+                $validated['document_file'] = null;
+            } elseif ($request->hasFile('document_file')) {
+                // Remover documento antigo se existir
+                if ($receipt->document_file) {
+                    $oldPath = public_path($receipt->document_file);
+                    if (File::exists($oldPath)) {
+                        File::delete($oldPath);
+                    }
+                }
+                
+                // Salvar novo documento
+                $file = $request->file('document_file');
+                $directory = public_path('documents/receipts');
+                if (!File::exists($directory)) {
+                    File::makeDirectory($directory, 0755, true);
+                }
+                $filename = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
+                $destinationPath = $directory . '/' . $filename;
+                File::copy($file->getRealPath(), $destinationPath);
+                $validated['document_file'] = 'documents/receipts/' . $filename;
+            } else {
+                // Manter documento existente
+                unset($validated['document_file']);
+            }
+
             $receipt->update($validated);
 
             // Se vinculado a uma nota fiscal, atualizar status
@@ -114,6 +200,20 @@ class ReceiptController extends Controller
             }
 
             DB::commit();
+            
+            // Broadcast event
+            event(new ReceiptChanged(
+                $receipt->id,
+                'updated',
+                'Recibo atualizado',
+                [
+                    'number' => $receipt->number,
+                    'client_id' => $receipt->client_id,
+                    'amount' => $receipt->amount,
+                    'payment_method' => $receipt->payment_method,
+                ]
+            ));
+            
             return redirect()->route('financial.receipts.index')
                 ->with('success', 'Recibo atualizado com sucesso!');
 

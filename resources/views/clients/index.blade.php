@@ -505,7 +505,7 @@
         };
     </script>
 
-    <div class="py-6">
+    <div class="p-6">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
         <div class="flex justify-between items-center mb-6">
             <h2 class="text-2xl font-bold text-gray-900 dark:text-gray-100">
@@ -518,37 +518,42 @@
             </button>
             @endcan
         </div>
-            <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-xl sm:rounded-lg">
-                <div class="p-6">
+        <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-xl sm:rounded-lg">
+        <div class="p-6 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
                     <!-- Filtros -->
-                    <form method="GET" action="{{ route('clients.index') }}" class="mb-6">
-                        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                            <div>
-                                <input type="text" name="search" value="{{ request('search') }}"
-                                       placeholder="Buscar por nome, email, CPF ou CNPJ..."
-                                       class="w-full border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-indigo-500 focus:border-indigo-500">
-                            </div>
-                            <div>
-                                <select name="type" class="w-full border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-indigo-500 focus:border-indigo-500">
-                                    <option value="">Todos os tipos</option>
-                                    <option value="individual" {{ request('type') === 'individual' ? 'selected' : '' }}>Pessoa Física</option>
-                                    <option value="company" {{ request('type') === 'company' ? 'selected' : '' }}>Pessoa Jurídica</option>
-                                </select>
-                            </div>
-                            <div>
-                                <select name="is_active" class="w-full border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-indigo-500 focus:border-indigo-500">
-                                    <option value="">Todos</option>
-                                    <option value="1" {{ request('is_active') === '1' ? 'selected' : '' }}>Ativos</option>
-                                    <option value="0" {{ request('is_active') === '0' ? 'selected' : '' }}>Inativos</option>
-                                </select>
-                            </div>
-                            <div>
-                                <x-button-loading variant="primary" type="submit" class="w-full">
+                    <div class="mb-6">
+                        <form method="GET" action="{{ route('clients.index') }}" class="mb-6">
+                            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                                <div>
+                                    <input type="text" name="search" value="{{ request('search') }}"
+                                        placeholder="Buscar por nome, email, CPF ou CNPJ..."
+                                        class="w-full border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-indigo-500 focus:border-indigo-500">
+                                </div>
+                                <div>
+                                    <select name="type" class="w-full border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-indigo-500 focus:border-indigo-500">
+                                        <option value="">Todos os tipos</option>
+                                        <option value="individual" {{ request('type') === 'individual' ? 'selected' : '' }}>Pessoa Física</option>
+                                        <option value="company" {{ request('type') === 'company' ? 'selected' : '' }}>Pessoa Jurídica</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <select name="is_active" class="w-full border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-indigo-500 focus:border-indigo-500">
+                                        <option value="">Todos</option>
+                                        <option value="1" {{ request('is_active') === '1' ? 'selected' : '' }}>Ativos</option>
+                                        <option value="0" {{ request('is_active') === '0' ? 'selected' : '' }}>Inativos</option>
+                                    </select>
+                                </div>
+                                <div>
+                                <button type="submit" class="inline-flex items-center px-4 py-2 bg-gray-800 dark:bg-gray-700 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700 dark:hover:bg-gray-600 focus:bg-gray-700 active:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition ease-in-out duration-150">
                                     Filtrar
-                                </x-button-loading>
+                                </button>
+                                <a href="{{ route('clients.index') }}" class="inline-flex items-center px-4 py-2 bg-gray-300 dark:bg-gray-600 border border-transparent rounded-md font-semibold text-xs text-gray-700 dark:text-gray-300 uppercase tracking-widest hover:bg-gray-400 dark:hover:bg-gray-500 focus:bg-gray-400 active:bg-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition ease-in-out duration-150">
+                                    Limpar
+                                </a>
+                                </div>
                             </div>
-                        </div>
-                    </form>
+                        </form>
+                    </div>
 
                     <!-- Tabela de Clientes -->
                     <div class="overflow-x-auto">

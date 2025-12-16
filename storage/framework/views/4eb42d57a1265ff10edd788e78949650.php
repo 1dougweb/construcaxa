@@ -87,9 +87,24 @@
         <?php echo \Livewire\Mechanisms\FrontendAssets\FrontendAssets::styles(); ?>
 
         <style>
-            /* Scrollbar customizada para o sidebar */
+            /* Scrollbar customizada para o sidebar - invisível por padrão */
+            .sidebar-scroll {
+                /* Padding fixo - sempre 1rem em todos os lados, não muda quando scrollbar aparece */
+                padding: 1rem !important;
+                box-sizing: border-box;
+                /* Overlay scroll - não afeta o tamanho do elemento */
+                overflow-y: auto;
+                scrollbar-width: thin;
+                scrollbar-color: transparent transparent;
+                /* Não reservar espaço para scrollbar - sempre overlay */
+                scrollbar-gutter: auto;
+            }
+            
+            /* Webkit (Chrome, Safari, Edge) - scrollbar invisível por padrão */
             .sidebar-scroll::-webkit-scrollbar {
-                width: 6px;
+                width: 8px;
+                background: transparent;
+                /* Scrollbar overlay - não afeta o layout */
             }
             
             .sidebar-scroll::-webkit-scrollbar-track {
@@ -97,18 +112,139 @@
             }
             
             .sidebar-scroll::-webkit-scrollbar-thumb {
-                background: #cbd5e1;
-                border-radius: 3px;
+                background: transparent;
+                border-radius: 4px;
+                transition: background 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             }
             
-            .sidebar-scroll::-webkit-scrollbar-thumb:hover {
-                background: #94a3b8;
+            /* Mostrar scrollbar quando a classe sidebar-scroll-visible estiver presente */
+            .sidebar-scroll-visible::-webkit-scrollbar-thumb {
+                background: rgba(203, 213, 225, 0.6);
             }
             
-            /* Para Firefox */
-            .sidebar-scroll {
+            .sidebar-scroll-visible::-webkit-scrollbar-thumb:hover {
+                background: rgba(148, 163, 184, 0.9);
+            }
+            
+            /* Para Firefox - mostrar quando visível */
+            .sidebar-scroll-visible {
+                scrollbar-color: rgba(203, 213, 225, 0.6) transparent;
+            }
+            
+            /* Dark mode adjustments */
+            .dark .sidebar-scroll-visible::-webkit-scrollbar-thumb {
+                background: rgba(75, 85, 99, 0.6);
+            }
+            
+            .dark .sidebar-scroll-visible::-webkit-scrollbar-thumb:hover {
+                background: rgba(107, 114, 128, 0.9);
+            }
+            
+            .dark .sidebar-scroll-visible {
+                scrollbar-color: rgba(75, 85, 99, 0.6) transparent;
+            }
+            
+            /* Garantir que o scrollbar seja sempre overlay (não afeta o layout) */
+            /* Para navegadores que suportam overlay (Chrome, Edge) */
+            @supports (overflow: overlay) {
+                .sidebar-scroll {
+                    overflow-y: overlay;
+                }
+            }
+            
+            /* Para navegadores que não suportam overlay */
+            @supports not (overflow: overlay) {
+                .sidebar-scroll {
+                    /* Manter padding fixo mesmo quando scrollbar aparece */
+                    padding: 1rem !important;
+                    padding-right: 1rem !important;
+                    /* Usar margin negativo para compensar scrollbar sem afetar padding */
+                    margin-right: 0;
+                }
+            }
+            
+            /* Garantir que o padding seja sempre fixo, independente do scrollbar estar visível */
+            .sidebar-scroll,
+            .sidebar-scroll-visible {
+                padding: 1rem !important;
+                padding-right: 1rem !important;
+                box-sizing: border-box;
+            }
+            
+            /* Forçar padding fixo mesmo quando hover (scrollbar visível) */
+            .sidebar-container:hover .sidebar-scroll,
+            .sidebar-container:hover .sidebar-scroll-visible {
+                padding: 1rem !important;
+                padding-right: 1rem !important;
+            }
+            
+            /* Scrollbar customizada para o layout principal (body/html) - igual ao sidebar */
+            html,
+            body {
                 scrollbar-width: thin;
-                scrollbar-color: #cbd5e1 transparent;
+                scrollbar-color: transparent transparent;
+                scrollbar-gutter: auto;
+            }
+            
+            /* Webkit (Chrome, Safari, Edge) - scrollbar invisível por padrão */
+            html::-webkit-scrollbar,
+            body::-webkit-scrollbar {
+                width: 8px;
+                height: 8px;
+                background: transparent;
+            }
+            
+            html::-webkit-scrollbar-track,
+            body::-webkit-scrollbar-track {
+                background: transparent;
+            }
+            
+            html::-webkit-scrollbar-thumb,
+            body::-webkit-scrollbar-thumb {
+                background: transparent;
+                border-radius: 4px;
+                transition: background 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            }
+            
+            /* Mostrar scrollbar quando a classe layout-scroll-visible estiver presente */
+            html.layout-scroll-visible::-webkit-scrollbar-thumb,
+            body.layout-scroll-visible::-webkit-scrollbar-thumb {
+                background: rgba(203, 213, 225, 0.6);
+            }
+            
+            html.layout-scroll-visible::-webkit-scrollbar-thumb:hover,
+            body.layout-scroll-visible::-webkit-scrollbar-thumb:hover {
+                background: rgba(148, 163, 184, 0.9);
+            }
+            
+            /* Para Firefox - mostrar quando visível */
+            html.layout-scroll-visible,
+            body.layout-scroll-visible {
+                scrollbar-color: rgba(203, 213, 225, 0.6) transparent;
+            }
+            
+            /* Dark mode adjustments para scrollbar do layout */
+            .dark html.layout-scroll-visible::-webkit-scrollbar-thumb,
+            .dark body.layout-scroll-visible::-webkit-scrollbar-thumb {
+                background: rgba(75, 85, 99, 0.6);
+            }
+            
+            .dark html.layout-scroll-visible::-webkit-scrollbar-thumb:hover,
+            .dark body.layout-scroll-visible::-webkit-scrollbar-thumb:hover {
+                background: rgba(107, 114, 128, 0.9);
+            }
+            
+            .dark html.layout-scroll-visible,
+            .dark body.layout-scroll-visible {
+                scrollbar-color: rgba(75, 85, 99, 0.6) transparent;
+            }
+            
+            /* Garantir que o scrollbar seja overlay (não afeta o layout) */
+            @supports (overflow: overlay) {
+                html,
+                body {
+                    overflow: overlay;
+                }
             }
             
             /* x-cloak para Alpine.js */
@@ -118,6 +254,41 @@
             
             /* Transições suaves para dropdowns */
             .dropdown-chevron {
+                transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            }
+            
+            /* Melhorias nas setas dos dropdowns do sidebar */
+            .sidebar-dropdown-arrow {
+                transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+                opacity: 0.7;
+                font-size: 0.75rem;
+            }
+            
+            .sidebar-dropdown-arrow:hover {
+                opacity: 1;
+            }
+            
+            .sidebar-dropdown-button:hover .sidebar-dropdown-arrow {
+                opacity: 1;
+                transform: scale(1.1);
+            }
+            
+            .sidebar-dropdown-button[aria-expanded="true"] .sidebar-dropdown-arrow {
+                transform: rotate(180deg) scale(1.1);
+                opacity: 1;
+            }
+            
+            /* Melhor alinhamento vertical */
+            .sidebar-dropdown-button {
+                align-items: center;
+            }
+            
+            .sidebar-dropdown-arrow {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                width: 1rem;
+                height: 1rem;
                 transition: transform 0.2s ease-in-out;
             }
             
@@ -177,6 +348,12 @@
                     return stored === 'true';
                 })(),
                 userMenuOpen: false,
+                openSearchModal: false,
+                searchQuery: '',
+                searchResults: [],
+                searchLoading: false,
+                searchHistory: [],
+                selectedIndex: -1,
                 darkMode: (() => {
                     const stored = localStorage.getItem('darkMode');
                     const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
@@ -231,8 +408,106 @@
                 },
                 init() {
                     // Sincronizar estado inicial - não precisa fazer nada pois os estilos já foram aplicados
+                },
+                loadSearchHistory() {
+                    try {
+                        const history = localStorage.getItem('searchHistory');
+                        this.searchHistory = history ? JSON.parse(history) : [];
+                    } catch (e) {
+                        this.searchHistory = [];
+                    }
+                },
+                saveToHistory(query) {
+                    if (!query || query.trim().length < 2) return;
+                    try {
+                        let history = JSON.parse(localStorage.getItem('searchHistory') || '[]');
+                        history = history.filter(h => h.toLowerCase() !== query.toLowerCase());
+                        history.unshift(query);
+                        history = history.slice(0, 10); // Manter apenas 10 itens
+                        localStorage.setItem('searchHistory', JSON.stringify(history));
+                        this.searchHistory = history;
+                    } catch (e) {
+                        console.error('Erro ao salvar histórico:', e);
+                    }
+                },
+                async performSearch(query) {
+                    if (!query || query.trim().length < 2) {
+                        this.searchResults = [];
+                        return;
+                    }
+                    
+                    this.searchLoading = true;
+                    try {
+                        const response = await fetch(`<?php echo e(route('search')); ?>?q=${encodeURIComponent(query)}`, {
+                            headers: {
+                                'X-Requested-With': 'XMLHttpRequest',
+                                'Accept': 'application/json'
+                            }
+                        });
+                        const data = await response.json();
+                        this.searchResults = data.results || [];
+                        this.saveToHistory(query);
+                    } catch (error) {
+                        console.error('Erro na pesquisa:', error);
+                        this.searchResults = [];
+                    } finally {
+                        this.searchLoading = false;
+                    }
                 }
-             }">
+             }"
+             x-init="
+                (function() {
+                    // Listener global para atalho de teclado CTRL+K / CMD+K
+                    var handleSearchShortcut = function(e) {
+                        if ((e.ctrlKey || e.metaKey) && e.key === 'k' && !e.shiftKey && !e.altKey) {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            openSearchModal = true;
+                            $nextTick(function() {
+                                var input = document.getElementById('search-input');
+                                if (input) {
+                                    input.focus();
+                                }
+                            });
+                        }
+                    };
+                    
+                    document.addEventListener('keydown', handleSearchShortcut);
+                    
+                    // Cleanup quando o componente for destruído
+                    $el.addEventListener('alpine:destroyed', function() {
+                        document.removeEventListener('keydown', handleSearchShortcut);
+                    });
+                    
+                    // Watch para abrir/fechar modal de pesquisa
+                    $watch('openSearchModal', function(value) {
+                        if (value) {
+                            document.body.style.overflow = 'hidden';
+                            $nextTick(function() {
+                                var input = document.getElementById('search-input');
+                                if (input) {
+                                    input.focus();
+                                }
+                                loadSearchHistory();
+                            });
+                        } else {
+                            document.body.style.overflow = '';
+                            searchQuery = '';
+                            searchResults = [];
+                            selectedIndex = -1;
+                        }
+                    });
+                    
+                    // Watch para pesquisa com debounce
+                    var searchDebounceTimer;
+                    $watch('searchQuery', function(value) {
+                        clearTimeout(searchDebounceTimer);
+                        searchDebounceTimer = setTimeout(function() {
+                            performSearch(value);
+                        }, 300);
+                    });
+                })();
+             ">
             <!-- Mobile top bar -->
             <div class="fixed top-0 left-0 right-0 h-16 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-4 flex items-center justify-between z-50 lg:hidden">
                 <!-- Botão hamburger/X -->
@@ -283,6 +558,14 @@
                         </a>
                     </div>
                 </div>
+                
+                <!-- Search Button (Mobile) -->
+                <button 
+                    @click="openSearchModal = true"
+                    class="p-2 rounded-md text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                    aria-label="Pesquisar">
+                    <i class="fi fi-rr-search text-lg"></i>
+                </button>
                 
                 <!-- Notificações e Perfil -->
                 <div class="flex items-center gap-2">
@@ -433,6 +716,7 @@
 
             <!-- Sidebar -->
             <aside class="sidebar-container fixed inset-y-0 left-0 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 z-40 transform transition-all duration-200 ease-in-out flex flex-col" 
+                   id="sidebar-container" 
                    :class="{ 
                        '-translate-x-full': !sidebarOpen, 
                        'translate-x-0': sidebarOpen,
@@ -459,7 +743,8 @@
                         </div>
                     </div>
                 </div>
-                <nav class="flex-1 overflow-y-auto sidebar-scroll p-4 space-y-1" 
+                <nav class="flex-1 overflow-y-auto sidebar-scroll space-y-2" 
+                     id="sidebar-nav" 
                      :class="{ 'lg:hidden': sidebarCollapsed }"
                      x-data="{ 
                     estoqueOpen: <?php echo e(request()->routeIs('products.*') || request()->routeIs('equipment.*') || request()->routeIs('material-requests.*') || request()->routeIs('equipment-requests.*') || request()->routeIs('suppliers.*') ? 'true' : 'false'); ?>,
@@ -470,7 +755,7 @@
                 }">
                     <!-- Dashboard sempre visível -->
                     <a href="<?php echo e(route('dashboard')); ?>" class="flex items-center px-3 py-2 rounded-md text-sm font-medium <?php echo e(request()->routeIs('dashboard') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'); ?>">
-                        <i class="fi fi-rr-dashboard mr-3 text-base"></i>
+                        <i class="fi fi-rr-dashboard mr-3 mt-1 text-base"></i>
                         <?php echo e(__('Dashboard')); ?>
 
                     </a>
@@ -478,12 +763,16 @@
                     <!-- Dropdown Estoque -->
                     <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(auth()->user()->can('view products') || auth()->user()->can('view service-orders') || auth()->user()->can('view suppliers') || auth()->user()->hasAnyRole(['admin', 'manager'])): ?>
                     <div>
-                        <button @click="estoqueOpen = !estoqueOpen" class="w-full flex items-center justify-between px-3 py-2 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                        <button 
+                            @click="estoqueOpen = !estoqueOpen" 
+                            class="sidebar-dropdown-button w-full flex items-center justify-between px-3 py-2 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                            :aria-expanded="estoqueOpen"
+                        >
                             <div class="flex items-center">
-                                <i class="fi fi-rr-box mr-3 text-base"></i>
+                                <i class="fi fi-rr-box mr-3 text-base mt-1"></i>
                                 <span><?php echo e(__('Estoque')); ?></span>
                             </div>
-                            <i class="fi fi-rr-angle-small-down text-xs transition-transform duration-200" :class="{ 'rotate-180': estoqueOpen }"></i>
+                            <i class="fi fi-rr-angle-small-down sidebar-dropdown-arrow flex-shrink-0" :class="{ 'rotate-180': estoqueOpen }"></i>
                         </button>
                         <div x-show="estoqueOpen" 
                              x-transition:enter="transition ease-out duration-200"
@@ -494,36 +783,36 @@
                              x-transition:leave-end="opacity-0 transform -translate-y-2"
                              class="ml-3 mt-0.5 mb-1 space-y-0.5 border-l-2 border-gray-200 dark:border-gray-700 pl-3">
                             <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('view products')): ?>
-                            <a href="<?php echo e(route('products.index')); ?>" class="flex items-center px-3 py-2 rounded-md text-sm font-medium <?php echo e(request()->routeIs('products.*') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 -ml-3 pl-5' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'); ?>">
-                                <i class="fi fi-rr-box mr-3 text-base"></i>
+                            <a href="<?php echo e(route('products.index')); ?>" class="flex items-center px-3 py-2 rounded-md text-sm font-medium <?php echo e(request()->routeIs('products.*') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'); ?>">
+                                <i class="fi fi-rr-box mr-3 text-base mt-1"></i>
                                 <?php echo e(__('Produtos')); ?>
 
                             </a>
                             <?php endif; ?>
                             <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('view products')): ?>
-                            <a href="<?php echo e(route('equipment.index')); ?>" class="flex items-center px-3 py-2 rounded-md text-sm font-medium <?php echo e(request()->routeIs('equipment.*') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 -ml-3 pl-5' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'); ?>">
-                                <i class="fi fi-rr-tools mr-3 text-base"></i>
+                            <a href="<?php echo e(route('equipment.index')); ?>" class="flex items-center px-3 py-2 rounded-md text-sm font-medium <?php echo e(request()->routeIs('equipment.*') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'); ?>">
+                                <i class="fi fi-rr-tools mr-3 text-base mt-1"></i>
                                 <?php echo e(__('Equipamentos')); ?>
 
                             </a>
                             <?php endif; ?>
                             <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('view service-orders')): ?>
-                            <a href="<?php echo e(route('material-requests.index')); ?>" class="flex items-center px-3 py-2 rounded-md text-sm font-medium <?php echo e(request()->routeIs('material-requests.*') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 -ml-3 pl-5' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'); ?>">
+                            <a href="<?php echo e(route('material-requests.index')); ?>" class="flex items-center px-3 py-2 rounded-md text-sm font-medium <?php echo e(request()->routeIs('material-requests.*') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'); ?>">
                                 <i class="fi fi-rr-clipboard mr-3 text-base"></i>
                                 <?php echo e(__('Requisições de Material')); ?>
 
                             </a>
                             <?php endif; ?>
                             <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('view service-orders')): ?>
-                            <a href="<?php echo e(route('equipment-requests.index')); ?>" class="flex items-center px-3 py-2 rounded-md text-sm font-medium <?php echo e(request()->routeIs('equipment-requests.*') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 -ml-3 pl-5' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'); ?>">
+                            <a href="<?php echo e(route('equipment-requests.index')); ?>" class="flex items-center px-3 py-2 rounded-md text-sm font-medium <?php echo e(request()->routeIs('equipment-requests.*') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'); ?>">
                                 <i class="fi fi-rr-clipboard mr-3 text-base"></i>
                                 <?php echo e(__('Requisições de Equipamento')); ?>
 
                             </a>
                             <?php endif; ?>
                             <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('view suppliers')): ?>
-                            <a href="<?php echo e(route('suppliers.index')); ?>" class="flex items-center px-3 py-2 rounded-md text-sm font-medium <?php echo e(request()->routeIs('suppliers.*') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 -ml-3 pl-5' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'); ?>">
-                                <i class="fi fi-rr-truck-side mr-3 text-base"></i>
+                            <a href="<?php echo e(route('suppliers.index')); ?>" class="flex items-center px-3 py-2 rounded-md text-sm font-medium <?php echo e(request()->routeIs('suppliers.*') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'); ?>">
+                                <i class="fi fi-rr-truck-side mr-3 text-base mt-1"></i>
                                 <?php echo e(__('Fornecedores')); ?>
 
                             </a>
@@ -535,12 +824,16 @@
                     <!-- Dropdown Gestão -->
                     <?php if(auth()->user()->can('view employees') || auth()->user()->can('manage attendance') || auth()->user()->can('view budgets') || auth()->user()->can('view projects') || auth()->user()->can('manage services') || auth()->user()->can('view clients') || auth()->user()->can('view service-orders') || auth()->user()->hasAnyRole(['admin', 'manager'])): ?>
                     <div>
-                        <button @click="gestaoOpen = !gestaoOpen" class="w-full flex items-center justify-between px-3 py-2 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                        <button 
+                            @click="gestaoOpen = !gestaoOpen" 
+                            class="sidebar-dropdown-button w-full flex items-center justify-between px-3 py-2 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                            :aria-expanded="gestaoOpen"
+                        >
                             <div class="flex items-center">
-                                <i class="fi fi-rr-settings mr-3 text-base"></i>
+                                <i class="fi fi-rr-settings mt-1 mr-3 text-base"></i>
                                 <span><?php echo e(__('Gestão')); ?></span>
                             </div>
-                            <i class="fi fi-rr-angle-small-down text-xs transition-transform duration-200" :class="{ 'rotate-180': gestaoOpen }"></i>
+                            <i class="fi fi-rr-angle-small-down sidebar-dropdown-arrow flex-shrink-0" :class="{ 'rotate-180': gestaoOpen }"></i>
                         </button>
                         <div x-show="gestaoOpen" 
                              x-transition:enter="transition ease-out duration-200"
@@ -559,7 +852,7 @@
                             ?>
                             <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($showClients): ?>
                             <a href="<?php echo e(route('clients.index')); ?>" 
-                               class="flex items-center px-3 py-2 rounded-md text-sm font-medium <?php echo e(request()->routeIs('clients.*') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 -ml-3 pl-5' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'); ?>">
+                               class="flex items-center px-3 py-2 rounded-md text-sm font-medium <?php echo e(request()->routeIs('clients.*') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'); ?>">
                                 <i class="fi fi-rr-user mr-3 text-base"></i>
                                 <?php echo e(__('Clientes')); ?>
 
@@ -567,75 +860,75 @@
                             <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                             <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($showContracts): ?>
                             <a href="<?php echo e(route('contracts.index')); ?>" 
-                               class="flex items-center px-3 py-2 rounded-md text-sm font-medium <?php echo e(request()->routeIs('contracts.*') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 -ml-3 pl-5' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'); ?>">
+                               class="flex items-center px-3 py-2 rounded-md text-sm font-medium <?php echo e(request()->routeIs('contracts.*') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'); ?>">
                                 <i class="fi fi-rr-legal mr-3 text-base"></i>
                                 <?php echo e(__('Contratos')); ?>
 
                             </a>
                             <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                             <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('view employees')): ?>
-                            <a href="<?php echo e(route('employees.index')); ?>" class="flex items-center px-3 py-2 rounded-md text-sm font-medium <?php echo e(request()->routeIs('employees.*') && !request()->routeIs('employees.proposals.*') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 -ml-3 pl-5' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'); ?>">
+                            <a href="<?php echo e(route('employees.index')); ?>" class="flex items-center px-3 py-2 rounded-md text-sm font-medium <?php echo e(request()->routeIs('employees.*') && !request()->routeIs('employees.proposals.*') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'); ?>">
                                 <i class="fi fi-rr-users mr-3 text-base"></i>
                                 <?php echo e(__('Funcionários')); ?>
 
                             </a>
                             <?php endif; ?>
                             <!-- <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('view employees')): ?>
-                            <a href="<?php echo e(route('proposals.index')); ?>" class="flex items-center px-3 py-2 rounded-md text-sm font-medium <?php echo e(request()->routeIs('proposals.*') || request()->routeIs('employees.proposals.*') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 -ml-3 pl-5' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'); ?>">
+                            <a href="<?php echo e(route('proposals.index')); ?>" class="flex items-center px-3 py-2 rounded-md text-sm font-medium <?php echo e(request()->routeIs('proposals.*') || request()->routeIs('employees.proposals.*') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'); ?>">
                                 <i class="fi fi-rr-receipt mr-3 text-base"></i>
                                 <?php echo e(__('Propostas')); ?>
 
                             </a>
                             <?php endif; ?> -->
                             <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('manage attendance')): ?>
-                            <a href="<?php echo e(route('attendance.manage')); ?>" class="flex items-center px-3 py-2 rounded-md text-sm font-medium <?php echo e(request()->routeIs('attendance.manage') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 -ml-3 pl-5' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'); ?>">
+                            <a href="<?php echo e(route('attendance.manage')); ?>" class="flex items-center px-3 py-2 rounded-md text-sm font-medium <?php echo e(request()->routeIs('attendance.manage') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'); ?>">
                                 <i class="fi fi-rr-calendar-check mr-3 text-base"></i>
                                 <?php echo e(__('Gestão de Pontos')); ?>
 
                             </a>
                             <?php endif; ?>
                             <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('view budgets')): ?>
-                            <a href="<?php echo e(route('budgets.index')); ?>" class="flex items-center px-3 py-2 rounded-md text-sm font-medium <?php echo e(request()->routeIs('budgets.*') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 -ml-3 pl-5' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'); ?>">
+                            <a href="<?php echo e(route('budgets.index')); ?>" class="flex items-center px-3 py-2 rounded-md text-sm font-medium <?php echo e(request()->routeIs('budgets.*') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'); ?>">
                                 <i class="fi fi-rr-receipt mr-3 text-base"></i>
                                 <?php echo e(__('Orçamentos')); ?>
 
                             </a>
                             <?php endif; ?>
-                            <a href="<?php echo e(route('inspections.index')); ?>" class="flex items-center px-3 py-2 rounded-md text-sm font-medium <?php echo e(request()->routeIs('inspections.*') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 -ml-3 pl-5' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'); ?>">
+                            <a href="<?php echo e(route('inspections.index')); ?>" class="flex items-center px-3 py-2 rounded-md text-sm font-medium <?php echo e(request()->routeIs('inspections.*') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'); ?>">
                                 <i class="fi fi-rr-clipboard-check mr-3 text-base"></i>
                                 <?php echo e(__('Vistorias')); ?>
 
                             </a>
                             <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('view projects')): ?>
-                            <a href="<?php echo e(route('projects.index')); ?>" class="flex items-center px-3 py-2 rounded-md text-sm font-medium <?php echo e(request()->routeIs('projects.*') && !request()->routeIs('client.projects.*') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 -ml-3 pl-5' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'); ?>">
+                            <a href="<?php echo e(route('projects.index')); ?>" class="flex items-center px-3 py-2 rounded-md text-sm font-medium <?php echo e(request()->routeIs('projects.*') && !request()->routeIs('client.projects.*') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'); ?>">
                                 <i class="fi fi-rr-building mr-3 text-base"></i>
                                 <?php echo e(__('Obras')); ?>
 
                             </a>
                             <?php endif; ?>
                             <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('view projects')): ?>
-                            <a href="<?php echo e(route('map.index')); ?>" class="flex items-center px-3 py-2 rounded-md text-sm font-medium <?php echo e(request()->routeIs('map.*') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 -ml-3 pl-5' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'); ?>">
+                            <a href="<?php echo e(route('map.index')); ?>" class="flex items-center px-3 py-2 rounded-md text-sm font-medium <?php echo e(request()->routeIs('map.*') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'); ?>">
                                 <i class="fi fi-rr-map mr-3 text-base"></i>
                                 <?php echo e(__('Mapa')); ?>
 
                             </a>
                             <?php endif; ?>
                             <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('manage services')): ?>
-                            <a href="<?php echo e(route('services.index')); ?>" class="flex items-center px-3 py-2 rounded-md text-sm font-medium <?php echo e(request()->routeIs('services.*') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 -ml-3 pl-5' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'); ?>">
+                            <a href="<?php echo e(route('services.index')); ?>" class="flex items-center px-3 py-2 rounded-md text-sm font-medium <?php echo e(request()->routeIs('services.*') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'); ?>">
                                 <i class="fi fi-rr-person-dolly-empty mr-3 text-base"></i>
                                 <?php echo e(__('Serviços')); ?>
 
                             </a>
                             <?php endif; ?>
                             <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('manage services')): ?>
-                            <a href="<?php echo e(route('labor-types.index')); ?>" class="flex items-center px-3 py-2 rounded-md text-sm font-medium <?php echo e(request()->routeIs('labor-types.*') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 -ml-3 pl-5' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'); ?>">
+                            <a href="<?php echo e(route('labor-types.index')); ?>" class="flex items-center px-3 py-2 rounded-md text-sm font-medium <?php echo e(request()->routeIs('labor-types.*') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'); ?>">
                                 <i class="fi fi-rr-users-alt mr-3 text-base"></i>
                                 <?php echo e(__('Tipos de Mão de Obra')); ?>
 
                             </a>
                             <?php endif; ?>
                             <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('manage services')): ?>
-                            <a href="<?php echo e(route('service-categories.index')); ?>" class="flex items-center px-3 py-2 rounded-md text-sm font-medium <?php echo e(request()->routeIs('service-categories.*') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 -ml-3 pl-5' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'); ?>">
+                            <a href="<?php echo e(route('service-categories.index')); ?>" class="flex items-center px-3 py-2 rounded-md text-sm font-medium <?php echo e(request()->routeIs('service-categories.*') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'); ?>">
                                 <i class="fi fi-rr-folder mr-3 text-base"></i>
                                 <?php echo e(__('Categorias de Serviços')); ?>
 
@@ -659,7 +952,7 @@
                     <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                     <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('view reports')): ?>
                     <a href="<?php echo e(route('reports.index')); ?>" class="flex items-center px-3 py-2 rounded-md text-sm font-medium <?php echo e(request()->routeIs('reports.*') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'); ?>">
-                        <i class="fi fi-rr-stats mr-3 text-base"></i>
+                        <i class="fi fi-rr-stats mr-3 mt-1 text-base"></i>
                         <?php echo e(__('Relatórios')); ?>
 
                     </a>
@@ -668,12 +961,16 @@
                     <!-- Dropdown Financeiro -->
                     <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('manage finances')): ?>
                     <div>
-                        <button @click="financeiroOpen = !financeiroOpen" class="w-full flex items-center justify-between px-3 py-2 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                        <button 
+                            @click="financeiroOpen = !financeiroOpen" 
+                            class="sidebar-dropdown-button w-full flex items-center justify-between px-3 py-2 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                            :aria-expanded="financeiroOpen"
+                        >
                             <div class="flex items-center">
-                                <i class="fi fi-rr-money mr-3 text-base"></i>
+                                <i class="fi fi-rr-money mr-3 mt-1 text-base"></i>
                                 <span><?php echo e(__('Financeiro')); ?></span>
                             </div>
-                            <i class="fi fi-rr-angle-small-down text-xs transition-transform duration-200" :class="{ 'rotate-180': financeiroOpen }"></i>
+                            <i class="fi fi-rr-angle-small-down sidebar-dropdown-arrow flex-shrink-0" :class="{ 'rotate-180': financeiroOpen }"></i>
                         </button>
                         <div x-show="financeiroOpen" 
                              x-transition:enter="transition ease-out duration-200"
@@ -683,28 +980,28 @@
                              x-transition:leave-start="opacity-100 transform translate-y-0"
                              x-transition:leave-end="opacity-0 transform -translate-y-2"
                              class="ml-3 mt-0.5 mb-1 space-y-0.5 border-l-2 border-gray-200 dark:border-gray-700 pl-3">
-                            <a href="<?php echo e(route('financial.dashboard')); ?>" class="flex items-center px-3 py-2 rounded-md text-sm font-medium <?php echo e(request()->routeIs('financial.dashboard') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 border-l-2 border-indigo-500 dark:border-indigo-400 -ml-3 pl-5' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'); ?>">
-                                <i class="fi fi-rr-dashboard mr-3 text-base"></i>
+                            <a href="<?php echo e(route('financial.dashboard')); ?>" class="flex items-center px-3 py-2 rounded-md text-sm font-medium <?php echo e(request()->routeIs('financial.dashboard') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'); ?>">
+                                <i class="fi fi-rr-dashboard mr-3 text-base mt-1"></i>
                                 <?php echo e(__('Dashboard Financeiro')); ?>
 
                             </a>
-                            <a href="<?php echo e(route('financial.accounts-payable.index')); ?>" class="flex items-center px-3 py-2 rounded-md text-sm font-medium <?php echo e(request()->routeIs('financial.accounts-payable.*') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 border-l-2 border-indigo-500 dark:border-indigo-400 -ml-3 pl-5' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'); ?>">
-                                <i class="fi fi-rr-arrow-trend-down mr-3 text-base"></i>
+                            <a href="<?php echo e(route('financial.accounts-payable.index')); ?>" class="flex items-center px-3 py-2 rounded-md text-sm font-medium <?php echo e(request()->routeIs('financial.accounts-payable.*') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'); ?>">
+                                <i class="fi fi-rr-arrow-trend-down mr-3 text-base mt-1"></i>
                                 <?php echo e(__('Contas a Pagar')); ?>
 
                             </a>
-                            <a href="<?php echo e(route('financial.accounts-receivable.index')); ?>" class="flex items-center px-3 py-2 rounded-md text-sm font-medium <?php echo e(request()->routeIs('financial.accounts-receivable.*') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 border-l-2 border-indigo-500 dark:border-indigo-400 -ml-3 pl-5' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'); ?>">
-                                <i class="fi fi-rr-arrow-trend-up mr-3 text-base"></i>
+                            <a href="<?php echo e(route('financial.accounts-receivable.index')); ?>" class="flex items-center px-3 py-2 rounded-md text-sm font-medium <?php echo e(request()->routeIs('financial.accounts-receivable.*') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'); ?>">
+                                <i class="fi fi-rr-arrow-trend-up mr-3 text-base mt-1"></i>
                                 <?php echo e(__('Contas a Receber')); ?>
 
                             </a>
-                            <a href="<?php echo e(route('financial.invoices.index')); ?>" class="flex items-center px-3 py-2 rounded-md text-sm font-medium <?php echo e(request()->routeIs('financial.invoices.*') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 border-l-2 border-indigo-500 dark:border-indigo-400 -ml-3 pl-5' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'); ?>">
-                                <i class="fi fi-rr-receipt mr-3 text-base"></i>
+                            <a href="<?php echo e(route('financial.invoices.index')); ?>" class="flex items-center px-3 py-2 rounded-md text-sm font-medium <?php echo e(request()->routeIs('financial.invoices.*') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'); ?>">
+                                <i class="fi fi-rr-receipt mr-3 text-base mt-1"></i>
                                 <?php echo e(__('Notas Fiscais')); ?>
 
                             </a>
-                            <a href="<?php echo e(route('financial.receipts.index')); ?>" class="flex items-center px-3 py-2 rounded-md text-sm font-medium <?php echo e(request()->routeIs('financial.receipts.*') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 border-l-2 border-indigo-500 dark:border-indigo-400 -ml-3 pl-5' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'); ?>">
-                                <i class="fi fi-rr-receipt mr-3 text-base"></i>
+                            <a href="<?php echo e(route('financial.receipts.index')); ?>" class="flex items-center px-3 py-2 rounded-md text-sm font-medium <?php echo e(request()->routeIs('financial.receipts.*') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'); ?>">
+                                <i class="fi fi-rr-receipt mr-3 text-base mt-1"></i>
                                 <?php echo e(__('Recibos')); ?>
 
                             </a>
@@ -723,12 +1020,16 @@
                     <!-- Dropdown Administração -->
                     <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('manage permissions')): ?>
                     <div>
-                        <button @click="adminOpen = !adminOpen" class="w-full flex items-center justify-between px-3 py-2 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                        <button 
+                            @click="adminOpen = !adminOpen" 
+                            class="sidebar-dropdown-button w-full flex items-center justify-between px-3 py-2 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                            :aria-expanded="adminOpen"
+                        >
                             <div class="flex items-center">
-                                <i class="fi fi-rr-shield-check mr-3 text-base"></i>
+                                <i class="fi fi-rr-shield-check mr-3 mt-1 text-base"></i>
                                 <span><?php echo e(__('Administração')); ?></span>
                             </div>
-                            <i class="fi fi-rr-angle-small-down text-xs transition-transform duration-200" :class="{ 'rotate-180': adminOpen }"></i>
+                            <i class="fi fi-rr-angle-small-down sidebar-dropdown-arrow flex-shrink-0" :class="{ 'rotate-180': adminOpen }"></i>
                         </button>
                         <div x-show="adminOpen" 
                              x-transition:enter="transition ease-out duration-200"
@@ -738,23 +1039,23 @@
                              x-transition:leave-start="opacity-100 transform translate-y-0"
                              x-transition:leave-end="opacity-0 transform -translate-y-2"
                              class="ml-3 mt-0.5 mb-1 space-y-0.5 border-l-2 border-gray-200 dark:border-gray-700 pl-3">
-                            <a href="<?php echo e(route('admin.permissions.users')); ?>" class="flex items-center px-3 py-2 rounded-md text-sm font-medium <?php echo e(request()->routeIs('admin.permissions.users') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 -ml-3 pl-5' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'); ?>">
-                                <i class="fi fi-rr-user-check mr-3 text-base"></i>
+                            <a href="<?php echo e(route('admin.permissions.users')); ?>" class="flex items-center px-3 py-2 rounded-md text-sm font-medium <?php echo e(request()->routeIs('admin.permissions.users') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'); ?>">
+                                <i class="fi fi-rr-user-check mr-3 text-base mt-1"></i>
                                 <?php echo e(__('Permissões: Usuários')); ?>
 
                             </a>
-                            <a href="<?php echo e(route('admin.permissions.roles')); ?>" class="flex items-center px-3 py-2 rounded-md text-sm font-medium <?php echo e(request()->routeIs('admin.permissions.roles') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 -ml-3 pl-5' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'); ?>">
-                                <i class="fi fi-rr-shield mr-3 text-base"></i>
+                            <a href="<?php echo e(route('admin.permissions.roles')); ?>" class="flex items-center px-3 py-2 rounded-md text-sm font-medium <?php echo e(request()->routeIs('admin.permissions.roles') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'); ?>">
+                                <i class="fi fi-rr-shield mr-3 text-base mt-1"></i>
                                 <?php echo e(__('Permissões: Papéis')); ?>
 
                             </a>
-                            <a href="<?php echo e(route('admin.email.index')); ?>" class="flex items-center px-3 py-2 rounded-md text-sm font-medium <?php echo e(request()->routeIs('admin.email.*') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 -ml-3 pl-5' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'); ?>">
-                                <i class="fi fi-rr-envelope mr-3 text-base"></i>
+                            <a href="<?php echo e(route('admin.email.index')); ?>" class="flex items-center px-3 py-2 rounded-md text-sm font-medium <?php echo e(request()->routeIs('admin.email.*') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'); ?>">
+                                <i class="fi fi-rr-envelope mr-3 text-base mt-1"></i>
                                 <?php echo e(__('Envio de Emails')); ?>
 
                             </a>
-                            <a href="<?php echo e(route('admin.settings')); ?>" class="flex items-center px-3 py-2 rounded-md text-sm font-medium <?php echo e(request()->routeIs('admin.settings') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 -ml-3 pl-5' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'); ?>">
-                                <i class="fi fi-rr-settings mr-3 text-base"></i>
+                            <a href="<?php echo e(route('admin.settings')); ?>" class="flex items-center px-3 py-2 rounded-md text-sm font-medium <?php echo e(request()->routeIs('admin.settings') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'); ?>">
+                                <i class="fi fi-rr-settings mt-1 mr-3 text-base"></i>
                                 <?php echo e(__('Configurações')); ?>
 
                             </a>
@@ -799,6 +1100,19 @@
 
                             </div>
                         <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+                    </div>
+                    
+                    <!-- Search Bar -->
+                    <div class="flex-1 max-w-xl mx-4 hidden lg:block">
+                        <button 
+                            @click="openSearchModal = true"
+                            class="w-full flex items-center gap-3 px-4 py-2 bg-gray-100 dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors text-left">
+                            <i class="fi fi-rr-search text-gray-400 dark:text-gray-500 mt-1"></i>
+                            <span class="text-sm text-gray-500 dark:text-gray-400 flex-1">Pesquisar...</span>
+                            <kbd class="hidden sm:inline-flex items-center px-2 py-1 text-xs font-semibold text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded">
+                                <span class="text-xs align-middle">⌘</span> K
+                            </kbd>
+                        </button>
                     </div>
                     
                     <!-- User Menu and Theme Toggle -->
@@ -947,7 +1261,7 @@
                                     <?php echo csrf_field(); ?>
                                     <button 
                                         type="submit" 
-                                        class="w-full text-left px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors">
+                                        class="w-full text-left px-4 mt-2 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors">
                                         <i class="fi fi-rr-sign-out-alt mr-2"></i>
                                         <?php echo e(__('Sair')); ?>
 
@@ -966,6 +1280,157 @@
                     <?php echo e($slot); ?>
 
                 </main>
+            </div>
+            
+            <!-- Modal de Pesquisa Global -->
+            <div 
+                x-show="openSearchModal"
+                x-cloak
+                x-transition:enter="transition ease-out duration-300"
+                x-transition:enter-start="opacity-0"
+                x-transition:enter-end="opacity-100"
+                x-transition:leave="transition ease-in duration-200"
+                x-transition:leave-start="opacity-100"
+                x-transition:leave-end="opacity-0"
+                class="fixed inset-0 z-50 flex items-start justify-center pt-20"
+                style="background-color: rgba(0, 0, 0, 0.75); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);"
+                @click.self="openSearchModal = false"
+                @keydown.escape.window="openSearchModal = false; searchQuery = ''; searchResults = []">
+                <div 
+                    x-show="openSearchModal"
+                    x-transition:enter="transition ease-out duration-300"
+                    x-transition:enter-start="opacity-0 scale-95"
+                    x-transition:enter-end="opacity-100 scale-100"
+                    x-transition:leave="transition ease-in duration-200"
+                    x-transition:leave-start="opacity-100 scale-100"
+                    x-transition:leave-end="opacity-0 scale-95"
+                    class="relative bg-white dark:bg-gray-800 rounded-lg shadow-2xl w-full max-w-2xl mx-4 border border-gray-200 dark:border-gray-700 overflow-hidden"
+                    @click.stop>
+                    <!-- Search Input -->
+                    <div class="p-4 border-b border-gray-200 dark:border-gray-700">
+                        <div class="relative">
+                            <i class="fi fi-rr-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500 mt-[2px]"></i>
+                            <input 
+                                id="search-input"
+                                type="text"
+                                x-model="searchQuery"
+                                placeholder="Pesquisar produtos, equipamentos, clientes, funcionários..."
+                                class="w-full pl-10 pr-4 py-3 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500"
+                                @keydown.arrow-down.prevent="selectedIndex = Math.min(selectedIndex + 1, searchResults.length - 1)"
+                                @keydown.arrow-up.prevent="selectedIndex = Math.max(selectedIndex - 1, -1)"
+                                @keydown.enter.prevent="if (selectedIndex >= 0 && searchResults[selectedIndex]) { window.location.href = searchResults[selectedIndex].url; } else if (searchResults.length > 0) { window.location.href = searchResults[0].url; }">
+                            <button 
+                                x-show="searchQuery"
+                                @click="searchQuery = ''; searchResults = []"
+                                class="absolute mt-1 right-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300">
+                                <i class="fi fi-rr-cross-small"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Results -->
+                    <div class="max-h-96 overflow-y-auto">
+                        <!-- Loading -->
+                        <div x-show="searchLoading" class="p-8 text-center">
+                            <i class="fi fi-rr-spinner animate-spin text-2xl text-gray-400 dark:text-gray-500 mb-2"></i>
+                            <p class="text-sm text-gray-500 dark:text-gray-400">Pesquisando...</p>
+                        </div>
+                        
+                        <!-- History (quando não há query) -->
+                        <div x-show="!searchQuery && !searchLoading && searchHistory.length > 0" class="p-4">
+                            <div class="flex items-center justify-between mb-3">
+                                <h3 class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Histórico</h3>
+                                <button 
+                                    @click="localStorage.removeItem('searchHistory'); searchHistory = []"
+                                    class="text-xs text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300">
+                                    Limpar
+                                </button>
+                            </div>
+                            <div class="space-y-1">
+                                <template x-for="(item, index) in searchHistory" :key="index">
+                                    <button 
+                                        @click="searchQuery = item"
+                                        class="w-full text-left px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md flex items-center gap-2 transition-colors">
+                                        <i class="fi fi-rr-clock text-gray-400"></i>
+                                        <span x-text="item"></span>
+                                    </button>
+                                </template>
+                            </div>
+                        </div>
+                        
+                        <!-- Empty State -->
+                        <div x-show="!searchQuery && !searchLoading && searchHistory.length === 0" class="p-8 text-center">
+                            <i class="fi fi-rr-search text-3xl text-gray-300 dark:text-gray-600 mb-2"></i>
+                            <p class="text-sm text-gray-500 dark:text-gray-400">Digite para pesquisar...</p>
+                        </div>
+                        
+                        <!-- No Results -->
+                        <div x-show="searchQuery && !searchLoading && searchResults.length === 0" class="p-8 text-center">
+                            <i class="fi fi-rr-search-alt text-3xl text-gray-300 dark:text-gray-600 mb-2"></i>
+                            <p class="text-sm text-gray-500 dark:text-gray-400">Nenhum resultado encontrado</p>
+                        </div>
+                        
+                        <!-- Results List -->
+                        <div x-show="!searchLoading && searchResults.length > 0" class="p-2">
+                            <template x-for="(result, index) in searchResults" :key="index">
+                                <a 
+                                    :href="result.url"
+                                    :class="selectedIndex === index ? 'bg-indigo-50 dark:bg-indigo-900/20 border-indigo-200 dark:border-indigo-700' : 'border-transparent'"
+                                    class="block px-4 py-3 border rounded-lg mb-2 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                                    <div class="flex items-start gap-3">
+                                        <!-- Photo/Icon -->
+                                        <div class="flex-shrink-0">
+                                            <template x-if="result.type === 'document'">
+                                                <div class="w-12 h-12 bg-red-100 dark:bg-red-900/20 rounded-lg flex items-center justify-center">
+                                                    <i class="fi fi-rr-file-pdf text-red-600 dark:text-red-400 text-xl"></i>
+                                                </div>
+                                            </template>
+                                            <template x-if="result.type !== 'document' && result.photo">
+                                                <img :src="result.photo" :alt="result.title" class="w-12 h-12 rounded-lg object-cover border border-gray-200 dark:border-gray-700">
+                                            </template>
+                                            <template x-if="result.type !== 'document' && !result.photo">
+                                                <div class="w-12 h-12 bg-gray-100 dark:bg-gray-700 rounded-lg flex items-center justify-center">
+                                                    <i :class="window.getTypeIcon(result.type)" class="text-gray-400 dark:text-gray-500 text-xl"></i>
+                                                </div>
+                                            </template>
+                                        </div>
+                                        
+                                        <!-- Content -->
+                                        <div class="flex-1 min-w-0">
+                                            <div class="flex items-start justify-between gap-2">
+                                                <h4 class="text-sm font-medium text-gray-900 dark:text-gray-100 truncate" x-text="result.title"></h4>
+                                                <span class="text-xs px-2 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 rounded" x-text="window.getTypeLabel(result.type)"></span>
+                                            </div>
+                                            <p class="text-xs text-gray-500 dark:text-gray-400" x-text="result.subtitle"></p>
+                                            <p x-show="result.description" class="text-xs text-gray-400 dark:text-gray-500 line-clamp-1" x-text="result.description"></p>
+                                        </div>
+                                    </div>
+                                </a>
+                            </template>
+                        </div>
+                    </div>
+                    
+                    <!-- Footer -->
+                    <div class="px-4 py-3 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50">
+                        <div class="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
+                            <div class="flex items-center gap-4">
+                                <span class="flex items-center gap-1">
+                                    <kbd class="px-1.5 py-0.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded">↑</kbd>
+                                    <kbd class="px-1.5 py-0.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded">↓</kbd>
+                                    <span>navegar</span>
+                                </span>
+                                <span class="flex items-center gap-1">
+                                    <kbd class="px-1.5 py-0.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded">↵</kbd>
+                                    <span>selecionar</span>
+                                </span>
+                            </div>
+                            <span class="flex items-center gap-1">
+                                <kbd class="px-1.5 py-0.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded">Esc</kbd>
+                                <span>fechar</span>
+                            </span>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -1429,6 +1894,136 @@
                 </div>
             </div>
         </div>
+        
+        <!-- Script para funções auxiliares de pesquisa -->
+        <script>
+            function getTypeIcon(type) {
+                const icons = {
+                    'product': 'fi fi-rr-box',
+                    'equipment': 'fi fi-rr-tools',
+                    'client': 'fi fi-rr-user',
+                    'employee': 'fi fi-rr-user',
+                    'project': 'fi fi-rr-folder',
+                    'document': 'fi fi-rr-file-pdf'
+                };
+                return icons[type] || 'fi fi-rr-file';
+            }
+            
+            function getTypeLabel(type) {
+                const labels = {
+                    'product': 'Produto',
+                    'equipment': 'Equipamento',
+                    'client': 'Cliente',
+                    'employee': 'Funcionário',
+                    'project': 'Projeto',
+                    'document': 'Documento'
+                };
+                return labels[type] || 'Item';
+            }
+            
+            // Tornar funções globais para uso no Alpine
+            window.getTypeIcon = getTypeIcon;
+            window.getTypeLabel = getTypeLabel;
+        </script>
+        
+        <!-- Script para controlar scrollbar do sidebar -->
+        <script>
+            (function() {
+                const sidebarContainer = document.getElementById('sidebar-container');
+                const sidebarNav = document.getElementById('sidebar-nav');
+                
+                if (!sidebarContainer || !sidebarNav) return;
+                
+                // Função para mostrar scrollbar
+                function showScrollbar() {
+                    sidebarNav.classList.add('sidebar-scroll-visible');
+                }
+                
+                // Função para esconder scrollbar
+                function hideScrollbar() {
+                    sidebarNav.classList.remove('sidebar-scroll-visible');
+                }
+                
+                // Event listeners para hover
+                sidebarContainer.addEventListener('mouseenter', showScrollbar);
+                sidebarContainer.addEventListener('mouseleave', hideScrollbar);
+                
+                // Também controlar quando o mouse está sobre o nav diretamente
+                sidebarNav.addEventListener('mouseenter', showScrollbar);
+                sidebarNav.addEventListener('mouseleave', function(e) {
+                    // Só esconder se o mouse não estiver mais no sidebar
+                    if (!sidebarContainer.contains(e.relatedTarget)) {
+                        hideScrollbar();
+                    }
+                });
+            })();
+        </script>
+        
+        <!-- Script para controlar scrollbar do layout principal -->
+        <script>
+            (function() {
+                let scrollTimeout;
+                let hoverTimeout;
+                const body = document.body;
+                const html = document.documentElement;
+                
+                // Função para verificar se há scroll
+                function hasScroll() {
+                    return html.scrollHeight > html.clientHeight || body.scrollHeight > body.clientHeight;
+                }
+                
+                // Função para mostrar scrollbar
+                function showLayoutScrollbar() {
+                    if (!hasScroll()) return;
+                    clearTimeout(hoverTimeout);
+                    body.classList.add('layout-scroll-visible');
+                    html.classList.add('layout-scroll-visible');
+                }
+                
+                // Função para esconder scrollbar
+                function hideLayoutScrollbar() {
+                    hoverTimeout = setTimeout(() => {
+                        body.classList.remove('layout-scroll-visible');
+                        html.classList.remove('layout-scroll-visible');
+                    }, 500); // Delay para suavizar a transição
+                }
+                
+                // Mostrar scrollbar quando hover no body/html
+                body.addEventListener('mouseenter', showLayoutScrollbar);
+                body.addEventListener('mouseleave', hideLayoutScrollbar);
+                html.addEventListener('mouseenter', showLayoutScrollbar);
+                html.addEventListener('mouseleave', hideLayoutScrollbar);
+                
+                // Mostrar scrollbar durante o scroll
+                let isScrolling = false;
+                function handleScroll() {
+                    if (!hasScroll()) return;
+                    
+                    if (!isScrolling) {
+                        showLayoutScrollbar();
+                        isScrolling = true;
+                    }
+                    clearTimeout(scrollTimeout);
+                    scrollTimeout = setTimeout(() => {
+                        isScrolling = false;
+                        if (!body.matches(':hover') && !html.matches(':hover')) {
+                            hideLayoutScrollbar();
+                        }
+                    }, 1000);
+                }
+                
+                // Escutar scroll no window
+                window.addEventListener('scroll', handleScroll, true);
+                
+                // Verificar scroll ao redimensionar
+                window.addEventListener('resize', function() {
+                    if (!hasScroll()) {
+                        body.classList.remove('layout-scroll-visible');
+                        html.classList.remove('layout-scroll-visible');
+                    }
+                });
+            })();
+        </script>
     </body>
 </html>
 <?php /**PATH C:\Users\Douglas\Documents\Projetos\stock-master\resources\views/components/app-layout.blade.php ENDPATH**/ ?>

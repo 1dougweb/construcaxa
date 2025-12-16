@@ -19,7 +19,9 @@
                                 <select name="client_id" id="client_id" class="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm">
                                     <option value="">Selecione um cliente</option>
                                     @foreach($clients as $client)
-                                        <option value="{{ $client->id }}" {{ $accountReceivable->client_id == $client->id ? 'selected' : '' }}>{{ $client->name }}</option>
+                                        <option value="{{ $client->id }}" {{ old('client_id', $accountReceivable->client_id) == $client->id ? 'selected' : '' }}>
+                                            {{ $client->name ?? $client->trading_name }}
+                                        </option>
                                     @endforeach
                                 </select>
                                 @error('client_id')
