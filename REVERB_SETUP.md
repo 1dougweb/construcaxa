@@ -63,10 +63,3 @@ Você pode usar o Supervisor ou PM2 para manter o servidor rodando, ou simplesme
 ## Para produção
 
 Configure um process manager como Supervisor para manter o Reverb rodando automaticamente.
-
-
-
-
-
-
-
