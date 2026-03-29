@@ -490,4 +490,42 @@ unset($__errorArgs, $__bag); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendB
             </div>
         </div>
     <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+
+    <!-- Media Picker Modal -->
+    <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($showMediaPicker): ?>
+        <div class="fixed inset-0 z-[150] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full max-w-6xl max-h-[90vh] overflow-hidden flex flex-col border border-gray-200 dark:border-gray-700">
+                <div class="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
+                    <h3 class="text-lg font-bold text-gray-900 dark:text-gray-100 flex items-center">
+                        <i class="fi fi-rr-picture mr-2"></i> Selecionar da Galeria
+                    </h3>
+                    <button wire:click="$set('showMediaPicker', false)" class="p-2 text-gray-400 hover:text-red-500 focus:outline-none transition-colors">
+                        <i class="fi fi-rr-cross"></i>
+                    </button>
+                </div>
+                <div class="flex-1 overflow-auto p-0 bg-gray-50 dark:bg-gray-900">
+                    <?php
+$__split = function ($name, $params = []) {
+    return [$name, $params];
+};
+[$__name, $__params] = $__split('file-manager', ['pickerMode' => true,'targetModel' => $mediaPickerTarget]);
+
+$key = 'media-picker-equipment';
+
+$key ??= \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::generateKey('lw-3404750797-0', 'media-picker-equipment');
+
+$__html = app('livewire')->mount($__name, $__params, $key);
+
+echo $__html;
+
+unset($__html);
+unset($__name);
+unset($__params);
+unset($__split);
+if (isset($__slots)) unset($__slots);
+?>
+                </div>
+            </div>
+        </div>
+    <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
 </div><?php /**PATH C:\Users\Douglas\Documents\Projetos\construcaxa\resources\views/livewire/equipment-form.blade.php ENDPATH**/ ?>

@@ -114,19 +114,39 @@ class FileManager extends Component
 
     public function getBreadcrumbsProperty()
     {
-        $parts = explode('/', $this->currentPath);
+        $parts = array_filter(explode('/', $this->currentPath));
         $breadcrumbs = [];
         $accumulated = '';
 
         foreach ($parts as $part) {
             $accumulated = $accumulated ? $accumulated . '/' . $part : $part;
+            
+            $name = $part;
+            if ($part === 'images') $name = 'Galeria';
+            if ($part === 'storage') $name = 'Arquivos';
+
             $breadcrumbs[] = [
-                'name' => $part === $this->baseDirectory ? 'Galeria' : $part,
+                'name' => $name,
                 'path' => $accumulated
             ];
         }
 
         return $breadcrumbs;
+    }
+
+    public function switchRoot($newRoot)
+    {
+        if (!in_array($newRoot, ['images', 'storage'])) return;
+
+        $this->baseDirectory = $newRoot;
+        $this->currentPath = $newRoot;
+
+        // Certificar que o diretório existe
+        if (!Storage::disk($this->disk)->exists($this->baseDirectory)) {
+            Storage::disk($this->disk)->makeDirectory($this->baseDirectory);
+        }
+
+        $this->loadDirectory();
     }
 
     public function navigateTo($path)

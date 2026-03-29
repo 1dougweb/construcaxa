@@ -66,35 +66,50 @@
     <!-- Header do File Manager -->
     <div class="flex flex-col sm:flex-row items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/50">
         
-        <!-- Breadcrumbs Navigation -->
-        <nav class="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-400 font-medium overflow-x-auto whitespace-nowrap pb-2 sm:pb-0 hide-scrollbar w-full sm:w-auto">
-            <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(count($this->breadcrumbs) > 1): ?>
-            <button wire:click="upDirectory" 
-                    @dragover.prevent.stop="$el.classList.add('bg-gray-300', 'dark:bg-gray-600')"
-                    @dragleave.prevent.stop="$el.classList.remove('bg-gray-300', 'dark:bg-gray-600')"
-                    @drop.prevent.stop="$el.classList.remove('bg-gray-300', 'dark:bg-gray-600'); handleDropOnTarget($event, '<?php echo e($this->breadcrumbs[count($this->breadcrumbs)-2]['path']); ?>')"
-                    class="p-1 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700 transition">
-                <i class="fi fi-rr-arrow-left mt-1"></i>
-            </button>
-            <div class="h-4 w-px bg-gray-300 dark:bg-gray-600 mx-1"></div>
-            <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
-
-            <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php $__currentLoopData = $this->breadcrumbs; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $index => $crumb): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
-                <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(!$loop->last): ?>
-                <button wire:click="navigateTo('<?php echo e($crumb['path']); ?>')" 
-                        @dragover.prevent.stop="$el.classList.add('underline', 'text-indigo-600', 'dark:text-indigo-400')"
-                        @dragleave.prevent.stop="$el.classList.remove('underline', 'text-indigo-600', 'dark:text-indigo-400')"
-                        @drop.prevent.stop="$el.classList.remove('underline', 'text-indigo-600', 'dark:text-indigo-400'); handleDropOnTarget($event, '<?php echo e($crumb['path']); ?>')"
-                        class="hover:text-indigo-600 dark:hover:text-indigo-400 transition">
-                    <?php echo e($crumb['name']); ?>
-
+        <!-- Breadcrumbs & Raiz -->
+        <div class="flex flex-col sm:flex-row items-center space-y-2 sm:space-y-0 sm:space-x-4 w-full sm:w-auto">
+            <!-- Root Switcher -->
+            <div class="flex items-center p-1 bg-gray-100 dark:bg-gray-700/50 rounded-lg">
+                <button wire:click="switchRoot('images')" 
+                        class="px-3 py-1 text-xs font-bold rounded-md transition-all <?php echo e($baseDirectory === 'images' ? 'bg-white dark:bg-gray-800 text-indigo-600 shadow-sm' : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'); ?>">
+                    <i class="fi fi-rr-gallery mr-1"></i> Galeria
                 </button>
-                <i class="fi fi-rr-angle-small-right text-gray-400 text-xs mt-1"></i>
-                <?php else: ?>
-                <span class="text-gray-900 dark:text-gray-100"><?php echo e($crumb['name']); ?></span>
+                <button wire:click="switchRoot('storage')" 
+                        class="px-3 py-1 text-xs font-bold rounded-md transition-all <?php echo e($baseDirectory === 'storage' ? 'bg-white dark:bg-gray-800 text-indigo-600 shadow-sm' : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'); ?>">
+                    <i class="fi fi-rr-hdd mr-1"></i> Arquivos
+                </button>
+            </div>
+
+            <!-- Breadcrumbs Navigation -->
+            <nav class="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-400 font-medium overflow-x-auto whitespace-nowrap pb-2 sm:pb-0 hide-scrollbar w-full sm:w-auto">
+                <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(count($this->breadcrumbs) > 1): ?>
+                <button wire:click="upDirectory" 
+                        @dragover.prevent.stop="$el.classList.add('bg-gray-300', 'dark:bg-gray-600')"
+                        @dragleave.prevent.stop="$el.classList.remove('bg-gray-300', 'dark:bg-gray-600')"
+                        @drop.prevent.stop="$el.classList.remove('bg-gray-300', 'dark:bg-gray-600'); handleDropOnTarget($event, '<?php echo e($this->breadcrumbs[count($this->breadcrumbs)-2]['path']); ?>')"
+                        class="p-1 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700 transition">
+                    <i class="fi fi-rr-arrow-left mt-1"></i>
+                </button>
+                <div class="h-4 w-px bg-gray-300 dark:bg-gray-600 mx-1"></div>
                 <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
-            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
-        </nav>
+
+                <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php $__currentLoopData = $this->breadcrumbs; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $index => $crumb): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                    <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(!$loop->last): ?>
+                    <button wire:click="navigateTo('<?php echo e($crumb['path']); ?>')" 
+                            @dragover.prevent.stop="$el.classList.add('underline', 'text-indigo-600', 'dark:text-indigo-400')"
+                            @dragleave.prevent.stop="$el.classList.remove('underline', 'text-indigo-600', 'dark:text-indigo-400')"
+                            @drop.prevent.stop="$el.classList.remove('underline', 'text-indigo-600', 'dark:text-indigo-400'); handleDropOnTarget($event, '<?php echo e($crumb['path']); ?>')"
+                            class="hover:text-indigo-600 dark:hover:text-indigo-400 transition">
+                        <?php echo e($crumb['name']); ?>
+
+                    </button>
+                    <i class="fi fi-rr-angle-small-right text-gray-400 text-xs"></i>
+                    <?php else: ?>
+                    <span class="text-gray-900 dark:text-gray-100"><?php echo e($crumb['name']); ?></span>
+                    <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+            </nav>
+        </div>
 
         <!-- Ações -->
         <div class="flex items-center space-x-3 w-full sm:w-auto mt-2 sm:mt-0">
