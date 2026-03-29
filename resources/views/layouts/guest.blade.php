@@ -11,32 +11,16 @@
         <link rel="preconnect" href="https://fonts.bunny.net">
         <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
 
-        <!-- Scripts -->
-        <!-- Tailwind CSS & JS CDNs -->
+        <!-- Tailwind CSS CDN -->
         <script src="https://cdn.tailwindcss.com?plugins=forms,typography,aspect-ratio"></script>
-        <script>
-            tailwind.config = {
-                darkMode: 'class',
-                theme: {
-                    extend: {
-                        colors: {
-                            indigo: {
-                                500: '#6366f1',
-                                600: '#4f46e5',
-                                700: '#4338ca',
-                                800: '#3730a3',
-                                900: '#312e81',
-                            }
-                        }
-                    }
-                }
-            }
-        </script>
 
+        @livewireStyles
     </head>
-    <body>
+    <body class="bg-gray-100">
         <div class="font-sans text-gray-900 antialiased">
             {{ $slot }}
         </div>
+
+        @livewireScripts
     </body>
 </html>
