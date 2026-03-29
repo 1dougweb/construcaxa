@@ -455,11 +455,7 @@
                     
                     const service = services.find(s => s.id == serviceId);
                     if (service) {
-                        if (service.unit_type === 'fixed') {
-                            subtotal += unitPrice;
-                        } else {
-                            subtotal += quantity * unitPrice;
-                        }
+                        subtotal += quantity * unitPrice;
                     } else {
                         subtotal += quantity * unitPrice;
                     }

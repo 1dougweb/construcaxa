@@ -667,14 +667,7 @@
                     // Find service to get unit type
                     const service = services.find(s => s.id == serviceId);
                     if (service) {
-                        // Calculate based on unit type
-                        if (service.unit_type === 'fixed') {
-                            // Fixed price regardless of quantity
-                            subtotal += unitPrice;
-                        } else {
-                            // Per hour or per unit
-                            subtotal += quantity * unitPrice;
-                        }
+                        subtotal += quantity * unitPrice;
                     } else {
                         // Fallback to simple calculation
                         subtotal += quantity * unitPrice;

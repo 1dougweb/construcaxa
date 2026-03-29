@@ -131,7 +131,7 @@ class InspectionForm extends Component
                         $this->itemPhotos[$itemKey][] = [
                             'id' => $photo->id,
                             'path' => $photo->photo_path,
-                            'url' => '/' . ltrim($photo->photo_path, '/'),
+                            'url' => '/storage/' . ltrim($photo->photo_path, '/'),
                         ];
                     }
                     
@@ -202,6 +202,50 @@ class InspectionForm extends Component
         $this->selectedEnvironments = array_values($this->selectedEnvironments);
     }
 
+    public function addItem($envIndex)
+    {
+        if (!isset($this->environmentItems[$envIndex])) {
+            $this->environmentItems[$envIndex] = [];
+        }
+        
+        $this->environmentItems[$envIndex][] = [
+            'id' => null,
+            'title' => '',
+        ];
+    }
+
+    public function removeItem($envIndex, $itemIndex)
+    {
+        if (isset($this->environmentItems[$envIndex][$itemIndex])) {
+            $item = $this->environmentItems[$envIndex][$itemIndex];
+            if (isset($item['id'])) {
+                $itemModel = InspectionEnvironmentItem::find($item['id']);
+                if ($itemModel) {
+                    // Deletar fotos associadas
+                    foreach ($itemModel->photos as $photo) {
+                        $filePath = public_path('storage/' . $photo->photo_path);
+                        if (File::exists($filePath)) {
+                            File::delete($filePath);
+                        }
+                        $photo->delete();
+                    }
+                    // Deletar sub-itens
+                    $itemModel->subItems()->delete();
+                    $itemModel->delete();
+                }
+            }
+            
+            unset($this->environmentItems[$envIndex][$itemIndex]);
+            $this->environmentItems[$envIndex] = array_values($this->environmentItems[$envIndex]);
+            
+            // Também limpar sub-itens e fotos da memória local
+            $itemKey = "{$envIndex}_{$itemIndex}";
+            unset($this->subItems[$itemKey]);
+            unset($this->tempPhotos[$itemKey]);
+            unset($this->itemPhotos[$itemKey]);
+        }
+    }
+
     public function nextStep()
     {
         if ($this->currentStep === 1) {
@@ -219,25 +263,36 @@ class InspectionForm extends Component
                 'selectedEnvironments.min' => 'Por favor, selecione pelo menos um ambiente.',
             ]);
             
-            // Inicializar ambientes selecionados
-            $this->environments = [];
-            foreach ($this->selectedEnvironments as $templateId) {
-                $template = InspectionEnvironmentTemplate::find($templateId);
-                if ($template) {
-                    $this->environments[] = [
-                        'id' => null,
-                        'template_id' => $templateId,
-                        'name' => $template->name,
-                    ];
-                    $envIndex = count($this->environments) - 1;
-                    $this->environmentItems[$envIndex] = [];
-                    
-                    // Criar repeater principal para este ambiente
-                    $defaultTitle = $template->name; // Título pré-definido
-                    $this->environmentItems[$envIndex][] = [
-                        'id' => null,
-                        'title' => $defaultTitle,
-                    ];
+            // Inicializar ambientes selecionados se for uma nova vistoria
+            if (!$this->inspection) {
+                $this->environments = [];
+                foreach ($this->selectedEnvironments as $templateId) {
+                    $template = InspectionEnvironmentTemplate::find($templateId);
+                    if ($template) {
+                        $this->environments[] = [
+                            'id' => null,
+                            'template_id' => $templateId,
+                            'name' => $template->name,
+                        ];
+                        $envIndex = count($this->environments) - 1;
+                        $this->environmentItems[$envIndex] = [];
+                        
+                        // Usar elementos padrões do template se houver
+                        if ($template->default_elements && is_array($template->default_elements)) {
+                            foreach ($template->default_elements as $element) {
+                                $this->environmentItems[$envIndex][] = [
+                                    'id' => null,
+                                    'title' => $element,
+                                ];
+                            }
+                        } else {
+                            // Senão, criar repeater com o nome do ambiente como padrão
+                            $this->environmentItems[$envIndex][] = [
+                                'id' => null,
+                                'title' => $template->name,
+                            ];
+                        }
+                    }
                 }
             }
         } elseif ($this->currentStep === 2) {
@@ -353,7 +408,7 @@ class InspectionForm extends Component
                 $photoModel = InspectionItemPhoto::find($photo['id']);
                 if ($photoModel) {
                     // Deletar arquivo físico
-                    $filePath = public_path($photoModel->photo_path);
+                    $filePath = public_path('storage/' . $photoModel->photo_path);
                     if (File::exists($filePath)) {
                         File::delete($filePath);
                     }

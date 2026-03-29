@@ -1,28 +1,28 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+<html lang="<?php echo e(str_replace('_', '-', app()->getLocale())); ?>">
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        <meta name="csrf-token" content="{{ csrf_token() }}">
+        <meta name="csrf-token" content="<?php echo e(csrf_token()); ?>">
 
-        <title>{{ config('app.name', 'Laravel') }}</title>
+        <title><?php echo e(config('app.name', 'Laravel')); ?></title>
 
         <!-- Notificações de sessão flash -->
-        @if(session('success'))
-            <meta name="notification-success" content="{{ session('success') }}">
-        @endif
-        @if(session('error'))
-            <meta name="notification-error" content="{{ session('error') }}">
-        @endif
-        @if(session('info'))
-            <meta name="notification-info" content="{{ session('info') }}">
-        @endif
-        @if(session('test_success'))
-            <meta name="notification-info" content="{{ session('test_success') }}">
-        @endif
-        @if(session('test_error'))
-            <meta name="notification-error" content="{{ session('test_error') }}">
-        @endif
+        <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(session('success')): ?>
+            <meta name="notification-success" content="<?php echo e(session('success')); ?>">
+        <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+        <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(session('error')): ?>
+            <meta name="notification-error" content="<?php echo e(session('error')); ?>">
+        <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+        <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(session('info')): ?>
+            <meta name="notification-info" content="<?php echo e(session('info')); ?>">
+        <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+        <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(session('test_success')): ?>
+            <meta name="notification-info" content="<?php echo e(session('test_success')); ?>">
+        <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+        <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(session('test_error')): ?>
+            <meta name="notification-error" content="<?php echo e(session('test_error')); ?>">
+        <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
 
         <!-- PWA Meta Tags -->
         <meta name="theme-color" content="#1E2780">
@@ -33,20 +33,20 @@
         <meta name="description" content="Sistema de gestão de estoque e projetos">
         
         <!-- PWA Manifest -->
-        <link rel="manifest" href="{{ url('manifest.json') }}">
+        <link rel="manifest" href="<?php echo e(url('manifest.json')); ?>">
         
         <!-- Apple Touch Icons (opcional - só carrega se existir) -->
-        @if(file_exists(public_path('icons/icon-192x192.png')))
-        <link rel="apple-touch-icon" href="{{ asset('icons/icon-192x192.png') }}">
-        <link rel="apple-touch-icon" sizes="152x152" href="{{ asset('icons/icon-152x152.png') }}">
-        <link rel="apple-touch-icon" sizes="180x180" href="{{ asset('icons/icon-192x192.png') }}">
-        @endif
+        <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(file_exists(public_path('icons/icon-192x192.png'))): ?>
+        <link rel="apple-touch-icon" href="<?php echo e(asset('icons/icon-192x192.png')); ?>">
+        <link rel="apple-touch-icon" sizes="152x152" href="<?php echo e(asset('icons/icon-152x152.png')); ?>">
+        <link rel="apple-touch-icon" sizes="180x180" href="<?php echo e(asset('icons/icon-192x192.png')); ?>">
+        <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
         
         <!-- Favicon (opcional - só carrega se existir) -->
-        @if(file_exists(public_path('icons/icon-192x192.png')))
-        <link rel="icon" type="image/png" sizes="192x192" href="{{ asset('icons/icon-192x192.png') }}">
-        <link rel="icon" type="image/png" sizes="512x512" href="{{ asset('icons/icon-512x512.png') }}">
-        @endif
+        <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(file_exists(public_path('icons/icon-192x192.png'))): ?>
+        <link rel="icon" type="image/png" sizes="192x192" href="<?php echo e(asset('icons/icon-192x192.png')); ?>">
+        <link rel="icon" type="image/png" sizes="512x512" href="<?php echo e(asset('icons/icon-512x512.png')); ?>">
+        <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
 
         <!-- Fonts -->
         <link rel="preconnect" href="https://fonts.bunny.net">
@@ -55,25 +55,25 @@
         <!-- WebSocket Configuration (antes dos scripts para garantir disponibilidade) -->
         <script>
             window.Laravel = {
-                @auth
-                user: @json(auth()->user()),
-                @endauth
-                csrfToken: '{{ csrf_token() }}',
-                appUrl: '{{ config('app.url') }}',
+                <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(auth()->guard()->check()): ?>
+                user: <?php echo json_encode(auth()->user(), 15, 512) ?>,
+                <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+                csrfToken: '<?php echo e(csrf_token()); ?>',
+                appUrl: '<?php echo e(config('app.url')); ?>',
                 reverb: {
-                    @if(config('reverb.apps.apps.main.key'))
-                    key: '{{ config('reverb.apps.apps.main.key') }}',
-                    @endif
-                    @if(config('reverb.servers.reverb.host'))
-                    host: '{{ config('reverb.servers.reverb.host') }}',
-                    @endif
-                    @if(config('reverb.servers.reverb.port'))
-                    port: {{ config('reverb.servers.reverb.port') }},
-                    @endif
-                    @if(config('reverb.servers.reverb.options.scheme'))
-                    scheme: '{{ config('reverb.servers.reverb.options.scheme') }}',
-                    @endif
-                    appUrl: '{{ config('app.url') }}'
+                    <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(config('reverb.apps.apps.main.key')): ?>
+                    key: '<?php echo e(config('reverb.apps.apps.main.key')); ?>',
+                    <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+                    <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(config('reverb.servers.reverb.host')): ?>
+                    host: '<?php echo e(config('reverb.servers.reverb.host')); ?>',
+                    <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+                    <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(config('reverb.servers.reverb.port')): ?>
+                    port: <?php echo e(config('reverb.servers.reverb.port')); ?>,
+                    <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+                    <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(config('reverb.servers.reverb.options.scheme')): ?>
+                    scheme: '<?php echo e(config('reverb.servers.reverb.options.scheme')); ?>',
+                    <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+                    appUrl: '<?php echo e(config('app.url')); ?>'
                 }
             };
         </script>
@@ -104,15 +104,16 @@
 
         
         <!-- App Scripts -->
-        <script src="{{ asset('js/theme.js') }}"></script>
-        <script src="{{ asset('js/notifications.js') }}"></script>
-        <script src="{{ asset('js/notification-system.js') }}"></script>
-        <script src="{{ asset('js/masks.js') }}"></script>
+        <script src="<?php echo e(asset('js/theme.js')); ?>"></script>
+        <script src="<?php echo e(asset('js/notifications.js')); ?>"></script>
+        <script src="<?php echo e(asset('js/notification-system.js')); ?>"></script>
+        <script src="<?php echo e(asset('js/masks.js')); ?>"></script>
 
         <!-- Flaticon UIcons será carregado via Vite -->
 
         <!-- Styles -->
-        @livewireStyles
+        <?php echo \Livewire\Mechanisms\FrontendAssets\FrontendAssets::styles(); ?>
+
         <style>
             /* Scrollbar customizada para o sidebar - invisível por padrão */
             .sidebar-scroll {
@@ -465,7 +466,7 @@
                     
                     this.searchLoading = true;
                     try {
-                        const response = await fetch(`{{ route('search') }}?q=${encodeURIComponent(query)}`, {
+                        const response = await fetch(`<?php echo e(route('search')); ?>?q=${encodeURIComponent(query)}`, {
                             headers: {
                                 'X-Requested-With': 'XMLHttpRequest',
                                 'Accept': 'application/json'
@@ -574,14 +575,14 @@
                 <div class="flex items-center gap-2 flex-1 justify-center" x-cloak>
                     <!-- Logo modo claro -->
                     <div x-show="!darkMode">
-                        <a href="{{ route('dashboard') }}" class="flex items-center">
-                            <img src="{{ asset('assets/images/logo.svg') }}" alt="Logo" class="h-8 w-auto" />
+                        <a href="<?php echo e(route('dashboard')); ?>" class="flex items-center">
+                            <img src="<?php echo e(asset('assets/images/logo.svg')); ?>" alt="Logo" class="h-8 w-auto" />
                         </a>
                     </div>
                     <!-- Logo modo escuro -->
                     <div x-show="darkMode">
-                        <a href="{{ route('dashboard') }}" class="flex items-center">
-                            <img src="{{ asset('assets/images/logo-light.svg') }}" alt="Logo" class="h-8 w-auto" />
+                        <a href="<?php echo e(route('dashboard')); ?>" class="flex items-center">
+                            <img src="<?php echo e(asset('assets/images/logo-light.svg')); ?>" alt="Logo" class="h-8 w-auto" />
                         </a>
                     </div>
                 </div>
@@ -625,7 +626,7 @@
                             <!-- Header -->
                             <div class="px-4 py-3 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
                                 <h3 class="text-sm font-semibold text-gray-900 dark:text-gray-100">Notificações</h3>
-                                <a href="{{ route('notifications.index') }}" 
+                                <a href="<?php echo e(route('notifications.index')); ?>" 
                                    class="text-xs text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300">
                                     Ver todas
                                 </a>
@@ -693,13 +694,14 @@
                             @click="open = !open"
                             class="flex items-center gap-1 p-1.5 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
                             <div class="flex-shrink-0">
-                                @if(Auth::user()->profile_photo)
-                                    <img src="{{ asset('storage/' . Auth::user()->profile_photo) }}" alt="{{ Auth::user()->name }}" class="h-8 w-8 rounded-full object-cover border-2 border-gray-200 dark:border-gray-600">
-                                @else
+                                <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(Auth::user()->profile_photo): ?>
+                                    <img src="<?php echo e(asset('storage/' . Auth::user()->profile_photo)); ?>" alt="<?php echo e(Auth::user()->name); ?>" class="h-8 w-8 rounded-full object-cover border-2 border-gray-200 dark:border-gray-600">
+                                <?php else: ?>
                                     <div class="h-8 w-8 rounded-full bg-indigo-500 flex items-center justify-center text-white font-semibold text-sm border-2 border-gray-200 dark:border-gray-600">
-                                        {{ strtoupper(substr(Auth::user()->name, 0, 1)) }}
+                                        <?php echo e(strtoupper(substr(Auth::user()->name, 0, 1))); ?>
+
                                     </div>
-                                @endif
+                                <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                             </div>
                             <i class="fi fi-rr-angle-small-down text-xs text-gray-600 dark:text-gray-400 hidden sm:block"></i>
                         </button>
@@ -716,22 +718,23 @@
                             x-cloak
                             class="fixed right-4 top-16 w-56 bg-white dark:bg-gray-800 rounded-md shadow-lg border border-gray-200 dark:border-gray-700 py-1 z-50">
                             <div class="px-4 py-3 border-b border-gray-200 dark:border-gray-700">
-                                <p class="text-sm font-medium text-gray-900 dark:text-gray-100">{{ Auth::user()->name }}</p>
-                                <p class="text-xs text-gray-500 dark:text-gray-400 truncate">{{ Auth::user()->email }}</p>
+                                <p class="text-sm font-medium text-gray-900 dark:text-gray-100"><?php echo e(Auth::user()->name); ?></p>
+                                <p class="text-xs text-gray-500 dark:text-gray-400 truncate"><?php echo e(Auth::user()->email); ?></p>
                             </div>
                             <a 
-                                href="{{ route('profile.edit') }}" 
+                                href="<?php echo e(route('profile.edit')); ?>" 
                                 class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
                                 <i class="fi fi-rr-user-pen mr-2"></i>
                                 Perfil
                             </a>
-                            <form method="POST" action="{{ route('logout') }}">
-                                @csrf
+                            <form method="POST" action="<?php echo e(route('logout')); ?>">
+                                <?php echo csrf_field(); ?>
                                 <button 
                                     type="submit" 
                                     class="w-full text-left px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors">
                                     <i class="fi fi-rr-sign-out-alt mr-2"></i>
-                                    {{ __('Sair') }}
+                                    <?php echo e(__('Sair')); ?>
+
                                 </button>
                             </form>
                         </div>
@@ -756,14 +759,14 @@
                     <div class="flex-1 flex items-center justify-center lg:justify-start">
                         <!-- Logo modo claro -->
                         <div x-show="!darkMode">
-                            <a href="{{ route('dashboard') }}" class="flex items-center gap-2">
-                                <img src="{{ asset('assets/images/logo.svg') }}" alt="Logo" class="h-12 w-auto" />
+                            <a href="<?php echo e(route('dashboard')); ?>" class="flex items-center gap-2">
+                                <img src="<?php echo e(asset('assets/images/logo.svg')); ?>" alt="Logo" class="h-12 w-auto" />
                             </a>
                         </div>
                         <!-- Logo modo escuro -->
                         <div x-show="darkMode">
-                            <a href="{{ route('dashboard') }}" class="flex items-center gap-2">
-                                <img src="{{ asset('assets/images/logo-light.svg') }}" alt="Logo" class="h-12 w-auto" />
+                            <a href="<?php echo e(route('dashboard')); ?>" class="flex items-center gap-2">
+                                <img src="<?php echo e(asset('assets/images/logo-light.svg')); ?>" alt="Logo" class="h-12 w-auto" />
                             </a>
                         </div>
                     </div>
@@ -772,19 +775,21 @@
                      id="sidebar-nav" 
                      :class="{ 'lg:hidden': sidebarCollapsed }"
                      x-data="{ 
-                    estoqueOpen: {{ request()->routeIs('products.*') || request()->routeIs('equipment.*') || request()->routeIs('material-requests.*') || request()->routeIs('equipment-requests.*') || request()->routeIs('suppliers.*') ? 'true' : 'false' }},
-                    gestaoOpen: {{ request()->routeIs('employees.*') || request()->routeIs('attendance.manage') || request()->routeIs('budgets.*') || request()->routeIs('inspections.*') || (request()->routeIs('projects.*') && !request()->routeIs('client.projects.*')) || request()->routeIs('services.*') || request()->routeIs('labor-types.*') || request()->routeIs('service-categories.*') || request()->routeIs('map.*') || request()->routeIs('clients.*') || request()->routeIs('contracts.*') ? 'true' : 'false' }},
-                    financeiroOpen: {{ request()->routeIs('financial.*') ? 'true' : 'false' }},
-                    adminOpen: {{ request()->routeIs('admin.permissions.*') || request()->routeIs('admin.email.*') ? 'true' : 'false' }}
+                    estoqueOpen: <?php echo e(request()->routeIs('products.*') || request()->routeIs('equipment.*') || request()->routeIs('material-requests.*') || request()->routeIs('equipment-requests.*') || request()->routeIs('suppliers.*') ? 'true' : 'false'); ?>,
+                    gestaoOpen: <?php echo e(request()->routeIs('employees.*') || request()->routeIs('attendance.manage') || request()->routeIs('budgets.*') || request()->routeIs('inspections.*') || (request()->routeIs('projects.*') && !request()->routeIs('client.projects.*')) || request()->routeIs('services.*') || request()->routeIs('labor-types.*') || request()->routeIs('service-categories.*') || request()->routeIs('map.*') || request()->routeIs('clients.*') || request()->routeIs('contracts.*') ? 'true' : 'false'); ?>,
+                    financeiroOpen: <?php echo e(request()->routeIs('financial.*') ? 'true' : 'false'); ?>,
+                    adminOpen: <?php echo e(request()->routeIs('admin.permissions.*') || request()->routeIs('admin.email.*') ? 'true' : 'false'); ?>
+
                 }">
                     <!-- Dashboard sempre visível -->
-                    <a href="{{ route('dashboard') }}" class="flex items-center px-3 py-2 rounded-md text-sm font-medium {{ request()->routeIs('dashboard') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700' }}">
+                    <a href="<?php echo e(route('dashboard')); ?>" class="flex items-center px-3 py-2 rounded-md text-sm font-medium <?php echo e(request()->routeIs('dashboard') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'); ?>">
                         <i class="fi fi-rr-dashboard mr-3 mt-1 text-base"></i>
-                        {{ __('Dashboard') }}
+                        <?php echo e(__('Dashboard')); ?>
+
                     </a>
 
                     <!-- Dropdown Estoque -->
-                    @if(auth()->user()->can('view products') || auth()->user()->can('view service-orders') || auth()->user()->can('view suppliers') || auth()->user()->hasAnyRole(['admin', 'manager']))
+                    <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(auth()->user()->can('view products') || auth()->user()->can('view service-orders') || auth()->user()->can('view suppliers') || auth()->user()->hasAnyRole(['admin', 'manager'])): ?>
                     <div>
                         <button 
                             @click="estoqueOpen = !estoqueOpen" 
@@ -793,7 +798,7 @@
                         >
                             <div class="flex items-center">
                                 <i class="fi fi-rr-box mr-3 text-base mt-1"></i>
-                                <span>{{ __('Estoque') }}</span>
+                                <span><?php echo e(__('Estoque')); ?></span>
                             </div>
                             <i class="fi fi-rr-angle-small-down sidebar-dropdown-arrow flex-shrink-0" :class="{ 'rotate-180': estoqueOpen }"></i>
                         </button>
@@ -805,42 +810,47 @@
                              x-transition:leave-start="opacity-100 transform translate-y-0"
                              x-transition:leave-end="opacity-0 transform -translate-y-2"
                              class="ml-3 mt-0.5 mb-1 space-y-0.5 border-l-2 border-gray-200 dark:border-gray-700 pl-3">
-                            @can('view products')
-                            <a href="{{ route('products.index') }}" class="flex items-center px-3 py-2 rounded-md text-sm font-medium {{ request()->routeIs('products.*') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700' }}">
+                            <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('view products')): ?>
+                            <a href="<?php echo e(route('products.index')); ?>" class="flex items-center px-3 py-2 rounded-md text-sm font-medium <?php echo e(request()->routeIs('products.*') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'); ?>">
                                 <i class="fi fi-rr-box mr-3 text-base mt-1"></i>
-                                {{ __('Produtos') }}
+                                <?php echo e(__('Produtos')); ?>
+
                             </a>
-                            @endcan
-                            @can('view products')
-                            <a href="{{ route('equipment.index') }}" class="flex items-center px-3 py-2 rounded-md text-sm font-medium {{ request()->routeIs('equipment.*') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700' }}">
+                            <?php endif; ?>
+                            <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('view products')): ?>
+                            <a href="<?php echo e(route('equipment.index')); ?>" class="flex items-center px-3 py-2 rounded-md text-sm font-medium <?php echo e(request()->routeIs('equipment.*') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'); ?>">
                                 <i class="fi fi-rr-hammer-crash mr-3 text-base mt-1"></i>
-                                {{ __('Equipamentos') }}
+                                <?php echo e(__('Equipamentos')); ?>
+
                             </a>
-                            @endcan
-                            @can('view service-orders')
-                            <a href="{{ route('material-requests.index') }}" class="flex items-center px-3 py-2 rounded-md text-sm font-medium {{ request()->routeIs('material-requests.*') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700' }}">
+                            <?php endif; ?>
+                            <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('view service-orders')): ?>
+                            <a href="<?php echo e(route('material-requests.index')); ?>" class="flex items-center px-3 py-2 rounded-md text-sm font-medium <?php echo e(request()->routeIs('material-requests.*') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'); ?>">
                                 <i class="fi fi-rr-clipboard mr-3 text-base"></i>
-                                {{ __('Requisições de Material') }}
+                                <?php echo e(__('Requisições de Material')); ?>
+
                             </a>
-                            @endcan
-                            @can('view service-orders')
-                            <a href="{{ route('equipment-requests.index') }}" class="flex items-center px-3 py-2 rounded-md text-sm font-medium {{ request()->routeIs('equipment-requests.*') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700' }}">
+                            <?php endif; ?>
+                            <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('view service-orders')): ?>
+                            <a href="<?php echo e(route('equipment-requests.index')); ?>" class="flex items-center px-3 py-2 rounded-md text-sm font-medium <?php echo e(request()->routeIs('equipment-requests.*') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'); ?>">
                                 <i class="fi fi-rr-clipboard mr-3 text-base"></i>
-                                {{ __('Requisições de Equipamento') }}
+                                <?php echo e(__('Requisições de Equipamento')); ?>
+
                             </a>
-                            @endcan
-                            @can('view suppliers')
-                            <a href="{{ route('suppliers.index') }}" class="flex items-center px-3 py-2 rounded-md text-sm font-medium {{ request()->routeIs('suppliers.*') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700' }}">
+                            <?php endif; ?>
+                            <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('view suppliers')): ?>
+                            <a href="<?php echo e(route('suppliers.index')); ?>" class="flex items-center px-3 py-2 rounded-md text-sm font-medium <?php echo e(request()->routeIs('suppliers.*') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'); ?>">
                                 <i class="fi fi-rr-truck-side mr-3 text-base mt-1"></i>
-                                {{ __('Fornecedores') }}
+                                <?php echo e(__('Fornecedores')); ?>
+
                             </a>
-                            @endcan
+                            <?php endif; ?>
                         </div>
                     </div>
-                    @endif
+                    <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
 
                     <!-- Dropdown Gestão -->
-                    @if(auth()->user()->can('view employees') || auth()->user()->can('manage attendance') || auth()->user()->can('view budgets') || auth()->user()->can('view projects') || auth()->user()->can('manage services') || auth()->user()->can('view clients') || auth()->user()->can('view service-orders') || auth()->user()->hasAnyRole(['admin', 'manager']))
+                    <?php if(auth()->user()->can('view employees') || auth()->user()->can('manage attendance') || auth()->user()->can('view budgets') || auth()->user()->can('view projects') || auth()->user()->can('manage services') || auth()->user()->can('view clients') || auth()->user()->can('view service-orders') || auth()->user()->hasAnyRole(['admin', 'manager'])): ?>
                     <div>
                         <button 
                             @click="gestaoOpen = !gestaoOpen" 
@@ -849,7 +859,7 @@
                         >
                             <div class="flex items-center">
                                 <i class="fi fi-rr-settings mt-1 mr-3 text-base"></i>
-                                <span>{{ __('Gestão') }}</span>
+                                <span><?php echo e(__('Gestão')); ?></span>
                             </div>
                             <i class="fi fi-rr-angle-small-down sidebar-dropdown-arrow flex-shrink-0" :class="{ 'rotate-180': gestaoOpen }"></i>
                         </button>
@@ -861,108 +871,123 @@
                              x-transition:leave-start="opacity-100 transform translate-y-0"
                              x-transition:leave-end="opacity-0 transform -translate-y-2"
                              class="ml-3 mt-0.5 mb-1 space-y-0.5 border-l-2 border-gray-200 dark:border-gray-700 pl-3">
-                            @php
+                            <?php
                                 $user = auth()->user();
                                 // Mesma lógica das rotas: role_or_permission:manager|admin|view clients
                                 $showClients = $user->hasAnyRole(['admin', 'manager']) || $user->can('view clients');
                                 // Mesma lógica das rotas: role_or_permission:manager|admin|view contracts
                                 $showContracts = $user->hasAnyRole(['admin', 'manager']) || $user->can('view contracts');
-                            @endphp
-                            @if($showClients)
-                            <a href="{{ route('clients.index') }}" 
-                               class="flex items-center px-3 py-2 rounded-md text-sm font-medium {{ request()->routeIs('clients.*') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700' }}">
+                            ?>
+                            <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($showClients): ?>
+                            <a href="<?php echo e(route('clients.index')); ?>" 
+                               class="flex items-center px-3 py-2 rounded-md text-sm font-medium <?php echo e(request()->routeIs('clients.*') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'); ?>">
                                 <i class="fi fi-rr-user mr-3 text-base"></i>
-                                {{ __('Clientes') }}
+                                <?php echo e(__('Clientes')); ?>
+
                             </a>
-                            @endif
-                            @if($showContracts)
-                            <a href="{{ route('contracts.index') }}" 
-                               class="flex items-center px-3 py-2 rounded-md text-sm font-medium {{ request()->routeIs('contracts.*') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700' }}">
+                            <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+                            <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($showContracts): ?>
+                            <a href="<?php echo e(route('contracts.index')); ?>" 
+                               class="flex items-center px-3 py-2 rounded-md text-sm font-medium <?php echo e(request()->routeIs('contracts.*') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'); ?>">
                                 <i class="fi fi-rr-memo-circle-check mr-3 text-base"></i>
-                                {{ __('Contratos') }}
+                                <?php echo e(__('Contratos')); ?>
+
                             </a>
-                            @endif
-                            @can('view employees')
-                            <a href="{{ route('employees.index') }}" class="flex items-center px-3 py-2 rounded-md text-sm font-medium {{ request()->routeIs('employees.*') && !request()->routeIs('employees.proposals.*') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700' }}">
+                            <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+                            <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('view employees')): ?>
+                            <a href="<?php echo e(route('employees.index')); ?>" class="flex items-center px-3 py-2 rounded-md text-sm font-medium <?php echo e(request()->routeIs('employees.*') && !request()->routeIs('employees.proposals.*') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'); ?>">
                                 <i class="fi fi-rr-users mr-3 text-base"></i>
-                                {{ __('Funcionários') }}
+                                <?php echo e(__('Funcionários')); ?>
+
                             </a>
-                            @endcan
-                            <!-- @can('view employees')
-                            <a href="{{ route('proposals.index') }}" class="flex items-center px-3 py-2 rounded-md text-sm font-medium {{ request()->routeIs('proposals.*') || request()->routeIs('employees.proposals.*') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700' }}">
+                            <?php endif; ?>
+                            <!-- <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('view employees')): ?>
+                            <a href="<?php echo e(route('proposals.index')); ?>" class="flex items-center px-3 py-2 rounded-md text-sm font-medium <?php echo e(request()->routeIs('proposals.*') || request()->routeIs('employees.proposals.*') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'); ?>">
                                 <i class="fi fi-rr-receipt mr-3 text-base"></i>
-                                {{ __('Propostas') }}
+                                <?php echo e(__('Propostas')); ?>
+
                             </a>
-                            @endcan -->
-                            @can('manage attendance')
-                            <a href="{{ route('attendance.manage') }}" class="flex items-center px-3 py-2 rounded-md text-sm font-medium {{ request()->routeIs('attendance.manage') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700' }}">
+                            <?php endif; ?> -->
+                            <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('manage attendance')): ?>
+                            <a href="<?php echo e(route('attendance.manage')); ?>" class="flex items-center px-3 py-2 rounded-md text-sm font-medium <?php echo e(request()->routeIs('attendance.manage') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'); ?>">
                                 <i class="fi fi-rr-calendar-check mr-3 text-base"></i>
-                                {{ __('Gestão de Pontos') }}
+                                <?php echo e(__('Gestão de Pontos')); ?>
+
                             </a>
-                            @endcan
-                            @can('view budgets')
-                            <a href="{{ route('budgets.index') }}" class="flex items-center px-3 py-2 rounded-md text-sm font-medium {{ request()->routeIs('budgets.*') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700' }}">
+                            <?php endif; ?>
+                            <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('view budgets')): ?>
+                            <a href="<?php echo e(route('budgets.index')); ?>" class="flex items-center px-3 py-2 rounded-md text-sm font-medium <?php echo e(request()->routeIs('budgets.*') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'); ?>">
                                 <i class="fi fi-rr-receipt mr-3 text-base"></i>
-                                {{ __('Orçamentos') }}
+                                <?php echo e(__('Orçamentos')); ?>
+
                             </a>
-                            @endcan
-                            <a href="{{ route('inspections.index') }}" class="flex items-center px-3 py-2 rounded-md text-sm font-medium {{ request()->routeIs('inspections.*') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700' }}">
+                            <?php endif; ?>
+                            <a href="<?php echo e(route('inspections.index')); ?>" class="flex items-center px-3 py-2 rounded-md text-sm font-medium <?php echo e(request()->routeIs('inspections.*') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'); ?>">
                                 <i class="fi fi-rr-add-document mr-3 text-base"></i>
-                                {{ __('Vistorias') }}
+                                <?php echo e(__('Vistorias')); ?>
+
                             </a>
-                            @can('view projects')
-                            <a href="{{ route('projects.index') }}" class="flex items-center px-3 py-2 rounded-md text-sm font-medium {{ request()->routeIs('projects.*') && !request()->routeIs('client.projects.*') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700' }}">
+                            <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('view projects')): ?>
+                            <a href="<?php echo e(route('projects.index')); ?>" class="flex items-center px-3 py-2 rounded-md text-sm font-medium <?php echo e(request()->routeIs('projects.*') && !request()->routeIs('client.projects.*') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'); ?>">
                                 <i class="fi fi-rr-building mr-3 text-base"></i>
-                                {{ __('Obras') }}
+                                <?php echo e(__('Obras')); ?>
+
                             </a>
-                            @endcan
-                            @can('view projects')
-                            <a href="{{ route('map.index') }}" class="flex items-center px-3 py-2 rounded-md text-sm font-medium {{ request()->routeIs('map.*') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700' }}">
+                            <?php endif; ?>
+                            <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('view projects')): ?>
+                            <a href="<?php echo e(route('map.index')); ?>" class="flex items-center px-3 py-2 rounded-md text-sm font-medium <?php echo e(request()->routeIs('map.*') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'); ?>">
                                 <i class="fi fi-rr-map mr-3 text-base"></i>
-                                {{ __('Mapa') }}
+                                <?php echo e(__('Mapa')); ?>
+
                             </a>
-                            @endcan
-                            @can('manage services')
-                            <a href="{{ route('services.index') }}" class="flex items-center px-3 py-2 rounded-md text-sm font-medium {{ request()->routeIs('services.*') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700' }}">
+                            <?php endif; ?>
+                            <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('manage services')): ?>
+                            <a href="<?php echo e(route('services.index')); ?>" class="flex items-center px-3 py-2 rounded-md text-sm font-medium <?php echo e(request()->routeIs('services.*') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'); ?>">
                                 <i class="fi fi-rr-person-dolly-empty mr-3 text-base"></i>
-                                {{ __('Serviços') }}
+                                <?php echo e(__('Serviços')); ?>
+
                             </a>
-                            @endcan
-                            @can('manage services')
-                            <a href="{{ route('labor-types.index') }}" class="flex items-center px-3 py-2 rounded-md text-sm font-medium {{ request()->routeIs('labor-types.*') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700' }}">
+                            <?php endif; ?>
+                            <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('manage services')): ?>
+                            <a href="<?php echo e(route('labor-types.index')); ?>" class="flex items-center px-3 py-2 rounded-md text-sm font-medium <?php echo e(request()->routeIs('labor-types.*') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'); ?>">
                                 <i class="fi fi-rr-users-alt mr-3 text-base"></i>
-                                {{ __('Tipos de Mão de Obra') }}
+                                <?php echo e(__('Tipos de Mão de Obra')); ?>
+
                             </a>
-                            @endcan
-                            @can('manage services')
-                            <a href="{{ route('service-categories.index') }}" class="flex items-center px-3 py-2 rounded-md text-sm font-medium {{ request()->routeIs('service-categories.*') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700' }}">
+                            <?php endif; ?>
+                            <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('manage services')): ?>
+                            <a href="<?php echo e(route('service-categories.index')); ?>" class="flex items-center px-3 py-2 rounded-md text-sm font-medium <?php echo e(request()->routeIs('service-categories.*') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'); ?>">
                                 <i class="fi fi-rr-folder mr-3 text-base"></i>
-                                {{ __('Categorias de Serviços') }}
+                                <?php echo e(__('Categorias de Serviços')); ?>
+
                             </a>
-                            @endcan
+                            <?php endif; ?>
                         </div>
                     </div>
-                    @endif
+                    <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
 
-                    @if(auth()->user()->hasRole('client'))
-                    <a href="{{ route('client.dashboard') }}" class="flex items-center px-3 py-2 rounded-md text-sm font-medium {{ request()->routeIs('client.dashboard') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700' }}">
+                    <?php if(auth()->user()->hasRole('client')): ?>
+                    <a href="<?php echo e(route('client.dashboard')); ?>" class="flex items-center px-3 py-2 rounded-md text-sm font-medium <?php echo e(request()->routeIs('client.dashboard') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'); ?>">
                         <i class="fi fi-rr-dashboard mr-3 text-base"></i>
-                        {{ __('Dashboard') }}
+                        <?php echo e(__('Dashboard')); ?>
+
                     </a>
-                    <a href="{{ route('client.projects.index') }}" class="flex items-center px-3 py-2 rounded-md text-sm font-medium {{ request()->routeIs('client.projects.*') && !request()->routeIs('client.dashboard') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700' }}">
+                    <a href="<?php echo e(route('client.projects.index')); ?>" class="flex items-center px-3 py-2 rounded-md text-sm font-medium <?php echo e(request()->routeIs('client.projects.*') && !request()->routeIs('client.dashboard') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'); ?>">
                         <i class="fi fi-rr-home mr-3 text-base"></i>
-                        {{ __('Minhas Obras') }}
+                        <?php echo e(__('Minhas Obras')); ?>
+
                     </a>
-                    @endif
-                    @can('view reports')
-                    <a href="{{ route('reports.index') }}" class="flex items-center px-3 py-2 rounded-md text-sm font-medium {{ request()->routeIs('reports.*') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700' }}">
+                    <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+                    <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('view reports')): ?>
+                    <a href="<?php echo e(route('reports.index')); ?>" class="flex items-center px-3 py-2 rounded-md text-sm font-medium <?php echo e(request()->routeIs('reports.*') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'); ?>">
                         <i class="fi fi-rr-stats mr-3 mt-1 text-base"></i>
-                        {{ __('Relatórios') }}
+                        <?php echo e(__('Relatórios')); ?>
+
                     </a>
-                    @endcan
+                    <?php endif; ?>
 
                     <!-- Dropdown Financeiro -->
-                    @can('manage finances')
+                    <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('manage finances')): ?>
                     <div>
                         <button 
                             @click="financeiroOpen = !financeiroOpen" 
@@ -971,7 +996,7 @@
                         >
                             <div class="flex items-center">
                                 <i class="fi fi-rr-money mr-3 mt-1 text-base"></i>
-                                <span>{{ __('Financeiro') }}</span>
+                                <span><?php echo e(__('Financeiro')); ?></span>
                             </div>
                             <i class="fi fi-rr-angle-small-down sidebar-dropdown-arrow flex-shrink-0" :class="{ 'rotate-180': financeiroOpen }"></i>
                         </button>
@@ -983,39 +1008,45 @@
                              x-transition:leave-start="opacity-100 transform translate-y-0"
                              x-transition:leave-end="opacity-0 transform -translate-y-2"
                              class="ml-3 mt-0.5 mb-1 space-y-0.5 border-l-2 border-gray-200 dark:border-gray-700 pl-3">
-                            <a href="{{ route('financial.dashboard') }}" class="flex items-center px-3 py-2 rounded-md text-sm font-medium {{ request()->routeIs('financial.dashboard') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700' }}">
+                            <a href="<?php echo e(route('financial.dashboard')); ?>" class="flex items-center px-3 py-2 rounded-md text-sm font-medium <?php echo e(request()->routeIs('financial.dashboard') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'); ?>">
                                 <i class="fi fi-rr-dashboard mr-3 text-base mt-1"></i>
-                                {{ __('Dashboard Financeiro') }}
+                                <?php echo e(__('Dashboard Financeiro')); ?>
+
                             </a>
-                            <a href="{{ route('financial.accounts-payable.index') }}" class="flex items-center px-3 py-2 rounded-md text-sm font-medium {{ request()->routeIs('financial.accounts-payable.*') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700' }}">
+                            <a href="<?php echo e(route('financial.accounts-payable.index')); ?>" class="flex items-center px-3 py-2 rounded-md text-sm font-medium <?php echo e(request()->routeIs('financial.accounts-payable.*') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'); ?>">
                                 <i class="fi fi-rr-arrow-trend-down mr-3 text-base mt-1"></i>
-                                {{ __('Contas a Pagar') }}
+                                <?php echo e(__('Contas a Pagar')); ?>
+
                             </a>
-                            <a href="{{ route('financial.accounts-receivable.index') }}" class="flex items-center px-3 py-2 rounded-md text-sm font-medium {{ request()->routeIs('financial.accounts-receivable.*') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700' }}">
+                            <a href="<?php echo e(route('financial.accounts-receivable.index')); ?>" class="flex items-center px-3 py-2 rounded-md text-sm font-medium <?php echo e(request()->routeIs('financial.accounts-receivable.*') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'); ?>">
                                 <i class="fi fi-rr-arrow-trend-up mr-3 text-base mt-1"></i>
-                                {{ __('Contas a Receber') }}
+                                <?php echo e(__('Contas a Receber')); ?>
+
                             </a>
-                            <a href="{{ route('financial.invoices.index') }}" class="flex items-center px-3 py-2 rounded-md text-sm font-medium {{ request()->routeIs('financial.invoices.*') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700' }}">
+                            <a href="<?php echo e(route('financial.invoices.index')); ?>" class="flex items-center px-3 py-2 rounded-md text-sm font-medium <?php echo e(request()->routeIs('financial.invoices.*') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'); ?>">
                                 <i class="fi fi-rr-receipt mr-3 text-base mt-1"></i>
-                                {{ __('Notas Fiscais') }}
+                                <?php echo e(__('Notas Fiscais')); ?>
+
                             </a>
-                            <a href="{{ route('financial.receipts.index') }}" class="flex items-center px-3 py-2 rounded-md text-sm font-medium {{ request()->routeIs('financial.receipts.*') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700' }}">
+                            <a href="<?php echo e(route('financial.receipts.index')); ?>" class="flex items-center px-3 py-2 rounded-md text-sm font-medium <?php echo e(request()->routeIs('financial.receipts.*') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'); ?>">
                                 <i class="fi fi-rr-receipt mr-3 text-base mt-1"></i>
-                                {{ __('Recibos') }}
+                                <?php echo e(__('Recibos')); ?>
+
                             </a>
                         </div>
                     </div>
-                    @endcan
+                    <?php endif; ?>
 
-                    @if(auth()->user()->hasRole('employee'))
-                    <a href="{{ route('attendance.index') }}" class="flex items-center px-3 py-2 rounded-md text-sm font-medium {{ request()->routeIs('attendance.index') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700' }}">
+                    <?php if(auth()->user()->hasRole('employee')): ?>
+                    <a href="<?php echo e(route('attendance.index')); ?>" class="flex items-center px-3 py-2 rounded-md text-sm font-medium <?php echo e(request()->routeIs('attendance.index') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'); ?>">
                         <i class="fi fi-rr-map mr-3 text-base"></i>
-                        {{ __('Bater Ponto') }}
+                        <?php echo e(__('Bater Ponto')); ?>
+
                     </a>
-                    @endif
+                    <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
 
                     <!-- Dropdown Administração -->
-                    @can('manage permissions')
+                    <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('manage permissions')): ?>
                     <div>
                         <button 
                             @click="adminOpen = !adminOpen" 
@@ -1024,7 +1055,7 @@
                         >
                             <div class="flex items-center">
                                 <i class="fi fi-rr-shield-check mr-3 mt-1 text-base"></i>
-                                <span>{{ __('Administração') }}</span>
+                                <span><?php echo e(__('Administração')); ?></span>
                             </div>
                             <i class="fi fi-rr-angle-small-down sidebar-dropdown-arrow flex-shrink-0" :class="{ 'rotate-180': adminOpen }"></i>
                         </button>
@@ -1036,25 +1067,29 @@
                              x-transition:leave-start="opacity-100 transform translate-y-0"
                              x-transition:leave-end="opacity-0 transform -translate-y-2"
                              class="ml-3 mt-0.5 mb-1 space-y-0.5 border-l-2 border-gray-200 dark:border-gray-700 pl-3">
-                            <a href="{{ route('admin.permissions.users') }}" class="flex items-center px-3 py-2 rounded-md text-sm font-medium {{ request()->routeIs('admin.permissions.users') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700' }}">
+                            <a href="<?php echo e(route('admin.permissions.users')); ?>" class="flex items-center px-3 py-2 rounded-md text-sm font-medium <?php echo e(request()->routeIs('admin.permissions.users') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'); ?>">
                                 <i class="fi fi-rr-users mr-3 text-base mt-1"></i>
-                                {{ __('Permissões: Usuários') }}
+                                <?php echo e(__('Permissões: Usuários')); ?>
+
                             </a>
-                            <a href="{{ route('admin.permissions.roles') }}" class="flex items-center px-3 py-2 rounded-md text-sm font-medium {{ request()->routeIs('admin.permissions.roles') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700' }}">
+                            <a href="<?php echo e(route('admin.permissions.roles')); ?>" class="flex items-center px-3 py-2 rounded-md text-sm font-medium <?php echo e(request()->routeIs('admin.permissions.roles') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'); ?>">
                                 <i class="fi fi-rr-shield mr-3 text-base mt-1"></i>
-                                {{ __('Permissões: Papéis') }}
+                                <?php echo e(__('Permissões: Papéis')); ?>
+
                             </a>
-                            <a href="{{ route('admin.email.index') }}" class="flex items-center px-3 py-2 rounded-md text-sm font-medium {{ request()->routeIs('admin.email.*') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700' }}">
+                            <a href="<?php echo e(route('admin.email.index')); ?>" class="flex items-center px-3 py-2 rounded-md text-sm font-medium <?php echo e(request()->routeIs('admin.email.*') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'); ?>">
                                 <i class="fi fi-rr-envelope mr-3 text-base mt-1"></i>
-                                {{ __('Envio de Emails') }}
+                                <?php echo e(__('Envio de Emails')); ?>
+
                             </a>
-                            <a href="{{ route('admin.settings') }}" class="flex items-center px-3 py-2 rounded-md text-sm font-medium {{ request()->routeIs('admin.settings') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700' }}">
+                            <a href="<?php echo e(route('admin.settings')); ?>" class="flex items-center px-3 py-2 rounded-md text-sm font-medium <?php echo e(request()->routeIs('admin.settings') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'); ?>">
                                 <i class="fi fi-rr-settings mt-1 mr-3 text-base"></i>
-                                {{ __('Configurações') }}
+                                <?php echo e(__('Configurações')); ?>
+
                             </a>
                         </div>
                     </div>
-                    @endcan
+                    <?php endif; ?>
                 </nav>
             </aside>
 
@@ -1087,11 +1122,12 @@
                             </svg>
                         </button>
                         
-                        @if (isset($header))
+                        <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(isset($header)): ?>
                             <div class="flex-1">
-                                {{ $header }}
+                                <?php echo e($header); ?>
+
                             </div>
-                        @endif
+                        <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                     </div>
                     
                     <!-- Search Bar -->
@@ -1147,7 +1183,7 @@
                                 <!-- Header -->
                                 <div class="px-4 py-3 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
                                     <h3 class="text-sm font-semibold text-gray-900 dark:text-gray-100">Notificações</h3>
-                                        <a href="{{ route('notifications.index') }}" 
+                                        <a href="<?php echo e(route('notifications.index')); ?>" 
                                            class="text-xs text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300">
                                             Ver todas
                                         </a>
@@ -1215,15 +1251,16 @@
                                 @click="open = !open"
                                 class="flex items-center gap-2 p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
                                 <div class="flex-shrink-0">
-                                    @if(Auth::user()->profile_photo)
-                                        <img src="{{ asset('storage/' . Auth::user()->profile_photo) }}" alt="{{ Auth::user()->name }}" class="h-8 w-8 rounded-full object-cover border-2 border-gray-200 dark:border-gray-600">
-                                    @else
+                                    <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(Auth::user()->profile_photo): ?>
+                                        <img src="<?php echo e(asset('storage/' . Auth::user()->profile_photo)); ?>" alt="<?php echo e(Auth::user()->name); ?>" class="h-8 w-8 rounded-full object-cover border-2 border-gray-200 dark:border-gray-600">
+                                    <?php else: ?>
                                         <div class="h-8 w-8 rounded-full bg-indigo-500 flex items-center justify-center text-white font-semibold text-sm border-2 border-gray-200 dark:border-gray-600">
-                                            {{ strtoupper(substr(Auth::user()->name, 0, 1)) }}
+                                            <?php echo e(strtoupper(substr(Auth::user()->name, 0, 1))); ?>
+
                                         </div>
-                                    @endif
+                                    <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                                 </div>
-                                <span class="hidden sm:block text-sm font-medium text-gray-700 dark:text-gray-300">{{ Auth::user()->name }}</span>
+                                <span class="hidden sm:block text-sm font-medium text-gray-700 dark:text-gray-300"><?php echo e(Auth::user()->name); ?></span>
                                 <i class="fi fi-rr-angle-small-down text-xs text-gray-600 dark:text-gray-400"></i>
                             </button>
                             
@@ -1239,22 +1276,23 @@
                                 x-cloak
                                 class="absolute right-0 mt-2 w-56 bg-white dark:bg-gray-800 rounded-md shadow-lg border border-gray-200 dark:border-gray-700 py-1 z-50">
                                 <div class="px-4 py-3 border-b border-gray-200 dark:border-gray-700">
-                                    <p class="text-sm font-medium text-gray-900 dark:text-gray-100">{{ Auth::user()->name }}</p>
-                                    <p class="text-xs text-gray-500 dark:text-gray-400 truncate">{{ Auth::user()->email }}</p>
+                                    <p class="text-sm font-medium text-gray-900 dark:text-gray-100"><?php echo e(Auth::user()->name); ?></p>
+                                    <p class="text-xs text-gray-500 dark:text-gray-400 truncate"><?php echo e(Auth::user()->email); ?></p>
                                 </div>
                                 <a 
-                                    href="{{ route('profile.edit') }}" 
+                                    href="<?php echo e(route('profile.edit')); ?>" 
                                     class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
                                     <i class="fi fi-rr-user-pen mr-2"></i>
                                     Perfil
                                 </a>
-                                <form method="POST" action="{{ route('logout') }}">
-                                    @csrf
+                                <form method="POST" action="<?php echo e(route('logout')); ?>">
+                                    <?php echo csrf_field(); ?>
                                     <button 
                                         type="submit" 
                                         class="w-full text-left px-4 mt-2 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors">
                                         <i class="fi fi-rr-sign-out-alt mr-2"></i>
-                                        {{ __('Sair') }}
+                                        <?php echo e(__('Sair')); ?>
+
                                     </button>
                                 </form>
                             </div>
@@ -1267,7 +1305,8 @@
             <div class="content-container pt-16 lg:pt-16 lg:ml-64 transition-all duration-200" 
                  :class="{ 'lg:ml-64': !sidebarCollapsed, 'lg:ml-0': sidebarCollapsed }">
                 <main class="p-4 sm:p-4">
-                    {{ $slot }}
+                    <?php echo e($slot); ?>
+
                 </main>
             </div>
             
@@ -1594,7 +1633,7 @@
                     async loadNotifications() {
                         this.loading = true;
                         try {
-                            const response = await fetch('{{ route('notifications.recent') }}');
+                            const response = await fetch('<?php echo e(route('notifications.recent')); ?>');
                             const data = await response.json();
                             this.notifications = data.notifications || [];
                             this.unreadCount = data.unread_count || 0;
@@ -1606,7 +1645,7 @@
                     },
                     async loadUnreadCount() {
                         try {
-                            const response = await fetch('{{ route('notifications.unread') }}');
+                            const response = await fetch('<?php echo e(route('notifications.unread')); ?>');
                             const data = await response.json();
                             this.unreadCount = data.count || 0;
                         } catch (error) {
@@ -1650,7 +1689,7 @@
                     },
                     async markAllAsRead() {
                         try {
-                            const response = await fetch('{{ route('notifications.read-all') }}', {
+                            const response = await fetch('<?php echo e(route('notifications.read-all')); ?>', {
                                 method: 'POST',
                                 headers: {
                                     'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || '',
@@ -1718,7 +1757,7 @@
                                 return;
                             }
 
-                            const response = await fetch('{{ route('notifications.test') }}', {
+                            const response = await fetch('<?php echo e(route('notifications.test')); ?>', {
                                 method: 'POST',
                                 headers: {
                                     'X-CSRF-TOKEN': csrfToken,
@@ -1760,11 +1799,12 @@
             }
         </script>
         <!-- Employee Functions - Definir antes do Livewire -->
-        @stack('employee-functions')
+        <?php echo $__env->yieldPushContent('employee-functions'); ?>
         
-        @livewireScripts
+        <?php echo \Livewire\Mechanisms\FrontendAssets\FrontendAssets::scripts(); ?>
+
         <script src="https://unpkg.com/imask"></script>
-        <script src="{{ asset('js/pwa.js') }}"></script>
+        <script src="<?php echo e(asset('js/pwa.js')); ?>"></script>
         
         <!-- Offcanvas Functions - Definir globalmente -->
         <script>
@@ -1827,7 +1867,7 @@
             });
         </script>
         
-        @stack('scripts')
+        <?php echo $__env->yieldPushContent('scripts'); ?>
         
         <!-- Modal de Upload de Arquivos (Global) -->
         <div id="file-upload-modal-container" 
@@ -2014,3 +2054,4 @@
         </script>
     </body>
 </html>
+<?php /**PATH C:\Users\Douglas\Documents\Projetos\construcaxa\resources\views/components/app-layout.blade.php ENDPATH**/ ?>

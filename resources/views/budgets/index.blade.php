@@ -158,7 +158,7 @@
 
             <!-- Budget Grid -->
             <div id="grid-container" class="bg-white dark:bg-gray-800 overflow-hidden shadow-xl sm:rounded-lg border border-gray-200 dark:border-gray-700 p-6">
-            <div id="grid-view" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-8">
+            <div id="grid-view" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
             @forelse($budgets as $budget)
                 <div class="budget-card status-{{ $budget->status }} bg-white dark:bg-gray-800 rounded-lg shadow-md border-2 {{ $budget->status_color }} dark:border-gray-700 hover:shadow-lg transition-shadow duration-200">
                     <div class="p-6">

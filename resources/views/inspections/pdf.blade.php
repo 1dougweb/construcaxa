@@ -80,35 +80,62 @@
         }
         .environment {
             margin-bottom: 30px;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            overflow: hidden;
             page-break-inside: avoid;
         }
         .environment-title {
-            font-size: 16px;
+            font-size: 14px;
             font-weight: bold;
-            margin-bottom: 10px;
-            background-color: #f3f4f6;
-            padding: 8px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            background-color: #1e40af;
+            color: #ffffff;
+            padding: 12px 15px;
+            margin: 0;
+            border-bottom: 1px solid #1e40af;
+        }
+        .environment-content {
+            padding: 15px;
+            background-color: #ffffff;
         }
         .item {
-            margin-bottom: 15px;
-            padding: 10px;
-            border: 1px solid #ddd;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 1px dashed #e5e7eb;
             page-break-inside: avoid;
         }
+        .item:last-child {
+            margin-bottom: 0;
+            padding-bottom: 0;
+            border-bottom: none;
+        }
         .item-title {
+            font-size: 11px;
             font-weight: bold;
-            margin-bottom: 5px;
+            color: #1f2937;
+            margin-bottom: 12px;
+            padding-left: 5px;
+            border-left: 4px solid #94a3b8;
+            text-transform: uppercase;
         }
         .quality-badge {
             display: inline-block;
-            padding: 2px 8px;
-            border-radius: 4px;
-            font-size: 10px;
-            margin-left: 10px;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 9px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
         .quality-excellent {
-            background-color: #d1fae5;
-            color: #065f46;
+            background-color: #065f46;
+            color: #ffffff;
+        }
+        .quality-very_good {
+            background-color: #1e40af;
+            color: #ffffff;
         }
         .quality-good {
             background-color: #dbeafe;
@@ -122,36 +149,65 @@
             background-color: #fee2e2;
             color: #991b1b;
         }
-        .quality-very_good {
-            background-color: #dbeafe;
-            color: #1e40af;
-        }
         .sub-item {
-            margin-top: 8px;
-            margin-left: 15px;
-            padding: 8px;
-            background-color: #f9fafb;
-            border-left: 3px solid #3b82f6;
+            margin-top: 10px;
+            margin-left: 5px;
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid #eeeeee;
+        }
+        .sub-item-excellent { background-color: #f0fdf4; }
+        .sub-item-very_good { background-color: #f0f9ff; }
+        .sub-item-good { background-color: #f0f9ff; }
+        .sub-item-regular { background-color: #fffbeb; }
+        .sub-item-poor { background-color: #fef2f2; }
+        .sub-item-table {
+            width: 100%;
+            border-collapse: collapse;
         }
         .sub-item-title {
             font-weight: bold;
             font-size: 11px;
-            margin-bottom: 3px;
+            color: #111827;
+        }
+        .sub-item-desc {
+            font-size: 10px;
+            color: #4b5563;
+            margin-top: 4px;
+        }
+        .sub-item-obs {
+            font-size: 9px;
+            color: #6b7280;
+            font-style: italic;
+            margin-top: 8px;
+            padding: 8px;
+            background-color: #ffffff;
+            border: 1px solid #e5e7eb;
+            border-radius: 4px;
         }
         .photos {
             margin-top: 10px;
         }
         .photo-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 5px;
-            margin-top: 5px;
-        }
-        .photo-item {
+            margin-top: 10px;
             width: 100%;
-            height: 80px;
-            object-fit: cover;
+        }
+        .photo-wrapper {
+            display: inline-block;
+            width: 220px;
+            height: 220px;
+            margin-right: 15px;
+            margin-bottom: 15px;
             border: 1px solid #ddd;
+            overflow: hidden;
+            vertical-align: top;
+            background-color: #ffffff;
+        }
+        .photo-img {
+            width: 220px;
+            height: 220px;
+            object-fit: cover;
+            background-color: #ffffff;
         }
         .footer {
             margin-top: 50px;
@@ -264,61 +320,72 @@
     @foreach($inspection->environments as $environment)
         <div class="environment">
             <div class="environment-title">{{ $environment->name }}</div>
-            
-            @if($environment->items->count() > 0)
-                @foreach($environment->items as $item)
-                    <div class="item">
-                        <div class="item-title">
-                            {{ $item->title }}
-                        </div>
-                        
-                        <!-- Sub-items -->
-                        @if($item->subItems->count() > 0)
-                            @foreach($item->subItems as $subItem)
-                                <div class="sub-item">
-                                    <div class="sub-item-title">
-                                        {{ $subItem->title }}
-                                        <span class="quality-badge quality-{{ $subItem->quality_rating }}">
-                                            {{ $subItem->quality_label }}
-                                        </span>
-                                    </div>
-                                    @if($subItem->description)
-                                        <div style="margin-top: 3px; font-size: 10px; color: #666;">
-                                            {{ $subItem->description }}
-                                        </div>
-                                    @endif
-                                    @if($subItem->observations)
-                                        <div style="margin-top: 3px; font-size: 10px; color: #666; font-style: italic;">
-                                            <strong>Obs:</strong> {{ $subItem->observations }}
-                                        </div>
-                                    @endif
+            <div class="environment-content">
+                @if($environment->items->count() > 0)
+                    @foreach($environment->items as $item)
+                        <div class="item">
+                            @if(trim(strtolower($item->title)) !== trim(strtolower($environment->name)))
+                                <div class="item-title">
+                                    {{ $item->title }}
                                 </div>
-                            @endforeach
-                        @endif
-
-                        @if($item->photos->count() > 0)
-                            <div class="photos">
-                                <strong>Fotos:</strong>
-                                <div class="photo-grid">
-                                    @foreach($item->photos as $photo)
-                                        @php
-                                            $imagePath = public_path($photo->photo_path);
-                                            $imageUrl = file_exists($imagePath) ? 'file://' . str_replace('\\', '/', $imagePath) : null;
-                                        @endphp
-                                        @if($imageUrl)
-                                            <img src="{{ $imageUrl }}" class="photo-item" alt="Foto">
+                            @endif
+                            
+                            <!-- Sub-items -->
+                            @if($item->subItems->count() > 0)
+                                @foreach($item->subItems as $subItem)
+                                    <div class="sub-item sub-item-{{ $subItem->quality_rating }}">
+                                        <table class="sub-item-table">
+                                            <tr>
+                                                <td class="sub-item-title">{{ $subItem->title }}</td>
+                                                <td style="text-align: right; width: 100px;">
+                                                    <span class="quality-badge quality-{{ $subItem->quality_rating }}">
+                                                        {{ $subItem->quality_label }}
+                                                    </span>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                        
+                                        @if($subItem->description)
+                                            <div class="sub-item-desc">
+                                                {{ $subItem->description }}
+                                            </div>
                                         @endif
-                                    @endforeach
+                                        
+                                        @if($subItem->observations)
+                                            <div class="sub-item-obs">
+                                                <strong>Obs:</strong> {{ $subItem->observations }}
+                                            </div>
+                                        @endif
+                                    </div>
+                                @endforeach
+                            @endif
+
+                            @if($item->photos->count() > 0)
+                                <div class="photos">
+                                    <strong>Fotos:</strong>
+                                    <div class="photo-grid">
+                                        @foreach($item->photos as $photo)
+                                            @php
+                                                $imagePath = public_path('storage/' . $photo->photo_path);
+                                                $imageUrl = file_exists($imagePath) ? 'file://' . str_replace('\\', '/', $imagePath) : null;
+                                            @endphp
+                                            @if($imageUrl)
+                                                <div class="photo-wrapper">
+                                                    <img src="{{ $imageUrl }}" class="photo-img" alt="Foto">
+                                                </div>
+                                            @endif
+                                        @endforeach
+                                    </div>
                                 </div>
-                            </div>
-                        @endif
+                            @endif
+                        </div>
+                    @endforeach
+                @else
+                    <div style="padding: 10px; color: #666;">
+                        Nenhum item cadastrado neste ambiente.
                     </div>
-                @endforeach
-            @else
-                <div style="padding: 10px; color: #666;">
-                    Nenhum item cadastrado neste ambiente.
-                </div>
-            @endif
+                @endif
+            </div>
         </div>
     @endforeach
 

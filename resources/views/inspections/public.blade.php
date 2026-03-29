@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Vistoria #{{ $inspection->number }}</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,typography,aspect-ratio"></script>
 </head>
 <body class="bg-gray-50">
     <div class="min-h-screen py-8">
@@ -54,7 +54,9 @@
                             
                             @foreach($environment->items as $item)
                                 <div class="mb-6 pb-6 border-b border-gray-200 last:border-b-0">
-                                    <h3 class="text-lg font-medium mb-3">{{ $item->title }}</h3>
+                                    @if(trim(strtolower($item->title)) !== trim(strtolower($environment->name)))
+                                        <h3 class="text-lg font-medium mb-3">{{ $item->title }}</h3>
+                                    @endif
                                     
                                     <!-- Sub-items -->
                                     @if($item->subItems->count() > 0)
@@ -86,7 +88,9 @@
                                     @if($item->photos->count() > 0)
                                         <div class="grid grid-cols-2 md:grid-cols-4 gap-2">
                                             @foreach($item->photos as $photo)
-                                                <img src="/{{ ltrim($photo->photo_path, '/') }}" alt="Foto" class="w-full h-32 object-cover rounded">
+                                                <div class="aspect-square overflow-hidden rounded bg-white border border-gray-200">
+                                                    <img src="/storage/{{ ltrim($photo->photo_path, '/') }}" alt="Foto" class="w-full h-full object-cover">
+                                                </div>
                                             @endforeach
                                         </div>
                                     @endif

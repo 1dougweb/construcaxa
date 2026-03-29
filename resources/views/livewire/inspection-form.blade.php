@@ -118,7 +118,7 @@
                                 @if($template->icon)
                                     <i class="{{ $template->icon }} text-3xl mb-2 {{ in_array($template->id, $selectedEnvironments ?? []) ? 'text-indigo-600 dark:text-indigo-400' : 'text-gray-600 dark:text-gray-400' }}"></i>
                                 @else
-                                    <i class="fi fi-rr-room text-3xl mb-2 {{ in_array($template->id, $selectedEnvironments ?? []) ? 'text-indigo-600 dark:text-indigo-400' : 'text-gray-600 dark:text-gray-400' }}"></i>
+                                    <i class="bi bi-house text-3xl mb-2 {{ in_array($template->id, $selectedEnvironments ?? []) ? 'text-indigo-600 dark:text-indigo-400' : 'text-gray-600 dark:text-gray-400' }}"></i>
                                 @endif
                                 <span class="text-sm font-medium text-center text-gray-900 dark:text-gray-100">{{ $template->name }}</span>
                                 @if($template->description)
@@ -143,8 +143,17 @@
                 <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">Avaliar Itens dos Ambientes</h3>
                 
                 @foreach($environments as $envIndex => $environment)
-                    <div class="border border-gray-300 dark:border-gray-600 rounded-lg p-4 mb-4">
-                        <h4 class="text-md font-semibold text-gray-900 dark:text-gray-100 mb-4">{{ $environment['name'] }}</h4>
+                    <div class="border border-gray-300 dark:border-gray-600 rounded-lg p-6 mb-8 bg-white dark:bg-gray-800 shadow-sm">
+                        <div class="flex justify-between items-center mb-6">
+                            <h4 class="text-lg font-bold text-indigo-600 dark:text-indigo-400 uppercase tracking-wider flex items-center">
+                                <i class="bi bi-geo-alt mr-2"></i>
+                                {{ $environment['name'] }}
+                            </h4>
+                            <button type="button" wire:click="addItem({{ $envIndex }})" class="inline-flex items-center px-3 py-1.5 bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300 rounded-md hover:bg-indigo-200 transition-colors text-sm font-medium">
+                                <i class="bi bi-plus-lg mr-1.5"></i>
+                                Adicionar Categoria
+                            </button>
+                        </div>
                         
                         @if(isset($environmentItems[$envIndex]))
                             @foreach($environmentItems[$envIndex] as $itemIndex => $item)
@@ -152,15 +161,25 @@
                                     $itemKey = "{$envIndex}_{$itemIndex}";
                                 @endphp
                                 
-                                <div class="mb-6 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                                    <div class="mb-4">
-                                        <x-label :for="'title_' . $itemKey" value="Título do Item *" />
+                                <div class="mb-6 p-5 bg-gray-50 dark:bg-gray-700/50 rounded-xl border border-gray-100 dark:border-gray-600 relative">
+                                    <button 
+                                        type="button" 
+                                        wire:click="removeItem({{ $envIndex }}, {{ $itemIndex }})" 
+                                        onclick="return confirm('Tem certeza que deseja remover esta categoria inteira e todas as suas fotos/sub-itens?')"
+                                        class="absolute top-4 right-4 text-gray-400 hover:text-red-500 transition-colors"
+                                        title="Remover Categoria"
+                                    >
+                                        <i class="bi bi-trash3 text-lg"></i>
+                                    </button>
+
+                                    <div class="mb-5 pr-8">
+                                        <x-label :for="'title_' . $itemKey" value="Nome da Categoria de Itens *" class="text-xs uppercase font-bold text-gray-500" />
                                         <x-input 
                                             :id="'title_' . $itemKey" 
                                             type="text" 
-                                            class="mt-1 block w-full" 
+                                            class="mt-1 block w-full border-gray-200" 
                                             wire:model="environmentItems.{{ $envIndex }}.{{ $itemIndex }}.title" 
-                                            placeholder="Ex: Paredes, Portas, Janelas..."
+                                            placeholder="Ex: Paredes, Portas, Janelas, Mobiliário..."
                                         />
                                     </div>
 
@@ -328,12 +347,12 @@
                                             <div class="mt-2 grid grid-cols-4 gap-2">
                                                 @foreach($tempPhotos[$itemKey] as $photoIndex => $photo)
                                                     @if($photo)
-                                                        <div class="relative">
-                                                            <img src="{{ $photo->temporaryUrl() }}" alt="Preview" class="w-full h-24 object-cover rounded">
+                                                        <div class="relative aspect-square overflow-hidden rounded bg-white">
+                                                            <img src="{{ $photo->temporaryUrl() }}" alt="Preview" class="w-full h-full object-cover">
                                                             <button 
                                                                 type="button"
                                                                 wire:click="removePhoto('{{ $itemKey }}', {{ $photoIndex }}, true)"
-                                                                class="absolute top-0 right-0 bg-red-500 text-white rounded-full p-1"
+                                                                class="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 shadow-sm"
                                                             >
                                                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
@@ -349,12 +368,12 @@
                                         @if(isset($itemPhotos[$itemKey]) && count($itemPhotos[$itemKey]) > 0)
                                             <div class="mt-2 grid grid-cols-4 gap-2">
                                                 @foreach($itemPhotos[$itemKey] as $photoIndex => $photo)
-                                                    <div class="relative">
-                                                        <img src="{{ $photo['url'] }}" alt="Foto" class="w-full h-24 object-cover rounded">
+                                                    <div class="relative aspect-square overflow-hidden rounded bg-white">
+                                                        <img src="{{ $photo['url'] }}" alt="Foto" class="w-full h-full object-cover">
                                                         <button 
                                                             type="button"
                                                             wire:click="removePhoto('{{ $itemKey }}', {{ $photoIndex }}, false)"
-                                                            class="absolute top-0 right-0 bg-red-500 text-white rounded-full p-1"
+                                                            class="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 shadow-sm"
                                                         >
                                                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />

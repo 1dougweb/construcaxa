@@ -131,27 +131,50 @@
                                     @if($environment->items->count() > 0)
                                         <div class="space-y-4">
                                             @foreach($environment->items as $item)
-                                                <div class="bg-gray-50 dark:bg-gray-700 p-4 rounded">
-                                                    <div class="flex justify-between items-start mb-2">
-                                                        <h5 class="font-medium text-gray-900 dark:text-gray-100">{{ $item->title }}</h5>
-                                                        <span class="px-2 py-1 text-xs rounded-full 
-                                                            @if($item->quality_rating === 'excellent') bg-green-100 text-green-800
-                                                            @elseif($item->quality_rating === 'good') bg-blue-100 text-blue-800
-                                                            @elseif($item->quality_rating === 'regular') bg-yellow-100 text-yellow-800
-                                                            @else bg-red-100 text-red-800
-                                                            @endif">
-                                                            {{ $item->quality_label }}
-                                                        </span>
-                                                    </div>
+                                                <div class="bg-gray-50 dark:bg-gray-700 p-4 rounded mb-4 last:mb-0">
+                                                    @if(trim(strtolower($item->title)) !== trim(strtolower($environment->name)))
+                                                        <div class="flex justify-between items-center mb-4">
+                                                            <h5 class="font-bold text-gray-900 dark:text-gray-100 uppercase tracking-wide text-sm">{{ $item->title }}</h5>
+                                                        </div>
+                                                    @endif
                                                     
-                                                    @if($item->observations)
-                                                        <p class="text-sm text-gray-600 dark:text-gray-400 mb-2">{{ $item->observations }}</p>
+                                                    <!-- Sub-items -->
+                                                    @if($item->subItems->count() > 0)
+                                                        <div class="space-y-3 mb-4 ml-2 border-l-2 border-indigo-500 pl-4">
+                                                            @foreach($item->subItems as $subItem)
+                                                                <div class="bg-white dark:bg-gray-800 p-3 rounded shadow-sm">
+                                                                    <div class="flex justify-between items-start mb-1">
+                                                                        <h6 class="font-semibold text-sm text-gray-900 dark:text-gray-100">{{ $subItem->title }}</h6>
+                                                                        <span class="px-2 py-0.5 text-[10px] font-bold rounded-full uppercase
+                                                                            @if($subItem->quality_rating === 'excellent') bg-green-100 text-green-800
+                                                                            @elseif($subItem->quality_rating === 'very_good') bg-blue-100 text-blue-800
+                                                                            @elseif($subItem->quality_rating === 'good') bg-yellow-100 text-yellow-800
+                                                                            @else bg-red-100 text-red-800
+                                                                            @endif">
+                                                                            {{ $subItem->quality_label }}
+                                                                        </span>
+                                                                    </div>
+                                                                    
+                                                                    @if($subItem->description)
+                                                                        <p class="text-xs text-gray-600 dark:text-gray-400">{{ $subItem->description }}</p>
+                                                                    @endif
+                                                                    
+                                                                    @if($subItem->observations)
+                                                                        <div class="mt-2 p-2 bg-gray-50 dark:bg-gray-900 rounded text-xs italic text-gray-700 dark:text-gray-300">
+                                                                            <strong>Obs:</strong> {{ $subItem->observations }}
+                                                                        </div>
+                                                                    @endif
+                                                                </div>
+                                                            @endforeach
+                                                        </div>
                                                     @endif
 
                                                     @if($item->photos->count() > 0)
                                                         <div class="grid grid-cols-4 gap-2 mt-2">
                                                             @foreach($item->photos as $photo)
-                                                                <img src="/{{ ltrim($photo->photo_path, '/') }}" alt="Foto" class="w-full h-24 object-cover rounded">
+                                                                <div class="aspect-square overflow-hidden rounded bg-white border border-gray-200 dark:border-gray-700">
+                                                                    <img src="/storage/{{ ltrim($photo->photo_path, '/') }}" alt="Foto" class="w-full h-full object-cover">
+                                                                </div>
                                                             @endforeach
                                                         </div>
                                                     @endif

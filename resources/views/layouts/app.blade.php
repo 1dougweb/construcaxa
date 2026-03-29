@@ -68,7 +68,32 @@
         <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
 
         <!-- Scripts -->
-        @vite(['resources/css/app.css', 'resources/js/app.js', 'resources/js/notifications.js'])
+        <!-- Tailwind CSS & Outras Bibliotecas JS via CDN -->
+        <script src="https://cdn.tailwindcss.com?plugins=forms,typography,aspect-ratio"></script>
+        <link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/@flaticon/flaticon-uicons/css/regular/rounded.css'>
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+        
+        <!-- Script Livewire/Alpine Dependencies -->
+        <script defer src="https://cdn.jsdelivr.net/npm/@alpinejs/persist@3.x.x/dist/cdn.min.js"></script>
+        
+        <script>
+            tailwind.config = {
+                darkMode: 'class', // Add dark mode via class for the switcher to work without refresh
+                theme: {
+                    extend: {
+                        colors: {
+                            indigo: {
+                                500: '#6366f1',
+                                600: '#4f46e5',
+                                700: '#4338ca',
+                                800: '#3730a3',
+                                900: '#312e81',
+                            }
+                        }
+                    }
+                }
+            }
+        </script>
 
         <!-- Styles -->
         @livewireStyles
@@ -198,29 +223,88 @@
         <script src="{{ asset('js/pwa.js') }}"></script>
         
         <!-- WebSocket Configuration -->
+        <!-- Global JS Config & Bibliotecas -->
+        <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+        
+        <!-- App Scripts -->
+        <script src="{{ asset('js/theme.js') }}"></script>
+        <script src="{{ asset('js/notifications.js') }}"></script>
+        <script src="{{ asset('js/notification-system.js') }}"></script>
+        <script src="{{ asset('js/masks.js') }}"></script>
+        
         <script>
             window.Laravel = {
                 @auth
                 user: @json(auth()->user()),
                 @endauth
                 csrfToken: '{{ csrf_token() }}',
-                appUrl: '{{ config('app.url') }}',
-                reverb: {
-                    @if(config('reverb.apps.apps.main.key'))
-                    key: '{{ config('reverb.apps.apps.main.key') }}',
-                    @endif
-                    @if(config('reverb.servers.reverb.host'))
-                    host: '{{ config('reverb.servers.reverb.host') }}',
-                    @endif
-                    @if(config('reverb.servers.reverb.port'))
-                    port: {{ config('reverb.servers.reverb.port') }},
-                    @endif
-                    @if(config('reverb.servers.reverb.options.scheme'))
-                    scheme: '{{ config('reverb.servers.reverb.options.scheme') }}',
-                    @endif
-                    appUrl: '{{ config('app.url') }}'
+                appUrl: '{{ config('app.url') }}'
+            };
+            
+            // Inicializar Axios globalmente
+            window.axios = axios;
+            window.axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
+        </script>
+        
+        <!-- Offcanvas Functions - Definir globalmente -->
+        <script>
+            window.openOffcanvas = function(id) {
+                const offcanvas = document.getElementById(id);
+                const backdrop = document.getElementById(id + '-backdrop');
+                
+                if (offcanvas && backdrop) {
+                    backdrop.style.display = 'block';
+                    offcanvas.style.display = 'block';
+                    
+                    // Trigger reflow
+                    offcanvas.offsetHeight;
+                    backdrop.offsetHeight;
+                    
+                    // Add classes for animation (right side)
+                    setTimeout(() => {
+                        offcanvas.classList.remove('translate-x-full');
+                        offcanvas.classList.add('translate-x-0');
+                        backdrop.classList.remove('opacity-0', 'pointer-events-none');
+                        backdrop.classList.add('opacity-100');
+                    }, 10);
+                    
+                    // Prevent body scroll
+                    document.body.style.overflow = 'hidden';
+                } else {
+                    console.error('Offcanvas ou backdrop não encontrado:', id);
                 }
             };
+
+            window.closeOffcanvas = function(id) {
+                const offcanvas = document.getElementById(id);
+                const backdrop = document.getElementById(id + '-backdrop');
+                
+                if (offcanvas && backdrop) {
+                    // Remove classes for animation (right side)
+                    offcanvas.classList.remove('translate-x-0');
+                    offcanvas.classList.add('translate-x-full');
+                    backdrop.classList.remove('opacity-100');
+                    backdrop.classList.add('opacity-0', 'pointer-events-none');
+                    
+                    // Hide after animation
+                    setTimeout(() => {
+                        offcanvas.style.display = 'none';
+                        backdrop.style.display = 'none';
+                        document.body.style.overflow = '';
+                    }, 300);
+                }
+            };
+
+            // Close on Escape key
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape') {
+                    const openOffcanvas = document.querySelector('[id$="-offcanvas"]:not(.translate-x-full)');
+                    if (openOffcanvas && openOffcanvas.classList.contains('translate-x-0')) {
+                        const id = openOffcanvas.id;
+                        window.closeOffcanvas(id);
+                    }
+                }
+            });
         </script>
         
         <!-- Scripts Stack -->
