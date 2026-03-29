@@ -219,7 +219,7 @@ class ProductForm extends Component
 
     public function resetForm()
     {
-        // Reset completo de TODOS os campos para evitar contaminação entre produtos
+        // Reset manual de todos os campos de formulário
         $this->name = '';
         $this->description = '';
         $this->price = null;
@@ -236,19 +236,17 @@ class ProductForm extends Component
         $this->product = null;
         $this->productId = null;
         $this->showDeleteModal = false;
-        
-        // Garantir que propriedades de dados sempre existam
+        $this->showMediaPicker = false;
+        $this->mediaPickerTarget = null;
+        $this->stockToAdd = null;
+
+        // Recarregar coleções (NÃO chamar $this->reset() pois destruiria estas coleções)
         $this->categories = Category::orderBy('name')->get();
         $this->suppliers = Supplier::orderBy('company_name')->get();
         $this->unitTypes = Product::UNIT_TYPES;
-        
-        // Forçar reset do componente Livewire para limpar qualquer estado residual
-        $this->reset();
-        
-        // Re-inicializar após reset para garantir que dados estejam disponíveis
-        $this->categories = Category::orderBy('name')->get();
-        $this->suppliers = Supplier::orderBy('company_name')->get();
-        $this->unitTypes = Product::UNIT_TYPES;
+
+        // Limpar erros de validação
+        $this->resetValidation();
     }
 
     public function openMediaPicker($targetModel)

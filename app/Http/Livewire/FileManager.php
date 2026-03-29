@@ -29,7 +29,7 @@ class FileManager extends Component
     public $multiple = false;
     
     // Status e avisos
-    public $disk = 'public'; // Usar o disco 'public' que aponta para storage/app/public em vez do root de public
+    public $disk = 'real_public'; // Usar o disco 'real_public' que aponta direto para public/ (mesma raiz dos uploads de produto/equipamento)
 
     protected $listeners = [
         'refresh-file-manager' => 'loadDirectory',
@@ -86,7 +86,7 @@ class FileManager extends Component
                     'extension' => strtolower($extension),
                     'size' => $this->formatSize(Storage::disk($this->disk)->size($file)),
                     'last_modified' => date('d/m/Y H:i', Storage::disk($this->disk)->lastModified($file)),
-                    'url' => '/storage/' . $file,
+                    'url' => '/' . ltrim($file, '/'),
                     'is_image' => in_array(strtolower($extension), ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg', 'avif'])
                 ];
             }, $files);

@@ -16,6 +16,8 @@ services:
       - storage_public:/var/www/storage/app/public
       - storage_framework:/var/www/storage/framework
       - storage_logs:/var/www/storage/logs
+      # Volume para uploads diretos em public/images (produtos, equipamentos, file manager)
+      - public_images:/var/www/public/images
     ports:
       - "8080:8080"
       - "8000:80"
@@ -55,4 +57,7 @@ volumes:
   storage_framework:
     driver: local
   storage_logs:
+    driver: local
+  # Volume para fotos em public/images (uploads via disco real_public)
+  public_images:
     driver: local

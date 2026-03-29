@@ -261,6 +261,11 @@ RUN echo '#!/bin/bash' > /usr/local/bin/docker-entrypoint.sh && \
     echo 'mkdir -p /var/www/storage/app/public/products/photos' >> /usr/local/bin/docker-entrypoint.sh && \
     echo 'mkdir -p /var/www/storage/app/public/uploads' >> /usr/local/bin/docker-entrypoint.sh && \
     echo 'mkdir -p /var/www/storage/app/livewire-tmp' >> /usr/local/bin/docker-entrypoint.sh && \
+    echo '# Garantir diretórios de upload em public/images (FileManager + Produtos + Equipamentos)' >> /usr/local/bin/docker-entrypoint.sh && \
+    echo 'mkdir -p /var/www/public/images/products' >> /usr/local/bin/docker-entrypoint.sh && \
+    echo 'mkdir -p /var/www/public/images/equipment' >> /usr/local/bin/docker-entrypoint.sh && \
+    echo 'chown -R www:www /var/www/public/images' >> /usr/local/bin/docker-entrypoint.sh && \
+    echo 'chmod -R 775 /var/www/public/images' >> /usr/local/bin/docker-entrypoint.sh && \
     echo 'mkdir -p /var/www/storage/framework/cache/data' >> /usr/local/bin/docker-entrypoint.sh && \
     echo 'mkdir -p /var/www/storage/framework/sessions' >> /usr/local/bin/docker-entrypoint.sh && \
     echo 'mkdir -p /var/www/storage/framework/views' >> /usr/local/bin/docker-entrypoint.sh && \

@@ -37,7 +37,7 @@
 
     <!-- Offcanvas para Novo/Editar Produto -->
     <x-offcanvas id="product-offcanvas" title="Novo Produto" width="w-full md:w-[600px]">
-        @livewire('product-form', ['product' => null])
+        @livewire('product-form', ['product' => null], key('product-form-offcanvas'))
     </x-offcanvas>
 
     <!-- Offcanvas para Movimentação de Estoque -->

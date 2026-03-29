@@ -296,7 +296,7 @@
 
     <!-- Offcanvas para Novo/Editar Equipamento -->
     <x-offcanvas id="equipment-offcanvas" title="Novo Equipamento" width="w-full md:w-[700px]">
-        @livewire('equipment-form', ['equipment' => null], key('equipment-form'))
+        @livewire('equipment-form', ['equipment' => null], key('equipment-form-offcanvas'))
     </x-offcanvas>
 </x-app-layout>
 

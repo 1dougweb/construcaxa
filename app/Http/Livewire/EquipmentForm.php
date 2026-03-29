@@ -126,8 +126,14 @@ class EquipmentForm extends Component
         $this->featured_photo = null;
         $this->featured_photo_path = null;
         $this->showDeleteModal = false;
-        
-        $this->reset();
+        $this->showMediaPicker = false;
+        $this->mediaPickerTarget = null;
+
+        // Recarregar categorias (NÃO usar $this->reset() pois destruiria equipmentCategories)
+        $this->equipmentCategories = EquipmentCategory::orderBy('name')->get();
+
+        // Limpar erros de validação
+        $this->resetValidation();
     }
 
     public function openMediaPicker($targetModel)
