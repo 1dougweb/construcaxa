@@ -66,11 +66,31 @@
                     } catch (\Exception $e) {
                         // Se não conseguir acessar, usar apenas o existingPhotoPath
                     }
+
+                    // Lógica de URL resiliente
+                    $src = null;
+                    if ($tempPhoto) {
+                        $src = $tempPhoto->temporaryUrl();
+                    } elseif ($photoPath) {
+                        $src = $photoPath;
+                        // Se não for URL absoluta e não começar com /storage/, prefixar
+                        if (!str_starts_with($src, 'http') && !str_starts_with($src, '/storage/') && !str_starts_with($src, 'storage/')) {
+                            // Se o caminho começar com images/, products/ ou equipment/, ele pertence ao storage
+                            if (str_starts_with($src, 'images/') || str_starts_with($src, 'products/') || str_starts_with($src, 'equipment/')) {
+                                $src = '/storage/' . ltrim($src, '/');
+                            } else {
+                                // Fallback para manter compatibilidade
+                                $src = '/' . ltrim($src, '/');
+                            }
+                        } elseif (str_starts_with($src, 'storage/')) {
+                            $src = '/' . $src;
+                        }
+                    }
                 @endphp
                 
                 @if($tempPhoto)
                     <div class="relative w-full h-full group">
-                        <img src="{{ $tempPhoto->temporaryUrl() }}" alt="Preview" class="w-full h-full object-cover">
+                        <img src="{{ $src }}" alt="Preview" class="w-full h-full object-cover">
                         <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 transition-all duration-200 flex items-center justify-center">
                             <span class="text-white opacity-0 group-hover:opacity-100 text-sm font-medium">Clique para trocar</span>
                         </div>
@@ -86,7 +106,7 @@
                     </div>
                 @elseif($photoPath)
                     <div class="relative w-full h-full group">
-                        <img src="/{{ ltrim($photoPath, '/') }}" alt="Foto" class="w-full h-full object-cover">
+                        <img src="{{ $src }}" alt="Foto" class="w-full h-full object-cover">
                         <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 transition-all duration-200 flex items-center justify-center">
                             <span class="text-white opacity-0 group-hover:opacity-100 text-sm font-medium">Clique para trocar</span>
                         </div>
