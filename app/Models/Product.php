@@ -121,9 +121,9 @@ class Product extends Model
             if (strpos($photo, 'images/products/') === 0) {
                 return asset($photo);
             }
-            // Se for caminho antigo do banco (products/...)
+            // Se for caminho antigo do banco (products/...) mas agora realocado fisicamente
             if (strpos($photo, 'products/') === 0) {
-                return asset('storage/' . $photo);
+                return asset('images/' . $photo);
             }
             // Se for caminho do storage (products/...), fallback antigo
             return asset('storage/' . $photo);

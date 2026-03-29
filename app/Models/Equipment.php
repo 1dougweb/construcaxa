@@ -142,9 +142,9 @@ class Equipment extends Model
             if (strpos($photo, 'images/equipment/') === 0) {
                 return asset($photo);
             }
-            // Caminho antigo do banco
+            // Se for caminho antigo do banco mas agora realocado fisicamente
             if (strpos($photo, 'equipment/') === 0) {
-                return asset('storage/' . $photo);
+                return asset('images/' . $photo);
             }
             // Fallback antigo
             return asset('storage/' . $photo);
