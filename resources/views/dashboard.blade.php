@@ -1019,10 +1019,15 @@
 @push('scripts')
 <script>
     document.addEventListener('livewire:init', () => {
-        Livewire.on('productSaved', () => {
+        // Evento para fechar o offcanvas (A notificação é enviada via evento 'notification')
+        window.addEventListener('product-saved', (event) => {
+            console.log('[dashboard] fechar offcanvas produto');
             closeOffcanvas('product-offcanvas');
-            Livewire.dispatch('refresh');
+            
+            // Em vez de reload imediato, podemos disparar um refresh global se houver components ouvindo
+            Livewire.dispatch('refresh-products');
         });
+
         Livewire.on('equipmentSaved', () => {
             closeOffcanvas('equipment-offcanvas');
             window.location.reload();
@@ -1037,16 +1042,52 @@
         });
     });
 
+    const getProductFormComponent = () => {
+        const offcanvas = document.getElementById('product-offcanvas');
+        if (!offcanvas) return null;
+        const componentEl = offcanvas.querySelector('[wire\\:id]');
+        if (!componentEl) return null;
+        const componentId = componentEl.getAttribute('wire:id');
+        return window.Livewire ? window.Livewire.find(componentId) : null;
+    };
+
     // Eventos de edição para produtos
     window.addEventListener('edit-product', (event) => {
-        const productId = event.detail.id;
+        const detail = Array.isArray(event.detail) ? event.detail[0] : event.detail;
+        const productId = detail?.id || detail?.productId;
+        
+        if (!productId) return;
+
         const offcanvas = document.getElementById('product-offcanvas');
+        if (!offcanvas) return;
+
         const title = offcanvas.querySelector('h2');
         if (title) title.textContent = 'Editar Produto';
-        const livewireComponent = document.querySelector('[wire\\:id]');
-        if (livewireComponent) {
-            const componentId = livewireComponent.getAttribute('wire:id');
-            Livewire.find(componentId).call('loadProduct', productId);
+        
+        openOffcanvas('product-offcanvas');
+
+        const component = getProductFormComponent();
+        if (component) {
+            component.call('resetForm');
+            setTimeout(() => {
+                component.call('loadProduct', productId);
+            }, 100);
+        }
+    });
+
+    // Evento de criação para produtos (caso seja disparado via JS)
+    window.addEventListener('create-product', () => {
+        const offcanvas = document.getElementById('product-offcanvas');
+        if (!offcanvas) return;
+
+        const title = offcanvas.querySelector('h2');
+        if (title) title.textContent = 'Novo Produto';
+        
+        openOffcanvas('product-offcanvas');
+
+        const component = getProductFormComponent();
+        if (component) {
+            component.call('resetForm');
         }
     });
 

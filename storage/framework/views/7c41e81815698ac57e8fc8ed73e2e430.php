@@ -1,9 +1,9 @@
 <div>
     <form wire:submit.prevent="save" class="space-y-6">
         <!-- Foto destacada e campos nome/descrição -->
-        <div class="flex gap-6 items-start">
-            <!-- Foto destacada à esquerda -->
-            <div class="flex-shrink-0">
+        <div class="flex flex-col md:flex-row gap-6 items-start">
+            <!-- Foto destacada à esquerda (e no topo no mobile) -->
+            <div class="flex-shrink-0 w-full md:w-auto flex justify-center md:block">
                 <?php if (isset($component)) { $__componentOriginal9448918d289b17b19c0b97e59e70c1ea = $component; } ?>
 <?php if (isset($attributes)) { $__attributesOriginal9448918d289b17b19c0b97e59e70c1ea = $attributes; } ?>
 <?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.photo-upload','data' => ['wire:model' => 'featured_photo','label' => ''.e(__('Foto do Produto')).'','deleteAction' => 'confirmDeletePhoto','existingPhotoPath' => ''.e($featured_photo_path).'']] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
@@ -27,7 +27,7 @@
             </div>
 
             <!-- Nome e Descrição à direita -->
-            <div class="flex-1 space-y-4">
+            <div class="flex-1 space-y-4 w-full">
         <div>
             <?php if (isset($component)) { $__componentOriginald8ba2b4c22a13c55321e34443c386276 = $component; } ?>
 <?php if (isset($attributes)) { $__attributesOriginald8ba2b4c22a13c55321e34443c386276 = $attributes; } ?>

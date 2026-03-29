@@ -47,6 +47,7 @@ unset($__defined_vars); ?>
 <div 
     x-data="{
         isDragging: false,
+        previewUrl: null,
         handleDragOver(e) {
             e.preventDefault();
             e.stopPropagation();
@@ -63,14 +64,25 @@ unset($__defined_vars); ?>
             this.isDragging = false;
             const files = e.dataTransfer.files;
             if (files.length > 0) {
-                const file = files[0];
-                const validTypes = ['image/jpeg', 'image/png', 'image/jpg', 'image/gif', 'image/webp', 'image/avif'];
-                if (validTypes.includes(file.type) || file.type.startsWith('image/')) {
-                    window.Livewire.find('<?php echo e($_instance->getId()); ?>').upload('<?php echo e($modelName); ?>', file);
-                }
+                this.processFile(files[0]);
+            }
+        },
+        handleFileSelect(e) {
+            if (e.target.files.length > 0) {
+                this.processFile(e.target.files[0]);
+            }
+        },
+        processFile(file) {
+            const validTypes = ['image/jpeg', 'image/png', 'image/jpg', 'image/gif', 'image/webp', 'image/avif'];
+            if (validTypes.includes(file.type) || file.type.startsWith('image/')) {
+                this.previewUrl = URL.createObjectURL(file);
+                window.Livewire.find('<?php echo e($_instance->getId()); ?>').upload('<?php echo e($modelName); ?>', file);
             }
         }
     }"
+    x-on:livewire-upload-start="isUploading = true"
+    x-on:livewire-upload-finish="isUploading = false"
+    x-on:livewire-upload-error="isUploading = false"
 >
     <?php if (isset($component)) { $__componentOriginald8ba2b4c22a13c55321e34443c386276 = $component; } ?>
 <?php if (isset($attributes)) { $__attributesOriginald8ba2b4c22a13c55321e34443c386276 = $attributes; } ?>
@@ -102,98 +114,72 @@ unset($__defined_vars); ?>
             :class="{ 'border-indigo-500 dark:border-indigo-400 bg-indigo-50 dark:bg-indigo-900/30': isDragging, 'border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700': !isDragging }"
             class="w-full h-full border-2 border-dashed rounded-lg overflow-hidden flex items-center justify-center cursor-pointer transition-all duration-200 hover:border-indigo-400 dark:hover:border-indigo-500 hover:bg-indigo-50/50 dark:hover:bg-indigo-900/30 relative"
         >
-            <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($attributes->whereStartsWith('wire:model')->first()): ?>
-                <?php
-                    // Acessar propriedades do Livewire via @entangle ou diretamente
-                    $tempPhoto = null;
-                    $photoPath = $existingPhotoPath;
-                    
-                    // Tentar acessar via $this se disponível (contexto Livewire)
-                    try {
-                        if (isset($this)) {
-                            $tempPhoto = $this->$modelName ?? null;
-                            $pathProperty = $modelName . '_path';
-                            $photoPath = $this->$pathProperty ?? $existingPhotoPath;
-                        }
-                    } catch (\Exception $e) {
-                        // Se não conseguir acessar, usar apenas o existingPhotoPath
+            <?php
+                // Resolução de Path existente do servidor se Alpine não tiver uma previewUrl
+                $photoPath = $existingPhotoPath;
+                try {
+                    if (isset($this)) {
+                        $pathProperty = $modelName . '_path';
+                        $photoPath = $this->$pathProperty ?? $existingPhotoPath;
                     }
+                } catch (\Exception $e) {}
 
-                    // Lógica de URL resiliente
-                    $src = null;
-                    if ($tempPhoto) {
-                        $src = $tempPhoto->temporaryUrl();
-                    } elseif ($photoPath) {
-                        $src = $photoPath;
-                        
-                        // Já é uma URL absoluta (http ou https)
-                        if (str_starts_with($src, 'http://') || str_starts_with($src, 'https://')) {
-                            // Mantém como está
-                        } elseif (str_starts_with($src, '/')) {
-                            // Caminho absoluto local - mantém como está
-                        } elseif (str_starts_with($src, 'images/') || str_starts_with($src, 'products/') || str_starts_with($src, 'equipment/')) {
-                            // Salvo via disco real_public (root public/) - URL direta sem /storage/
-                            $src = '/' . ltrim($src, '/');
+                $src = null;
+                if ($photoPath) {
+                    $src = $photoPath;
+                    if (!str_starts_with($src, 'http://') && !str_starts_with($src, 'https://') && !str_starts_with($src, '/')) {
+                        if (str_starts_with($src, 'images/') || str_starts_with($src, 'products/') || str_starts_with($src, 'equipment/')) {
+                            $src = '/' . $src;
                         } else {
-                            // Fallback para disco public (storage/app/public/)
                             $src = '/storage/' . ltrim($src, '/');
                         }
                     }
-                ?>
-                
-                <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($tempPhoto): ?>
-                    <div class="relative w-full h-full group">
-                        <img src="<?php echo e($src); ?>" alt="Preview" class="w-full h-full object-cover">
-                        <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 transition-all duration-200 flex items-center justify-center">
-                            <span class="text-white opacity-0 group-hover:opacity-100 text-sm font-medium">Clique para trocar</span>
-                        </div>
-                        <!-- Loading overlay centralizado sobre a foto -->
-                        <div wire:loading wire:target="<?php echo e($modelName); ?>" class="absolute inset-0 bg-black bg-opacity-60 flex items-center justify-center z-10">
-                            <div class="flex items-center justify-center">
-                                <svg class="animate-spin h-10 w-10 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                </svg>
+                }
+            ?>
+            
+            <!-- Imagem via AlpineJS (novo upload super rápido) -->
+            <template x-if="previewUrl">
+                <div class="relative w-full h-full group">
+                    <img :src="previewUrl" alt="Preview Local" class="w-full h-full object-cover">
+                    <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 transition-all duration-200 flex items-center justify-center">
+                        <span class="text-white opacity-0 group-hover:opacity-100 text-sm font-medium">Clique para trocar</span>
+                    </div>
+                </div>
+            </template>
+
+            <!-- Imagem via Servidor (já salva) -->
+            <template x-if="!previewUrl">
+                <div class="w-full h-full">
+                    <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($src): ?>
+                        <div class="relative w-full h-full group">
+                            <img src="<?php echo e($src); ?>" alt="Foto Salva" class="w-full h-full object-cover">
+                            <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 transition-all duration-200 flex items-center justify-center">
+                                <span class="text-white opacity-0 group-hover:opacity-100 text-sm font-medium">Clique para trocar</span>
                             </div>
                         </div>
-                    </div>
-                <?php elseif($photoPath): ?>
-                    <div class="relative w-full h-full group">
-                        <img src="<?php echo e($src); ?>" alt="Foto" class="w-full h-full object-cover">
-                        <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 transition-all duration-200 flex items-center justify-center">
-                            <span class="text-white opacity-0 group-hover:opacity-100 text-sm font-medium">Clique para trocar</span>
-                        </div>
-                        <!-- Loading overlay centralizado sobre a foto existente -->
-                        <div wire:loading wire:target="<?php echo e($modelName); ?>" class="absolute inset-0 bg-black bg-opacity-60 flex items-center justify-center z-10">
-                            <div class="flex items-center justify-center">
-                                <svg class="animate-spin h-10 w-10 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                </svg>
-                            </div>
-                        </div>
-                    </div>
-                <?php else: ?>
-                    <!-- Estado vazio com loading centralizado -->
-                    <div class="absolute inset-0 w-full h-full">
-                        <div wire:loading.remove wire:target="<?php echo e($modelName); ?>" class="absolute inset-0 flex flex-col items-center justify-center text-center text-gray-400 dark:text-gray-500 p-4">
+                    <?php else: ?>
+                        <!-- Estado Vazio -->
+                        <div class="absolute inset-0 flex flex-col items-center justify-center text-center text-gray-400 dark:text-gray-500 p-4">
                             <svg class="h-12 w-12 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
                             </svg>
                             <p class="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Arraste e solte</p>
                             <p class="text-xs text-gray-500 dark:text-gray-400">ou clique para selecionar</p>
-                            <p class="text-xs text-gray-400 dark:text-gray-500 mt-2">JPEG, PNG, JPG, GIF, WEBP, AVIF até 2MB</p>
+                            <p class="text-xs text-gray-400 dark:text-gray-500 mt-2">JPEG, PNG, JPG até 2MB</p>
                         </div>
-                        <!-- Loading centralizado quando não há foto -->
-                        <div wire:loading wire:target="<?php echo e($modelName); ?>" class="absolute inset-0 flex items-center justify-center">
-                            <svg class="animate-spin h-10 w-10 text-indigo-600 dark:text-indigo-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                            </svg>
-                        </div>
-                    </div>
-                <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
-            <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+                    <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+                </div>
+            </template>
+            
+            <!-- Loading overlay centralizado (Upload pro Livewire) -->
+            <div wire:loading wire:target="<?php echo e($modelName); ?>" class="absolute inset-0 bg-black bg-opacity-60 flex items-center justify-center z-10">
+                <div class="flex items-center justify-center">
+                    <svg class="animate-spin h-10 w-10 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                </div>
+            </div>
         </label>
         
         <!-- Input de arquivo oculto -->
@@ -201,6 +187,7 @@ unset($__defined_vars); ?>
             type="file" 
             id="<?php echo e($modelName); ?>" 
             wire:model="<?php echo e($modelName); ?>" 
+            @change="handleFileSelect"
             accept="image/jpeg,image/png,image/jpg,image/gif,image/webp,image/avif"
             class="hidden"
         />

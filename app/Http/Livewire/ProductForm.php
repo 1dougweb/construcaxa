@@ -297,15 +297,56 @@ class ProductForm extends Component
 
     public function save()
     {
+        // 1. Validar primeiro fora da transação
+        $validatedData = $this->validate();
+
         try {
             DB::beginTransaction();
             
-            $validatedData = $this->validate();
-            
-            // Define a unidade padrão baseada no tipo selecionado
-            $validatedData['unit_label'] = Product::UNIT_TYPES[$validatedData['measurement_unit']]['unit'];
-            
-            // Se estiver editando e stock/min_stock não foram informados, manter valores atuais
+            // Processamento de imagem
+            if ($this->featured_photo) {
+                $filename = time() . '_' . uniqid() . '.' . $this->featured_photo->getClientOriginalExtension();
+                $path = $this->featured_photo->storeAs('images/products', $filename, ['disk' => 'real_public']);
+                $photoPath = $path;
+                
+                if ($this->product && $this->product->id) {
+                    $this->product->refresh();
+                    $currentPhotos = $this->product->photos ?? [];
+                    if ($this->featured_photo_path && $this->featured_photo_path !== $photoPath) {
+                        if (str_starts_with($this->featured_photo_path, 'images/products/')) {
+                            $oldPath = public_path($this->featured_photo_path);
+                            if (File::exists($oldPath)) {
+                                File::delete($oldPath);
+                            }
+                        } else {
+                            Storage::disk('public')->delete($this->featured_photo_path);
+                        }
+                        $currentPhotos = array_filter($currentPhotos, function($photo) {
+                            return $photo !== $this->featured_photo_path;
+                        });
+                    }
+                    array_unshift($currentPhotos, $photoPath);
+                    $validatedData['photos'] = array_values(array_unique($currentPhotos));
+                } else {
+                    $validatedData['photos'] = [$photoPath];
+                }
+            } elseif ($this->product && $this->product->id) {
+                $this->product->refresh();
+                $currentPhotos = $this->product->photos ?? [];
+                if ($this->featured_photo_path) {
+                    $currentPhotos = array_filter($currentPhotos, function($photo) {
+                        return $photo !== $this->featured_photo_path;
+                    });
+                    array_unshift($currentPhotos, $this->featured_photo_path);
+                    $validatedData['photos'] = array_values($currentPhotos);
+                } elseif (!empty($currentPhotos)) {
+                    $validatedData['photos'] = $currentPhotos;
+                }
+            } elseif (!$this->product && $this->featured_photo_path) {
+                $validatedData['photos'] = [$this->featured_photo_path];
+            }
+
+            // Normalização de campos numéricos
             if ($this->product && $this->product->id) {
                 if (!isset($validatedData['stock']) || $validatedData['stock'] === null) {
                     $this->product->refresh();
@@ -316,130 +357,66 @@ class ProductForm extends Component
                     $validatedData['min_stock'] = $this->product->min_stock;
                 }
             }
-            
-            // Upload da foto destacada
-            // IMPORTANTE: Sempre trabalhar com o produto atual do banco, não com estado em memória
-            if ($this->featured_photo) {
-                // Nova foto foi enviada - salvar direto na pasta public real
-                $filename = time() . '_' . uniqid() . '.' . $this->featured_photo->getClientOriginalExtension();
-                $path = $this->featured_photo->storeAs('images/products', $filename, ['disk' => 'real_public']);
-                
-                // Caminho relativo para salvar no banco (storage/products/filename.jpg)
-                $photoPath = $path;
-                
-                // Se é atualização e havia foto antiga, deletar do storage
-                if ($this->product && $this->product->id) {
-                    // Recarregar produto do banco para garantir dados atualizados
-                    $this->product->refresh();
-                    $currentPhotos = $this->product->photos ?? [];
-                    
-                    // Deletar foto antiga se existir e for diferente da nova
-                    if ($this->featured_photo_path && $this->featured_photo_path !== $photoPath) {
-                        // Verificar se é caminho antigo (public/images) ou novo (storage)
-                        if (str_starts_with($this->featured_photo_path, 'images/products/')) {
-                            // Caminho antigo - deletar de public
-                            $oldPath = public_path($this->featured_photo_path);
-                            if (File::exists($oldPath)) {
-                                File::delete($oldPath);
-                            }
-                        } else {
-                            // Caminho novo - deletar do storage
-                            Storage::disk('public')->delete($this->featured_photo_path);
-                        }
-                        // Remover do array também
-                        $currentPhotos = array_filter($currentPhotos, function($photo) {
-                            return $photo !== $this->featured_photo_path;
-                        });
-                    }
-                    
-                    // Adicionar nova foto no início
-                    array_unshift($currentPhotos, $photoPath);
-                    $validatedData['photos'] = array_values(array_unique($currentPhotos));
-                } else {
-                    // Novo produto
-                    $validatedData['photos'] = [$photoPath];
-                }
-            } elseif ($this->product && $this->product->id) {
-                // Não há upload novo - preservar fotos existentes do banco
-                $this->product->refresh();
-                $currentPhotos = $this->product->photos ?? [];
-                
-                if ($this->featured_photo_path) {
-                    // Se há featured_photo_path definido (pode vir do picker ou já existir),
-                    // garantir que está no início do array
-                    $currentPhotos = array_filter($currentPhotos, function($photo) {
-                        return $photo !== $this->featured_photo_path;
-                    });
-                    array_unshift($currentPhotos, $this->featured_photo_path);
-                    $validatedData['photos'] = array_values($currentPhotos);
-                } elseif (!empty($currentPhotos)) {
-                    // Preservar array existente como está
-                    $validatedData['photos'] = $currentPhotos;
-                }
-            } elseif (!$this->product && $this->featured_photo_path) {
-                // Novo produto com imagem selecionada do picker (sem upload físico)
-                $validatedData['photos'] = [$this->featured_photo_path];
-            }
-            // Para novo produto sem foto, não definir photos (será null/vazio)
-        
-        $message = '';
-        $action = $this->product ? 'updated' : 'created';
-        $productName = $this->product ? $this->product->name : $validatedData['name'];
 
+            $validatedData['unit_label'] = \App\Models\Product::UNIT_TYPES[$validatedData['measurement_unit']]['unit'];
+
+            $action = $this->product ? 'updated' : 'created';
+            
             if ($this->product) {
-                // Atualização
                 $this->product->update($validatedData);
-                $message = 'Produto atualizado com sucesso.';
-                session()->flash('success', $message);
-            } else {
-                // Criação
-                // Gera o SKU automaticamente apenas para novos produtos
-                $validatedData['sku'] = $this->generateSKU($validatedData['name']);
-                $this->product = Product::create($validatedData);
                 $productName = $this->product->name;
-                $message = 'Produto criado com sucesso.';
-                session()->flash('success', $message);
+            } else {
+                $validatedData['sku'] = $this->generateSKU($validatedData['name']);
+                $this->product = \App\Models\Product::create($validatedData);
+                $productName = $this->product->name;
             }
-            
+
             DB::commit();
-            
-            if ($this->product && $this->product->id) {
-                // Disparar evento de broadcast de forma síncrona
-                // Usar try-catch para evitar erros se o WebSocket não estiver disponível
-                try {
-                    broadcast(new ProductChanged(
-                        $this->product->id,
-                        $action,
-                        $message,
-                        $productName
-                    ));
-                } catch (\Exception $e) {
-                    // Log do erro mas não interromper o fluxo
-                    \Log::warning('Erro ao fazer broadcast de ProductChanged: ' . $e->getMessage());
-                }
+
+            try {
+                broadcast(new \App\Events\ProductChanged($this->product->id, $action, '', $productName));
+            } catch (\Exception $e) {
+                \Log::warning('Erro de broadcast: ' . $e->getMessage());
             }
 
-            // Atualizar lista em tempo real via Livewire
-            $this->dispatch('refresh-products')->to(ProductList::class);
+            $successMsg = ($action === 'updated') 
+                ? "Produto atualizado com sucesso!" 
+                : "Produto cadastrado com sucesso!";
 
-            // Emitir evento para o frontend (Único responsável por fechar o offcanvas e notificar)
-            $this->dispatch('product-saved', [
-                'message' => $message,
-                'type' => 'success'
-            ]);
+            \Log::info("Produto salvo: " . $productName);
 
-            $this->resetForm();
-        } catch (\Exception $e) {
-            DB::rollBack();
-            \Log::error('Erro ao salvar produto: ' . $e->getMessage());
-            \Log::error('Stack trace: ' . $e->getTraceAsString());
-            session()->flash('error', 'Erro ao salvar produto: ' . $e->getMessage());
+            // Garantir que a UI receba a notificação e feche o offcanvas via JS puro
             $this->js("
-                (function() {
-                    if (typeof window.showNotification === 'function') {
-                        window.showNotification('Erro ao salvar produto. Verifique os logs.', 'error', 5000);
-                    }
-                })();
+                if (window.showNotification) {
+                    window.showNotification('{$successMsg}', 'success');
+                } else {
+                    alert('{$successMsg}');
+                }
+                
+                if (typeof window.closeOffcanvas === 'function') {
+                    window.closeOffcanvas('product-offcanvas');
+                }
+            ");
+
+            // Atualizar listas
+            $this->dispatch('refresh-products');
+            
+            // Limpar form
+            $this->resetForm();
+
+        } catch (\Exception $e) {
+            if (DB::transactionLevel() > 0) {
+                DB::rollBack();
+            }
+            \Log::error('Erro ao salvar produto: ' . $e->getMessage());
+            
+            $errorMsg = 'Erro ao salvar. Verifique os logs.';
+            $this->js("
+                if (window.showNotification) {
+                    window.showNotification('{$errorMsg}', 'error');
+                } else {
+                    alert('{$errorMsg}');
+                }
             ");
         }
     }

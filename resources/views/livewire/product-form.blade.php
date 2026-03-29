@@ -1,9 +1,9 @@
 <div>
     <form wire:submit.prevent="save" class="space-y-6">
         <!-- Foto destacada e campos nome/descrição -->
-        <div class="flex gap-6 items-start">
-            <!-- Foto destacada à esquerda -->
-            <div class="flex-shrink-0">
+        <div class="flex flex-col md:flex-row gap-6 items-start">
+            <!-- Foto destacada à esquerda (e no topo no mobile) -->
+            <div class="flex-shrink-0 w-full md:w-auto flex justify-center md:block">
                 <x-photo-upload 
                     wire:model="featured_photo"
                     label="{{ __('Foto do Produto') }}"
@@ -13,7 +13,7 @@
             </div>
 
             <!-- Nome e Descrição à direita -->
-            <div class="flex-1 space-y-4">
+            <div class="flex-1 space-y-4 w-full">
         <div>
             <x-label for="name" value="{{ __('Nome') }}" />
             <x-input id="name" class="block mt-1 w-full" type="text" wire:model="name" min-value="1" autofocus />
