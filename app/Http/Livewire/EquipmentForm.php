@@ -17,6 +17,8 @@ class EquipmentForm extends Component
     protected $listeners = [
         'edit-equipment' => 'loadEquipment',
         'reset-equipment-form' => 'resetForm',
+        'media-selected' => 'handleMediaSelected',
+        'open-media-picker' => 'openMediaPicker',
     ];
 
     public $equipment;
@@ -32,6 +34,10 @@ class EquipmentForm extends Component
     public $featured_photo_path;
     public $showDeleteModal = false;
     public $equipmentCategories;
+
+    // Media Picker Variables
+    public $showMediaPicker = false;
+    public $mediaPickerTarget = null;
 
     protected function rules()
     {
@@ -115,11 +121,30 @@ class EquipmentForm extends Component
         $this->equipment_category_id = null;
         $this->purchase_price = null;
         $this->purchase_date = null;
-        $this->notes = '';
+        $this->notes = null;
         $this->status = 'available';
         $this->featured_photo = null;
         $this->featured_photo_path = null;
         $this->showDeleteModal = false;
+        
+        $this->reset();
+    }
+
+    public function openMediaPicker($targetModel)
+    {
+        $this->mediaPickerTarget = $targetModel;
+        $this->showMediaPicker = true;
+    }
+
+    public function handleMediaSelected($path, $url = null, $targetModel = null)
+    {
+        $target = $targetModel ?? $this->mediaPickerTarget;
+
+        if ($target === 'featured_photo' || $this->mediaPickerTarget === 'featured_photo') {
+            $this->featured_photo_path = $path;
+            $this->featured_photo = null; // Limpar upload temporário
+            $this->showMediaPicker = false;
+        }
     }
 
     public function updatedFeaturedPhoto()
@@ -231,14 +256,16 @@ class EquipmentForm extends Component
                 array_unshift($photos, $photoPath); // Adiciona no início
                 $validatedData['photos'] = array_values($photos);
             } elseif ($this->equipment && $this->featured_photo_path) {
-                // Se não há upload novo mas há foto destacada existente, manter o array de fotos
+                // Equipamento existente sem novo upload: manter fotos com a selecionada do picker no início
                 $photos = $this->equipment->photos ?? [];
-                // Garantir que a foto destacada está no início
                 $photos = array_filter($photos, function($photo) {
                     return $photo !== $this->featured_photo_path;
                 });
                 array_unshift($photos, $this->featured_photo_path);
                 $validatedData['photos'] = array_values($photos);
+            } elseif (!$this->equipment && $this->featured_photo_path) {
+                // Novo equipamento com imagem selecionada do picker (sem upload físico)
+                $validatedData['photos'] = [$this->featured_photo_path];
             }
 
             $message = '';

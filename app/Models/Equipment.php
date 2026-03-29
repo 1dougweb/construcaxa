@@ -135,20 +135,24 @@ class Equipment extends Model
             return [];
         }
 
-        return array_map(function ($photo) {
-            if (empty($photo)) {
-                return null;
+        return array_values(array_filter(array_map(function ($photo) {
+            if (empty($photo)) return null;
+
+            // Já é uma URL absoluta (http ou https) - retornar como está
+            if (str_starts_with($photo, 'http://') || str_starts_with($photo, 'https://')) {
+                return $photo;
             }
-            if (strpos($photo, 'images/equipment/') === 0) {
+            // Novo padrão: images/equipment/
+            if (str_starts_with($photo, 'images/equipment/')) {
                 return asset($photo);
             }
-            // Se for caminho antigo do banco mas agora realocado fisicamente
-            if (strpos($photo, 'equipment/') === 0) {
+            // Caminho antigo realocado: equipment/ -> images/equipment/
+            if (str_starts_with($photo, 'equipment/')) {
                 return asset('images/' . $photo);
             }
-            // Fallback antigo
+            // Fallback legado (storage)
             return asset('storage/' . $photo);
-        }, $this->photos);
+        }, $this->photos)));
     }
 
     // Método para obter a URL da primeira foto

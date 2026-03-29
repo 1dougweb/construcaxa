@@ -114,20 +114,24 @@ class Product extends Model
             return [];
         }
 
-        return array_map(function ($photo) {
-            if (empty($photo)) {
-                return null;
+        return array_values(array_filter(array_map(function ($photo) {
+            if (empty($photo)) return null;
+
+            // Já é uma URL absoluta (http ou https)
+            if (str_starts_with($photo, 'http://') || str_starts_with($photo, 'https://')) {
+                return $photo;
             }
-            if (strpos($photo, 'images/products/') === 0) {
+            // Novo padrão: images/products/
+            if (str_starts_with($photo, 'images/products/')) {
                 return asset($photo);
             }
-            // Se for caminho antigo do banco (products/...) mas agora realocado fisicamente
-            if (strpos($photo, 'products/') === 0) {
+            // Caminho antigo realocado: products/ -> images/products/
+            if (str_starts_with($photo, 'products/')) {
                 return asset('images/' . $photo);
             }
-            // Se for caminho do storage (products/...), fallback antigo
+            // Fallback legado (storage)
             return asset('storage/' . $photo);
-        }, $this->photos);
+        }, $this->photos)));
     }
 
     // Método para obter a URL da primeira foto

@@ -211,5 +211,17 @@ if (isset($__messageOriginal)) { $message = $__messageOriginal; }
 endif;
 unset($__errorArgs, $__bag); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
     </div>
+
+    <!-- Botão de Galeria -->
+    <div class="mt-3" style="width: 200px;">
+        <button 
+            type="button"
+            wire:click="openMediaPicker('<?php echo e($modelName); ?>')"
+            class="w-full flex items-center justify-center gap-2 px-3 py-2 text-xs font-medium text-indigo-600 dark:text-indigo-400 border border-indigo-300 dark:border-indigo-600 rounded-md hover:bg-indigo-50 dark:hover:bg-indigo-900/30 transition-colors"
+        >
+            <i class="fi fi-rr-picture"></i>
+            Abrir Galeria
+        </button>
+    </div>
 </div>
 <?php /**PATH C:\Users\Douglas\Documents\Projetos\construcaxa\resources\views/components/photo-upload.blade.php ENDPATH**/ ?>

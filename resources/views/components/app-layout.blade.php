@@ -747,7 +747,7 @@
                      :class="{ 'lg:hidden': sidebarCollapsed }"
                      x-data="{ 
                     estoqueOpen: {{ request()->routeIs('products.*') || request()->routeIs('equipment.*') || request()->routeIs('material-requests.*') || request()->routeIs('equipment-requests.*') || request()->routeIs('suppliers.*') ? 'true' : 'false' }},
-                    gestaoOpen: {{ request()->routeIs('employees.*') || request()->routeIs('attendance.manage') || request()->routeIs('budgets.*') || request()->routeIs('inspections.*') || (request()->routeIs('projects.*') && !request()->routeIs('client.projects.*')) || request()->routeIs('services.*') || request()->routeIs('labor-types.*') || request()->routeIs('service-categories.*') || request()->routeIs('map.*') || request()->routeIs('clients.*') || request()->routeIs('contracts.*') ? 'true' : 'false' }},
+                    gestaoOpen: {{ request()->routeIs('employees.*') || request()->routeIs('attendance.manage') || request()->routeIs('budgets.*') || request()->routeIs('inspections.*') || (request()->routeIs('projects.*') && !request()->routeIs('client.projects.*')) || request()->routeIs('services.*') || request()->routeIs('labor-types.*') || request()->routeIs('service-categories.*') || request()->routeIs('map.*') || request()->routeIs('clients.*') || request()->routeIs('contracts.*') || request()->routeIs('media.*') ? 'true' : 'false' }},
                     financeiroOpen: {{ request()->routeIs('financial.*') ? 'true' : 'false' }},
                     adminOpen: {{ request()->routeIs('admin.permissions.*') || request()->routeIs('admin.email.*') ? 'true' : 'false' }}
                 }">
@@ -854,6 +854,12 @@
                                class="flex items-center px-3 py-2 rounded-md text-sm font-medium {{ request()->routeIs('contracts.*') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700' }}">
                                 <i class="fi fi-rr-memo-circle-check mr-3 text-base"></i>
                                 {{ __('Contratos') }}
+                            </a>
+                            @endif
+                            @if(auth()->user()->hasAnyRole(['admin', 'manager']))
+                            <a href="{{ route('media.index') }}" class="flex items-center px-3 py-2 rounded-md text-sm font-medium {{ request()->routeIs('media.*') ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700' }}">
+                                <i class="fi fi-rr-picture mr-3 text-base"></i>
+                                {{ __('Arquivos') }}
                             </a>
                             @endif
                             @can('view employees')

@@ -49,6 +49,9 @@ Route::middleware(['auth'])->group(function () {
     // Pesquisa Global
     Route::get('/api/search', [SearchController::class, 'search'])->name('search');
 
+    // Gerenciador de Arquivos (Mídias)
+    Route::middleware(['role_or_permission:manager|admin'])->get('/media', \App\Http\Livewire\FileManager::class)->name('media.index');
+
     // Produtos - Criação (deve vir antes das rotas com parâmetros)
     Route::middleware(['permission:create products'])->group(function () {
         Route::get('products/create', [ProductController::class, 'create'])->name('products.create');

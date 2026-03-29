@@ -34,6 +34,10 @@ class ProductForm extends Component
     public $showDeleteModal = false;
     public $stockToAdd = null;
     
+    // Media Picker Variables
+    public $showMediaPicker = false;
+    public $mediaPickerTarget = null;
+    
     public $categories;
     public $suppliers;
     public $unitTypes;
@@ -41,6 +45,8 @@ class ProductForm extends Component
     protected $listeners = [
         'edit-product' => 'loadProduct',
         'reset-product-form' => 'resetForm',
+        'media-selected' => 'handleMediaSelected',
+        'open-media-picker' => 'openMediaPicker',
     ];
 
     protected function rules()
@@ -245,6 +251,23 @@ class ProductForm extends Component
         $this->unitTypes = Product::UNIT_TYPES;
     }
 
+    public function openMediaPicker($targetModel)
+    {
+        $this->mediaPickerTarget = $targetModel;
+        $this->showMediaPicker = true;
+    }
+
+    public function handleMediaSelected($path, $url = null, $targetModel = null)
+    {
+        $target = $targetModel ?? $this->mediaPickerTarget;
+
+        if ($target === 'featured_photo' || $this->mediaPickerTarget === 'featured_photo') {
+            $this->featured_photo_path = $path;
+            $this->featured_photo = null; // Limpar upload temporário se existia
+            $this->showMediaPicker = false;
+        }
+    }
+
     private function generateSKU($name)
     {
         // Remove acentos e caracteres especiais
@@ -344,17 +367,20 @@ class ProductForm extends Component
             $currentPhotos = $this->product->photos ?? [];
             
             if ($this->featured_photo_path) {
-                // Se há featured_photo_path definido, garantir que está no início
+                // Se há featured_photo_path definido (pode vir do picker ou já existir),
+                // garantir que está no início do array
                 $currentPhotos = array_filter($currentPhotos, function($photo) {
-                return $photo !== $this->featured_photo_path;
-            });
+                    return $photo !== $this->featured_photo_path;
+                });
                 array_unshift($currentPhotos, $this->featured_photo_path);
                 $validatedData['photos'] = array_values($currentPhotos);
             } elseif (!empty($currentPhotos)) {
                 // Preservar array existente como está
                 $validatedData['photos'] = $currentPhotos;
             }
-            // Se não há featured_photo_path e não há fotos, não definir photos (mantém vazio)
+        } elseif (!$this->product && $this->featured_photo_path) {
+            // Novo produto com imagem selecionada do picker (sem upload físico)
+            $validatedData['photos'] = [$this->featured_photo_path];
         }
         // Para novo produto sem foto, não definir photos (será null/vazio)
         

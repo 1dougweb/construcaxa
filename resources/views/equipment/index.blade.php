@@ -106,17 +106,13 @@
                                     <tr>
                                         <td class="px-6 py-4 whitespace-nowrap">
                                             @php
-                                                $photos = $item->photos ?? [];
-                                                if (is_string($photos)) {
-                                                    $photos = json_decode($photos, true) ?? [];
-                                                }
-                                                $photos = is_array($photos) ? $photos : [];
+                                                $photoUrls = $item->photo_urls ?? [];
                                             @endphp
-                                            @if(!empty($photos))
+                                            @if(!empty($photoUrls))
                                                 <div x-data="{ 
                                                     open: false, 
                                                     currentIndex: 0,
-                                                    images: @js(array_map(function($photo) { return '/' . ltrim($photo, '/'); }, $photos)),
+                                                    images: @js($photoUrls),
                                                     openLightbox(index) {
                                                         this.currentIndex = index;
                                                         this.open = true;
@@ -135,10 +131,11 @@
                                                 }" @keydown.escape="closeLightbox()" @keydown.arrow-left="prevImage()" @keydown.arrow-right="nextImage()">
                                                     <div class="w-16 h-16 rounded overflow-hidden cursor-pointer hover:opacity-80 transition-opacity">
                                                         <img 
-                                                            src="/{{ ltrim($photos[0], '/') }}" 
+                                                            src="{{ $photoUrls[0] }}" 
                                                             alt="{{ $item->name }}"
                                                             class="w-full h-full object-cover border border-gray-200 dark:border-gray-700 rounded-md"
                                                             @click="openLightbox(0)"
+                                                            onerror="this.onerror=null; this.src='data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'64\' height=\'64\'%3E%3Crect fill=\'%23e5e7eb\' width=\'64\' height=\'64\'/%3E%3C/svg%3E';"
                                                         >
                                                     </div>
                                                     

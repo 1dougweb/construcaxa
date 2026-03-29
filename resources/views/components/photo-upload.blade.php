@@ -152,4 +152,16 @@
             <p class="text-red-500 text-xs mt-1 absolute -bottom-6 left-0">{{ $message }}</p>
         @enderror
     </div>
+
+    <!-- Botão de Galeria -->
+    <div class="mt-3" style="width: 200px;">
+        <button 
+            type="button"
+            wire:click="openMediaPicker('{{ $modelName }}')"
+            class="w-full flex items-center justify-center gap-2 px-3 py-2 text-xs font-medium text-indigo-600 dark:text-indigo-400 border border-indigo-300 dark:border-indigo-600 rounded-md hover:bg-indigo-50 dark:hover:bg-indigo-900/30 transition-colors"
+        >
+            <i class="fi fi-rr-picture"></i>
+            Abrir Galeria
+        </button>
+    </div>
 </div>
