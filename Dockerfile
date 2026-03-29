@@ -260,6 +260,7 @@ RUN echo '#!/bin/bash' > /usr/local/bin/docker-entrypoint.sh && \
     echo 'mkdir -p /var/www/storage/app/public/images' >> /usr/local/bin/docker-entrypoint.sh && \
     echo 'mkdir -p /var/www/storage/app/public/products/photos' >> /usr/local/bin/docker-entrypoint.sh && \
     echo 'mkdir -p /var/www/storage/app/public/uploads' >> /usr/local/bin/docker-entrypoint.sh && \
+    echo 'mkdir -p /var/www/storage/app/livewire-tmp' >> /usr/local/bin/docker-entrypoint.sh && \
     echo 'mkdir -p /var/www/storage/framework/cache/data' >> /usr/local/bin/docker-entrypoint.sh && \
     echo 'mkdir -p /var/www/storage/framework/sessions' >> /usr/local/bin/docker-entrypoint.sh && \
     echo 'mkdir -p /var/www/storage/framework/views' >> /usr/local/bin/docker-entrypoint.sh && \
@@ -269,6 +270,7 @@ RUN echo '#!/bin/bash' > /usr/local/bin/docker-entrypoint.sh && \
     echo 'touch /var/www/storage/logs/laravel.log' >> /usr/local/bin/docker-entrypoint.sh && \
     echo 'chown -R www:www /var/www/storage /var/www/bootstrap/cache' >> /usr/local/bin/docker-entrypoint.sh && \
     echo 'chmod -R 775 /var/www/storage/framework /var/www/storage/logs /var/www/bootstrap/cache' >> /usr/local/bin/docker-entrypoint.sh && \
+    echo 'chmod -R 775 /var/www/storage/app/livewire-tmp' >> /usr/local/bin/docker-entrypoint.sh && \
     echo 'chmod -R 755 /var/www/storage/app/public' >> /usr/local/bin/docker-entrypoint.sh && \
     echo 'chmod -R o+r /var/www/storage/app/public' >> /usr/local/bin/docker-entrypoint.sh && \
     echo '' >> /usr/local/bin/docker-entrypoint.sh && \

@@ -60,35 +60,48 @@ class FileManager extends Component
 
     public function loadDirectory()
     {
-        // Segurança contra diretórios forjados
-        if (strpos($this->currentPath, '..') !== false) {
-            $this->currentPath = $this->baseDirectory;
+        try {
+            // Segurança contra diretórios forjados
+            if (strpos($this->currentPath, '..') !== false) {
+                $this->currentPath = $this->baseDirectory;
+            }
+
+            // Listar pastas
+            $dirs = Storage::disk($this->disk)->directories($this->currentPath);
+            $this->directories = array_map(function($dir) {
+                return [
+                    'name' => basename($dir),
+                    'path' => $dir,
+                    'isEditing' => false
+                ];
+            }, $dirs);
+
+            // Listar arquivos
+            $files = Storage::disk($this->disk)->files($this->currentPath);
+            $this->files = array_map(function($file) {
+                $extension = pathinfo($file, PATHINFO_EXTENSION);
+                return [
+                    'name' => basename($file),
+                    'path' => $file,
+                    'extension' => strtolower($extension),
+                    'size' => $this->formatSize(Storage::disk($this->disk)->size($file)),
+                    'last_modified' => date('d/m/Y H:i', Storage::disk($this->disk)->lastModified($file)),
+                    'url' => '/storage/' . $file,
+                    'is_image' => in_array(strtolower($extension), ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg', 'avif'])
+                ];
+            }, $files);
+        } catch (\Exception $e) {
+            \Log::error('Erro ao carregar diretório no FileManager: ' . $e->getMessage());
+            $this->directories = [];
+            $this->files = [];
+            
+            if (config('app.debug')) {
+                $this->dispatch('notification', [
+                    'type' => 'error',
+                    'message' => 'Erro de sistema: ' . $e->getMessage()
+                ]);
+            }
         }
-
-        // Listar pastas
-        $dirs = Storage::disk($this->disk)->directories($this->currentPath);
-        $this->directories = array_map(function($dir) {
-            return [
-                'name' => basename($dir),
-                'path' => $dir,
-                'isEditing' => false
-            ];
-        }, $dirs);
-
-        // Listar arquivos
-        $files = Storage::disk($this->disk)->files($this->currentPath);
-        $this->files = array_map(function($file) {
-            $extension = pathinfo($file, PATHINFO_EXTENSION);
-            return [
-                'name' => basename($file),
-                'path' => $file,
-                'extension' => strtolower($extension),
-                'size' => $this->formatSize(Storage::disk($this->disk)->size($file)),
-                'last_modified' => date('d/m/Y H:i', Storage::disk($this->disk)->lastModified($file)),
-                'url' => '/storage/' . $file,
-                'is_image' => in_array(strtolower($extension), ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg', 'avif'])
-            ];
-        }, $files);
     }
 
     public function enterDirectory($name)
@@ -138,11 +151,12 @@ class FileManager extends Component
     {
         if (!in_array($newRoot, ['images', 'storage'])) return;
 
-        $this->baseDirectory = $newRoot;
-        $this->currentPath = $newRoot;
+        // Se for storage, apontar para a raiz do disco ''
+        $this->baseDirectory = $newRoot === 'storage' ? '' : $newRoot;
+        $this->currentPath = $this->baseDirectory;
 
-        // Certificar que o diretório existe
-        if (!Storage::disk($this->disk)->exists($this->baseDirectory)) {
+        // Certificar que o diretório existe (se não for a raiz)
+        if ($this->baseDirectory !== '' && !Storage::disk($this->disk)->exists($this->baseDirectory)) {
             Storage::disk($this->disk)->makeDirectory($this->baseDirectory);
         }
 
