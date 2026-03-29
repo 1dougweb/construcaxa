@@ -257,6 +257,7 @@ RUN echo '#!/bin/bash' > /usr/local/bin/docker-entrypoint.sh && \
     echo 'fi' >> /usr/local/bin/docker-entrypoint.sh && \
     echo '' >> /usr/local/bin/docker-entrypoint.sh && \
     echo '# Ensure storage directories exist and have correct permissions' >> /usr/local/bin/docker-entrypoint.sh && \
+    echo 'mkdir -p /var/www/storage/app/public/images' >> /usr/local/bin/docker-entrypoint.sh && \
     echo 'mkdir -p /var/www/storage/app/public/products/photos' >> /usr/local/bin/docker-entrypoint.sh && \
     echo 'mkdir -p /var/www/storage/app/public/uploads' >> /usr/local/bin/docker-entrypoint.sh && \
     echo 'mkdir -p /var/www/storage/framework/cache/data' >> /usr/local/bin/docker-entrypoint.sh && \
