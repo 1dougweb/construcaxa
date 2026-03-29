@@ -122,7 +122,17 @@ class Product extends Model
                 return $photo;
             }
 
-            // Uso de caminho relativo (mais resiliente à configuração de APP_URL)
+            // Já começa com / — usar direto
+            if (str_starts_with($photo, '/')) {
+                return $photo;
+            }
+
+            // Salvo via disco real_public (public/images/...) — URL direta sem /storage/
+            if (str_starts_with($photo, 'images/') || str_starts_with($photo, 'products/') || str_starts_with($photo, 'equipment/')) {
+                return '/' . $photo;
+            }
+
+            // Fallback: assume disco public (storage/app/public/...)
             return '/storage/' . $photo;
         }, $this->photos)));
     }
