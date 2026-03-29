@@ -120,17 +120,13 @@
                                     <tr>
                                         <td class="px-6 py-4 whitespace-nowrap">
                                             <?php
-                                                $photos = $item->photos ?? [];
-                                                if (is_string($photos)) {
-                                                    $photos = json_decode($photos, true) ?? [];
-                                                }
-                                                $photos = is_array($photos) ? $photos : [];
+                                                $photoUrls = $item->photo_urls ?? [];
                                             ?>
-                                            <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(!empty($photos)): ?>
+                                            <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(!empty($photoUrls)): ?>
                                                 <div x-data="{ 
                                                     open: false, 
                                                     currentIndex: 0,
-                                                    images: <?php echo \Illuminate\Support\Js::from(array_map(function($photo) { return '/' . ltrim($photo, '/'); }, $photos))->toHtml() ?>,
+                                                    images: <?php echo \Illuminate\Support\Js::from($photoUrls)->toHtml() ?>,
                                                     openLightbox(index) {
                                                         this.currentIndex = index;
                                                         this.open = true;
@@ -149,10 +145,11 @@
                                                 }" @keydown.escape="closeLightbox()" @keydown.arrow-left="prevImage()" @keydown.arrow-right="nextImage()">
                                                     <div class="w-16 h-16 rounded overflow-hidden cursor-pointer hover:opacity-80 transition-opacity">
                                                         <img 
-                                                            src="/<?php echo e(ltrim($photos[0], '/')); ?>" 
+                                                            src="<?php echo e($photoUrls[0]); ?>" 
                                                             alt="<?php echo e($item->name); ?>"
                                                             class="w-full h-full object-cover border border-gray-200 dark:border-gray-700 rounded-md"
                                                             @click="openLightbox(0)"
+                                                            onerror="this.onerror=null; this.src='data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'64\' height=\'64\'%3E%3Crect fill=\'%23e5e7eb\' width=\'64\' height=\'64\'/%3E%3C/svg%3E';"
                                                         >
                                                     </div>
                                                     

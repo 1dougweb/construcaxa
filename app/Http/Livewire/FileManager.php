@@ -29,7 +29,7 @@ class FileManager extends Component
     public $multiple = false;
     
     // Status e avisos
-    public $disk = 'real_public'; // Usar o disco que aponta direto para a pasta public
+    public $disk = 'public'; // Usar o disco 'public' que aponta para storage/app/public em vez do root de public
 
     protected $listeners = [
         'refresh-file-manager' => 'loadDirectory',
@@ -85,7 +85,7 @@ class FileManager extends Component
                 'extension' => strtolower($extension),
                 'size' => $this->formatSize(Storage::disk($this->disk)->size($file)),
                 'last_modified' => date('d/m/Y H:i', Storage::disk($this->disk)->lastModified($file)),
-                'url' => asset($file),
+                'url' => '/storage/' . $file,
                 'is_image' => in_array(strtolower($extension), ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg', 'avif'])
             ];
         }, $files);
@@ -223,6 +223,41 @@ class FileManager extends Component
             'type' => 'success',
             'message' => 'Pasta criada com sucesso!'
         ]);
+    }
+
+    // --- Download ---
+
+    public function downloadDirectory($path)
+    {
+        $folderName = basename($path);
+        $zipName = $folderName . '.zip';
+        $tempFile = tempnam(sys_get_temp_dir(), 'zip') . '.zip';
+        
+        $zip = new \ZipArchive();
+        if ($zip->open($tempFile, \ZipArchive::CREATE | \ZipArchive::OVERWRITE)) {
+            $files = Storage::disk($this->disk)->allFiles($path);
+            
+            foreach ($files as $file) {
+                // Caminho relativo dentro do ZIP
+                $relativePath = substr($file, strlen($path) + 1);
+                $zip->addFromString($relativePath, Storage::disk($this->disk)->get($file));
+            }
+            
+            $zip->close();
+            
+            return response()->download($tempFile, $zipName)->deleteFileAfterSend(true);
+        }
+        
+        $this->dispatch('notification', [
+            'type' => 'error',
+            'message' => 'Erro ao gerar o arquivo ZIP.'
+        ]);
+        return null;
+    }
+
+    public function downloadFile($path, $name)
+    {
+        return Storage::disk($this->disk)->download($path, $name);
     }
 
     // --- Deletar ---

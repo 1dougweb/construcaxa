@@ -114,19 +114,20 @@
         <!-- Ações -->
         <div class="flex items-center space-x-3 w-full sm:w-auto mt-2 sm:mt-0">
             <!-- Loading Indicator -->
-            <div wire:loading wire:target="uploads" class="text-sm text-indigo-600 dark:text-indigo-400 font-medium flex items-center">
-                <i class="fi fi-rr-spinner animate-spin mr-2"></i> Enviando...
-            </div>
-            
             <button wire:click="$set('showCreateModal', true)" class="px-3 py-1.5 text-sm bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition shadow-sm flex items-center">
                 <i class="fi fi-rr-folder-add mr-2"></i> Nova Pasta
             </button>
-
-            <!-- Upload File Input (Hidden) -->
-            <label class="px-3 py-1.5 text-sm bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition shadow-sm cursor-pointer flex items-center">
-                <i class="fi fi-rr-upload mr-2"></i> Enviar
-                <input type="file" multiple wire:model="uploads" class="hidden">
-            </label>
+            <div class="relative group">
+                <input type="file" wire:model="uploads" multiple class="hidden" id="fileUpload" accept="*/*">
+                <label for="fileUpload" class="flex items-center px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl transition-all shadow-lg shadow-indigo-200 dark:shadow-none cursor-pointer group-hover:-translate-y-0.5 active:translate-y-0">
+                    <i class="fi fi-rr-cloud-upload mr-2 text-lg"></i>
+                    <span class="font-bold text-sm">Enviar Arquivos</span>
+                </label>
+                <!-- Indicador de Carregamento -->
+                <div wire:loading wire:target="uploads" class="absolute -bottom-1 left-0 right-0 h-1 bg-indigo-200 rounded-full overflow-hidden">
+                    <div class="h-full bg-indigo-600 animate-progress"></div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -151,6 +152,13 @@
                      @drop.prevent.stop="$event.currentTarget.querySelector('.card-inner').classList.remove('ring-2','ring-indigo-400','!bg-indigo-100'); handleDropOnTarget($event, '<?php echo e($dir['path']); ?>')"
                      wire:click="enterDirectory('<?php echo e($dir['name']); ?>')"
                      class="group relative flex flex-col cursor-pointer select-none">
+
+                    <!-- Botão Download (Pasta) -->
+                    <button wire:click.stop="downloadDirectory('<?php echo e($dir['path']); ?>')"
+                            class="absolute top-1 right-9 z-10 p-1.5 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-400 hover:text-indigo-600 opacity-0 group-hover:opacity-100 transition-all shadow"
+                            title="Download ZIP">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                    </button>
 
                     <!-- Botão Deletar -->
                     <button @click.stop="confirmDelete('<?php echo e($dir['path']); ?>', true)"
@@ -180,6 +188,13 @@
                 <div draggable="true"
                      @dragstart="startDrag($event, '<?php echo e($file['path']); ?>')"
                      class="group relative flex flex-col select-none">
+
+                    <!-- Botão Download (Arquivo) -->
+                    <button wire:click.stop="downloadFile('<?php echo e($file['path']); ?>', '<?php echo e($file['name']); ?>')"
+                            class="absolute top-1 right-9 z-10 p-1.5 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-400 hover:text-indigo-600 opacity-0 group-hover:opacity-100 transition-all shadow"
+                            title="Baixar">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                    </button>
 
                     <!-- Botão Deletar -->
                     <button @click.stop="confirmDelete('<?php echo e($file['path']); ?>', false)"

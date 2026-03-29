@@ -138,20 +138,13 @@ class Equipment extends Model
         return array_values(array_filter(array_map(function ($photo) {
             if (empty($photo)) return null;
 
-            // Já é uma URL absoluta (http ou https) - retornar como está
+            // Já é uma URL absoluta (http ou https)
             if (str_starts_with($photo, 'http://') || str_starts_with($photo, 'https://')) {
                 return $photo;
             }
-            // Novo padrão: images/equipment/
-            if (str_starts_with($photo, 'images/equipment/')) {
-                return asset($photo);
-            }
-            // Caminho antigo realocado: equipment/ -> images/equipment/
-            if (str_starts_with($photo, 'equipment/')) {
-                return asset('images/' . $photo);
-            }
-            // Fallback legado (storage)
-            return asset('storage/' . $photo);
+
+            // Uso de caminho relativo (mais resiliente à configuração de APP_URL)
+            return '/storage/' . $photo;
         }, $this->photos)));
     }
 

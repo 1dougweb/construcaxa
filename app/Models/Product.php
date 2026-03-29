@@ -121,16 +121,9 @@ class Product extends Model
             if (str_starts_with($photo, 'http://') || str_starts_with($photo, 'https://')) {
                 return $photo;
             }
-            // Novo padrão: images/products/
-            if (str_starts_with($photo, 'images/products/')) {
-                return asset($photo);
-            }
-            // Caminho antigo realocado: products/ -> images/products/
-            if (str_starts_with($photo, 'products/')) {
-                return asset('images/' . $photo);
-            }
-            // Fallback legado (storage)
-            return asset('storage/' . $photo);
+
+            // Uso de caminho relativo (mais resiliente à configuração de APP_URL)
+            return '/storage/' . $photo;
         }, $this->photos)));
     }
 
