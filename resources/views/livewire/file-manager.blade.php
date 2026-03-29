@@ -112,19 +112,27 @@
 
         <!-- Ações -->
         <div class="flex items-center space-x-3 w-full sm:w-auto mt-2 sm:mt-0">
-            <!-- Loading Indicator -->
+            <!-- Nova Pasta -->
             <button wire:click="$set('showCreateModal', true)" class="px-3 py-1.5 text-sm bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition shadow-sm flex items-center">
                 <i class="fi fi-rr-folder-add mr-2"></i> Nova Pasta
             </button>
-            <div class="relative group">
-                <input type="file" wire:model="uploads" multiple class="hidden" id="fileUpload" accept="*/*">
+            
+            <div 
+                x-data="{ isUploading: false, progress: 0 }"
+                x-on:livewire-upload-start="isUploading = true"
+                x-on:livewire-upload-finish="isUploading = false; progress = 0"
+                x-on:livewire-upload-error="isUploading = false; progress = 0; $dispatch('notification', { type: 'error', message: 'Erro no servidor' })"
+                x-on:livewire-upload-progress="progress = $event.detail.progress"
+                class="relative group"
+            >
+                <input type="file" wire:model.live="uploads" multiple class="hidden" id="fileUpload" accept="*/*">
                 <label for="fileUpload" class="flex items-center px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl transition-all shadow-lg shadow-indigo-200 dark:shadow-none cursor-pointer group-hover:-translate-y-0.5 active:translate-y-0">
                     <i class="fi fi-rr-cloud-upload mr-2 text-lg"></i>
                     <span class="font-bold text-sm">Enviar Arquivos</span>
                 </label>
-                <!-- Indicador de Carregamento -->
-                <div wire:loading wire:target="uploads" class="absolute -bottom-1 left-0 right-0 h-1 bg-indigo-200 rounded-full overflow-hidden">
-                    <div class="h-full bg-indigo-600 animate-progress"></div>
+                <!-- Indicador de Carregamento Alpine -->
+                <div x-show="isUploading" class="absolute -bottom-2 left-0 right-0 h-1.5 bg-indigo-200 rounded-full overflow-hidden transition-all duration-300">
+                    <div class="h-full bg-indigo-800 transition-all duration-300 ease-out" :style="`width: ${progress}%`"></div>
                 </div>
             </div>
         </div>

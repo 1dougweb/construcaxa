@@ -329,58 +329,58 @@ class ProductForm extends Component
                 
                 // Se é atualização e havia foto antiga, deletar do storage
                 if ($this->product && $this->product->id) {
-                // Recarregar produto do banco para garantir dados atualizados
+                    // Recarregar produto do banco para garantir dados atualizados
+                    $this->product->refresh();
+                    $currentPhotos = $this->product->photos ?? [];
+                    
+                    // Deletar foto antiga se existir e for diferente da nova
+                    if ($this->featured_photo_path && $this->featured_photo_path !== $photoPath) {
+                        // Verificar se é caminho antigo (public/images) ou novo (storage)
+                        if (str_starts_with($this->featured_photo_path, 'images/products/')) {
+                            // Caminho antigo - deletar de public
+                            $oldPath = public_path($this->featured_photo_path);
+                            if (File::exists($oldPath)) {
+                                File::delete($oldPath);
+                            }
+                        } else {
+                            // Caminho novo - deletar do storage
+                            Storage::disk('public')->delete($this->featured_photo_path);
+                        }
+                        // Remover do array também
+                        $currentPhotos = array_filter($currentPhotos, function($photo) {
+                            return $photo !== $this->featured_photo_path;
+                        });
+                    }
+                    
+                    // Adicionar nova foto no início
+                    array_unshift($currentPhotos, $photoPath);
+                    $validatedData['photos'] = array_values(array_unique($currentPhotos));
+                } else {
+                    // Novo produto
+                    $validatedData['photos'] = [$photoPath];
+                }
+            } elseif ($this->product && $this->product->id) {
+                // Não há upload novo - preservar fotos existentes do banco
                 $this->product->refresh();
                 $currentPhotos = $this->product->photos ?? [];
                 
-                // Deletar foto antiga se existir e for diferente da nova
-                if ($this->featured_photo_path && $this->featured_photo_path !== $photoPath) {
-                    // Verificar se é caminho antigo (public/images) ou novo (storage)
-                    if (strpos($this->featured_photo_path, 'images/products/') === 0) {
-                        // Caminho antigo - deletar de public
-                        $oldPath = public_path($this->featured_photo_path);
-                        if (File::exists($oldPath)) {
-                            File::delete($oldPath);
-                        }
-                    } else {
-                        // Caminho novo - deletar do storage
-                        Storage::disk('public')->delete($this->featured_photo_path);
-                    }
-                    // Remover do array também
+                if ($this->featured_photo_path) {
+                    // Se há featured_photo_path definido (pode vir do picker ou já existir),
+                    // garantir que está no início do array
                     $currentPhotos = array_filter($currentPhotos, function($photo) {
                         return $photo !== $this->featured_photo_path;
                     });
+                    array_unshift($currentPhotos, $this->featured_photo_path);
+                    $validatedData['photos'] = array_values($currentPhotos);
+                } elseif (!empty($currentPhotos)) {
+                    // Preservar array existente como está
+                    $validatedData['photos'] = $currentPhotos;
                 }
-                
-                // Adicionar nova foto no início
-                array_unshift($currentPhotos, $photoPath);
-                $validatedData['photos'] = array_values(array_unique($currentPhotos));
-            } else {
-                // Novo produto
-                $validatedData['photos'] = [$photoPath];
+            } elseif (!$this->product && $this->featured_photo_path) {
+                // Novo produto com imagem selecionada do picker (sem upload físico)
+                $validatedData['photos'] = [$this->featured_photo_path];
             }
-        } elseif ($this->product && $this->product->id) {
-            // Não há upload novo - preservar fotos existentes do banco
-            $this->product->refresh();
-            $currentPhotos = $this->product->photos ?? [];
-            
-            if ($this->featured_photo_path) {
-                // Se há featured_photo_path definido (pode vir do picker ou já existir),
-                // garantir que está no início do array
-                $currentPhotos = array_filter($currentPhotos, function($photo) {
-                    return $photo !== $this->featured_photo_path;
-                });
-                array_unshift($currentPhotos, $this->featured_photo_path);
-                $validatedData['photos'] = array_values($currentPhotos);
-            } elseif (!empty($currentPhotos)) {
-                // Preservar array existente como está
-                $validatedData['photos'] = $currentPhotos;
-            }
-        } elseif (!$this->product && $this->featured_photo_path) {
-            // Novo produto com imagem selecionada do picker (sem upload físico)
-            $validatedData['photos'] = [$this->featured_photo_path];
-        }
-        // Para novo produto sem foto, não definir photos (será null/vazio)
+            // Para novo produto sem foto, não definir photos (será null/vazio)
         
         $message = '';
         $action = $this->product ? 'updated' : 'created';

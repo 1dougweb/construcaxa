@@ -83,9 +83,9 @@ $__split = function ($name, $params = []) {
 };
 [$__name, $__params] = $__split('product-form', ['product' => null]);
 
-$key = null;
+$key = 'product-form-offcanvas';
 
-$key ??= \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::generateKey('lw-83508014-1', null);
+$key ??= \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::generateKey('lw-83508014-1', 'product-form-offcanvas');
 
 $__html = app('livewire')->mount($__name, $__params, $key);
 

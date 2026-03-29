@@ -145,11 +145,11 @@
                                         existingDiv.id = 'existing-photo-profile_photo';
                                         existingDiv.className = 'relative w-full h-full group';
                                         existingDiv.style.display = 'block';
-                                        const photoPath = employee.profile_photo_path.startsWith('http') 
+                                        const photoSrc = employee.profile_photo_path.startsWith('http') 
                                             ? employee.profile_photo_path 
-                                            : `/storage/${employee.profile_photo_path}`;
+                                            : (employee.profile_photo_path.startsWith('images/') || employee.profile_photo_path.startsWith('products/') || employee.profile_photo_path.startsWith('equipment/') ? '/' + employee.profile_photo_path : `/storage/${employee.profile_photo_path}`);
                                         existingDiv.innerHTML = `
-                                            <img src="${photoPath}" alt="Foto" class="w-full h-full object-cover">
+                                            <img src="${photoSrc}" alt="Foto" class="w-full h-full object-cover">
                                             <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 transition-all duration-200 flex items-center justify-center">
                                                 <span class="text-white opacity-0 group-hover:opacity-100 text-sm font-medium">Clique para trocar</span>
                                             </div>

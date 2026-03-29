@@ -7,8 +7,18 @@
         <!-- Existing Photos -->
         @if(isset($photos) && is_array($photos) && count($photos) > 0)
             @foreach($photos as $index => $photo)
+                @php
+                    $photoUrl = $photo;
+                    if (!str_starts_with($photoUrl, 'http://') && !str_starts_with($photoUrl, 'https://') && !str_starts_with($photoUrl, '/')) {
+                        if (str_starts_with($photoUrl, 'images/') || str_starts_with($photoUrl, 'products/') || str_starts_with($photoUrl, 'equipment/')) {
+                            $photoUrl = '/' . ltrim($photoUrl, '/');
+                        } else {
+                            $photoUrl = '/storage/' . ltrim($photoUrl, '/');
+                        }
+                    }
+                @endphp
                 <div class="relative group aspect-square bg-gray-100 rounded-lg overflow-hidden border-2 border-gray-200">
-                    <img src="{{ asset('storage/' . $photo) }}" alt="Foto" class="w-full h-full object-cover">
+                    <img src="{{ $photoUrl }}" alt="Foto" class="w-full h-full object-cover">
                     <button 
                         type="button"
                         wire:click="confirmDeletePhoto({{ $index }})"

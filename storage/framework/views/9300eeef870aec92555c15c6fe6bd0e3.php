@@ -125,17 +125,18 @@ unset($__defined_vars); ?>
                         $src = $tempPhoto->temporaryUrl();
                     } elseif ($photoPath) {
                         $src = $photoPath;
-                        // Se não for URL absoluta e não começar com /storage/, prefixar
-                        if (!str_starts_with($src, 'http') && !str_starts_with($src, '/storage/') && !str_starts_with($src, 'storage/')) {
-                            // Se o caminho começar com images/, products/ ou equipment/, ele pertence ao storage
-                            if (str_starts_with($src, 'images/') || str_starts_with($src, 'products/') || str_starts_with($src, 'equipment/')) {
-                                $src = '/storage/' . ltrim($src, '/');
-                            } else {
-                                // Fallback para manter compatibilidade
-                                $src = '/' . ltrim($src, '/');
-                            }
-                        } elseif (str_starts_with($src, 'storage/')) {
-                            $src = '/' . $src;
+                        
+                        // Já é uma URL absoluta (http ou https)
+                        if (str_starts_with($src, 'http://') || str_starts_with($src, 'https://')) {
+                            // Mantém como está
+                        } elseif (str_starts_with($src, '/')) {
+                            // Caminho absoluto local - mantém como está
+                        } elseif (str_starts_with($src, 'images/') || str_starts_with($src, 'products/') || str_starts_with($src, 'equipment/')) {
+                            // Salvo via disco real_public (root public/) - URL direta sem /storage/
+                            $src = '/' . ltrim($src, '/');
+                        } else {
+                            // Fallback para disco public (storage/app/public/)
+                            $src = '/storage/' . ltrim($src, '/');
                         }
                     }
                 ?>

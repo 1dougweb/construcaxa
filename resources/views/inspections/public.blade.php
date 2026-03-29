@@ -89,7 +89,17 @@
                                         <div class="grid grid-cols-2 md:grid-cols-4 gap-2">
                                             @foreach($item->photos as $photo)
                                                 <div class="aspect-square overflow-hidden rounded bg-white border border-gray-200">
-                                                    <img src="/storage/{{ ltrim($photo->photo_path, '/') }}" alt="Foto" class="w-full h-full object-cover">
+                                                    @php
+                                                        $pUrl = $photo->photo_path;
+                                                        if (!str_starts_with($pUrl, 'http') && !str_starts_with($pUrl, '/')) {
+                                                            if (str_starts_with($pUrl, 'images/') || str_starts_with($pUrl, 'products/') || str_starts_with($pUrl, 'equipment/')) {
+                                                                $pUrl = '/' . ltrim($pUrl, '/');
+                                                            } else {
+                                                                $pUrl = '/storage/' . ltrim($pUrl, '/');
+                                                            }
+                                                        }
+                                                    @endphp
+                                                    <img src="{{ $pUrl }}" alt="Foto" class="w-full h-full object-cover">
                                                 </div>
                                             @endforeach
                                         </div>
