@@ -424,23 +424,7 @@ class ProductForm extends Component
             // Atualizar lista em tempo real via Livewire
             $this->dispatch('refresh-products')->to(ProductList::class);
 
-            // Executar JavaScript diretamente para garantir fechamento e notificação
-            $escapedMessage = addslashes($message);
-            $this->js("
-                (function() {
-                    if (typeof closeOffcanvas === 'function') {
-                        closeOffcanvas('product-offcanvas');
-                    }
-                    if (typeof window.showNotification === 'function') {
-                        window.showNotification('{$escapedMessage}', 'success', 4000);
-                    }
-                    if (typeof window.Livewire !== 'undefined') {
-                        window.Livewire.dispatch('refresh-products');
-                    }
-                })();
-            ");
-
-            // Emitir evento para outros listeners (fallback)
+            // Emitir evento para o frontend (Único responsável por fechar o offcanvas e notificar)
             $this->dispatch('product-saved', [
                 'message' => $message,
                 'type' => 'success'

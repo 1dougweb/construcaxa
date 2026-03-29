@@ -94,42 +94,19 @@
             }
             
             // Mostrar notificação
-            if (detail.message) {
-                if (window.showNotification) {
-                    window.showNotification(detail.message, detail.type || 'success', 4000);
-                } else {
-                    console.warn('[products] showNotification não disponível, mensagem:', detail.message);
-                }
+            const message = detail.message || (Array.isArray(detail) ? detail[0]?.message : null);
+            const type = detail.type || (Array.isArray(detail) ? detail[0]?.type : 'success');
+
+            if (message && window.showNotification) {
+                window.showNotification(message, type, 4000);
             }
         };
 
-        // Browser event (dispatch do Livewire 3)
+        // Browser event (Unificado para Livewire 3)
         window.addEventListener('product-saved', (event) => {
-            console.log('[products] Evento product-saved recebido (window)', event);
-            onProductSaved(event.detail || {});
-        });
-
-        // Fallback explícito do browser para evitar dependência de websockets
-        window.addEventListener('product-saved-browser', (event) => {
-            console.log('[products] Evento product-saved-browser recebido (window)', event);
-            onProductSaved(event.detail || {});
-        });
-
-        // Listener direto via Livewire.on (fallback)
-        if (window.Livewire) {
-            window.Livewire.on('product-saved', (detail = {}) => {
-                console.log('[products] Evento product-saved recebido (Livewire.on)', detail);
-                onProductSaved(detail);
-            });
-            window.Livewire.on('product-saved-browser', (detail = {}) => {
-                console.log('[products] Evento product-saved-browser recebido (Livewire.on)', detail);
-                onProductSaved(detail);
-            });
-        }
-        
-        // Listener para eventos Livewire customizados
-        document.addEventListener('livewire:init', () => {
-            console.log('[products] Livewire inicializado, configurando listeners');
+            // Livewire 3 envia o detalhe diretamente ou dentro de um array
+            const detail = Array.isArray(event.detail) ? event.detail[0] : event.detail;
+            onProductSaved(detail || {});
         });
 
         const handleEditProduct = (productId) => {
@@ -141,25 +118,18 @@
 
             openOffcanvas('product-offcanvas');
 
-            // SEMPRE resetar o formulário antes de carregar um novo produto
-            // Isso evita contaminação de estado entre produtos
             const component = getProductFormComponent();
             if (component) {
-                // Resetar primeiro
                 component.call('resetForm');
-                
-                // Aguardar um pouco para garantir que o reset foi processado
-            setTimeout(() => {
-                    // Agora carregar o produto
+                setTimeout(() => {
                     component.call('loadProduct', productId);
                 }, 100);
             }
         };
 
-        Livewire.on('edit-product', ({ id }) => handleEditProduct(id));
-
+        // Escutar apenas o evento de window para evitar duplicidade
         window.addEventListener('edit-product', (event) => {
-            const productId = event.detail?.id;
+            const productId = event.detail?.id || (Array.isArray(event.detail) ? event.detail[0]?.id : null);
             if (productId) handleEditProduct(productId);
         });
 
