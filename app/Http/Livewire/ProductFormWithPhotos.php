@@ -184,7 +184,7 @@ class ProductFormWithPhotos extends Component
             if ($this->photos) {
                 foreach ($this->photos as $photo) {
                     $filename = time() . '_' . uniqid() . '.' . $photo->getClientOriginalExtension();
-                    $path = $photo->storeAs('products', $filename, 'public');
+                    $path = $photo->storeAs('images/products', $filename, ['disk' => 'real_public']);
                     $allPhotos[] = $path;
                 }
             }

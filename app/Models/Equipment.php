@@ -139,11 +139,14 @@ class Equipment extends Model
             if (empty($photo)) {
                 return null;
             }
-            // Se for caminho antigo (images/equipment), manter compatibilidade
             if (strpos($photo, 'images/equipment/') === 0) {
-                return '/' . ltrim($photo, '/');
+                return asset($photo);
             }
-            // Se for caminho do storage (equipment/...), usar asset()
+            // Caminho antigo do banco
+            if (strpos($photo, 'equipment/') === 0) {
+                return asset('storage/' . $photo);
+            }
+            // Fallback antigo
             return asset('storage/' . $photo);
         }, $this->photos);
     }

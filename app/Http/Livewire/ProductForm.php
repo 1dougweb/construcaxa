@@ -299,9 +299,9 @@ class ProductForm extends Component
             // Upload da foto destacada
             // IMPORTANTE: Sempre trabalhar com o produto atual do banco, não com estado em memória
             if ($this->featured_photo) {
-                // Nova foto foi enviada - salvar usando Storage do Laravel
+                // Nova foto foi enviada - salvar direto na pasta public real
                 $filename = time() . '_' . uniqid() . '.' . $this->featured_photo->getClientOriginalExtension();
-                $path = $this->featured_photo->storeAs('products', $filename, 'public');
+                $path = $this->featured_photo->storeAs('images/products', $filename, ['disk' => 'real_public']);
                 
                 // Caminho relativo para salvar no banco (storage/products/filename.jpg)
                 $photoPath = $path;

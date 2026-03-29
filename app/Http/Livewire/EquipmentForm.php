@@ -151,15 +151,14 @@ class EquipmentForm extends Component
         if ($this->featured_photo_path) {
             // Se é um equipamento existente, deletar do storage e atualizar
             if ($this->equipment) {
-                // Verificar se é caminho antigo (public/images) ou novo (storage)
-                if (strpos($this->featured_photo_path, 'images/equipment/') === 0) {
-                    // Caminho antigo - deletar de public
+                // Verificar se é caminho de public (novo) ou storage (antigo)
+                if (strpos($this->featured_photo_path, 'equipment/') === 0 || strpos($this->featured_photo_path, 'images/equipment/') === 0) {
                     $filePath = public_path($this->featured_photo_path);
                     if (File::exists($filePath)) {
                         File::delete($filePath);
                     }
                 } else {
-                    // Caminho novo - deletar do storage
+                    // Caminho antigo - deletar do storage
                     Storage::disk('public')->delete($this->featured_photo_path);
                 }
                 
@@ -204,22 +203,21 @@ class EquipmentForm extends Component
                 'status' => $this->status,
             ];
 
-            // Upload da foto destacada - salvar usando Storage do Laravel
+            // Upload da foto destacada - salvar usando Storage direto na pasta public
             if ($this->featured_photo) {
                 $filename = time() . '_' . uniqid() . '.' . $this->featured_photo->getClientOriginalExtension();
-                $photoPath = $this->featured_photo->storeAs('equipment', $filename, 'public');
+                $photoPath = $this->featured_photo->storeAs('images/equipment', $filename, ['disk' => 'real_public']);
                 
                 // Se já existe foto destacada, deletar a antiga
                 if ($this->featured_photo_path) {
-                    // Verificar se é caminho antigo (public/images) ou novo (storage)
-                    if (strpos($this->featured_photo_path, 'images/equipment/') === 0) {
-                        // Caminho antigo - deletar de public
+                    // Verificar se é caminho direto da raiz (novo padrão)
+                    if (strpos($this->featured_photo_path, 'equipment/') === 0 || strpos($this->featured_photo_path, 'images/equipment/') === 0) {
                         $oldPath = public_path($this->featured_photo_path);
                         if (File::exists($oldPath)) {
                             File::delete($oldPath);
                         }
                     } else {
-                        // Caminho novo - deletar do storage
+                        // Caminho antigo - deletar do storage (storage/app/public)
                         Storage::disk('public')->delete($this->featured_photo_path);
                     }
                 }

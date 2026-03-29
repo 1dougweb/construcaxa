@@ -53,6 +53,8 @@ desktop.ini
 public/build
 public/hot
 public/storage
+public/images/products
+public/images/equipment
 
 # Temporary files
 *.log

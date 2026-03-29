@@ -158,12 +158,13 @@ RUN echo '[supervisord]' > /etc/supervisor/conf.d/supervisord.conf && \
 RUN chown -R www:www /var/www || true
 RUN chmod -R 775 /var/www/storage /var/www/bootstrap/cache || true
 # Ensure storage/app/public is accessible by web server
-# Make storage readable by web server (nginx runs as www-data or nginx user)
 RUN mkdir -p /var/www/storage/app/public && \
     chown -R www:www /var/www/storage/app/public && \
     chmod -R 755 /var/www/storage/app/public && \
-    # Ensure nginx can read files (add read permissions for others)
     chmod -R o+r /var/www/storage/app/public || true
+
+# Backup storage files baked into the image (for volume initialization on first run)
+RUN cp -rp /var/www/storage/app/public /var/www/storage/app/public_image_backup 2>/dev/null || true
 
 # Create log directories
 RUN mkdir -p /var/log && chmod 777 /var/log
@@ -248,6 +249,13 @@ RUN echo '#!/bin/bash' > /usr/local/bin/docker-entrypoint.sh && \
     echo '# O volume montado em /var/www/storage/app/public preserva dados entre rebuilds' >> /usr/local/bin/docker-entrypoint.sh && \
     echo '# Apenas garantir que diretórios existam e tenham permissões corretas' >> /usr/local/bin/docker-entrypoint.sh && \
     echo '' >> /usr/local/bin/docker-entrypoint.sh && \
+    echo '# Initialize volume with image files if empty (first run)' >> /usr/local/bin/docker-entrypoint.sh && \
+    echo 'if [ -d /var/www/storage/app/public_image_backup ] && [ -z "$(ls -A /var/www/storage/app/public 2>/dev/null)" ]; then' >> /usr/local/bin/docker-entrypoint.sh && \
+    echo '    echo "Volume is empty on first run. Copying stored files from image backup..."' >> /usr/local/bin/docker-entrypoint.sh && \
+    echo '    cp -rp /var/www/storage/app/public_image_backup/. /var/www/storage/app/public/' >> /usr/local/bin/docker-entrypoint.sh && \
+    echo '    echo "✓ Storage files restored from image"' >> /usr/local/bin/docker-entrypoint.sh && \
+    echo 'fi' >> /usr/local/bin/docker-entrypoint.sh && \
+    echo '' >> /usr/local/bin/docker-entrypoint.sh && \
     echo '# Ensure storage directories exist and have correct permissions' >> /usr/local/bin/docker-entrypoint.sh && \
     echo 'mkdir -p /var/www/storage/app/public/products/photos' >> /usr/local/bin/docker-entrypoint.sh && \
     echo 'mkdir -p /var/www/storage/app/public/uploads' >> /usr/local/bin/docker-entrypoint.sh && \
@@ -285,14 +293,9 @@ RUN echo '#!/bin/bash' > /usr/local/bin/docker-entrypoint.sh && \
     echo '# Create storage symlink if it does not exist' >> /usr/local/bin/docker-entrypoint.sh && \
     echo 'if [ -f /var/www/vendor/autoload.php ]; then' >> /usr/local/bin/docker-entrypoint.sh && \
     echo '    cd /var/www' >> /usr/local/bin/docker-entrypoint.sh && \
-    echo '    if [ ! -L /var/www/public/storage ]; then' >> /usr/local/bin/docker-entrypoint.sh && \
-    echo '        echo "Creating storage symlink..."' >> /usr/local/bin/docker-entrypoint.sh && \
-    echo '        # Remover diretório se existir (não pode ser symlink se for diretório)' >> /usr/local/bin/docker-entrypoint.sh && \
-    echo '        if [ -d /var/www/public/storage ] && [ ! -L /var/www/public/storage ]; then' >> /usr/local/bin/docker-entrypoint.sh && \
-    echo '            rm -rf /var/www/public/storage' >> /usr/local/bin/docker-entrypoint.sh && \
-    echo '        fi' >> /usr/local/bin/docker-entrypoint.sh && \
-    echo '        php artisan storage:link 2>&1 || echo "Storage link command failed"' >> /usr/local/bin/docker-entrypoint.sh && \
-    echo '    fi' >> /usr/local/bin/docker-entrypoint.sh && \
+    echo '    # Sempre recriar o link simbolico para garantir que seja valido no Linux (Docker)' >> /usr/local/bin/docker-entrypoint.sh && \
+    echo '    rm -rf /var/www/public/storage 2>/dev/null || true' >> /usr/local/bin/docker-entrypoint.sh && \
+    echo '    php artisan storage:link --relative 2>&1 || php artisan storage:link 2>&1 || echo "Storage link command failed"' >> /usr/local/bin/docker-entrypoint.sh && \
     echo '    # Verificar se symlink foi criado e aponta para o lugar certo' >> /usr/local/bin/docker-entrypoint.sh && \
     echo '    if [ -L /var/www/public/storage ]; then' >> /usr/local/bin/docker-entrypoint.sh && \
     echo '        echo "✓ Storage symlink exists"' >> /usr/local/bin/docker-entrypoint.sh && \

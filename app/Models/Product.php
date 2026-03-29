@@ -118,11 +118,14 @@ class Product extends Model
             if (empty($photo)) {
                 return null;
             }
-            // Se for caminho antigo (images/products), manter compatibilidade
             if (strpos($photo, 'images/products/') === 0) {
-                return '/' . ltrim($photo, '/');
+                return asset($photo);
             }
-            // Se for caminho do storage (products/...), usar asset() com /storage/
+            // Se for caminho antigo do banco (products/...)
+            if (strpos($photo, 'products/') === 0) {
+                return asset('storage/' . $photo);
+            }
+            // Se for caminho do storage (products/...), fallback antigo
             return asset('storage/' . $photo);
         }, $this->photos);
     }
